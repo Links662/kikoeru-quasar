@@ -1,6 +1,6 @@
 <template>
   <div>
-    <WorkDetails :metadata="metadata" />
+    <WorkDetails :metadata="metadata" @reset="requestData()" />
     <!-- <WorkQueue :queue="tracks" :editable="false" /> -->
     <WorkTree :tree="tree" :editable="false" />
   </div>
@@ -31,6 +31,13 @@ export default {
     }
   },
 
+  watch: {
+    $route (to) {
+      this.workid = to.params.id;
+      this.requestData();
+    }
+  },
+
   created () {
     this.requestData()
   },
@@ -42,7 +49,12 @@ export default {
           this.metadata = response.data
         })
         .catch((error) => {
-          throw new Error(`Failed to request /api/work/${this.workid}`)
+          if (error.response) {
+            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+            this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
+          } else {
+            this.showErrNotif(error.message || error)
+          }
         })
 
       this.$axios.get(`/api/tracks/${this.workid}`)
@@ -50,8 +62,20 @@ export default {
           this.tree = response.data
         })
         .catch((error) => {
-          throw new Error(`Failed to request /api/tracks/${this.workid}`)
+          if (error.response) {
+            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+            this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
+          } else {
+            this.showErrNotif(error.message || error)
+          }
         })
+    },
+    showErrNotif (message) {
+      this.$q.notify({
+        message,
+        color: 'negative',
+        icon: 'bug_report'
+      })
     }
   }
 }

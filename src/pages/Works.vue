@@ -1,52 +1,115 @@
 <template>
   <div>
     <div class="text-h5 text-weight-regular q-ma-md">
-      {{pageTitle}}<span v-show="pagination.totalCount"> ({{pagination.totalCount}})</span>
+      {{pageTitle}}
+      <span v-show="pagination.totalCount">
+        ({{pagination.totalCount}})
+      </span>
     </div>
     
-    <div class="row justify-center q-col-gutter-y-lg q-pb-xl q-pt-none">
-      <!-- 排序选择框 -->
-      <div class="col-11">
-        <q-select
-          dense
-          rounded
-          outlined
-          transition-show="scale"
-          transition-hide="scale"
-          v-model="oderOption"
-          :options="options"
-          label="排序"
-          style="max-width: 250px"
-        />
-      </div>
+    <div :class="`row justify-center ${listMode ? 'list' : 'q-mx-md'}`">
+      <q-infinite-scroll @load="onLoad" :offset="250" :disable="stopLoad" style="max-width: 1680px;" class="col">
+        <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
+          <!-- 排序选择框 -->
+          <q-select
+            dense
+            rounded
+            outlined
+            bg-color="white"
+            transition-show="scale"
+            transition-hide="scale"
+            v-model="sortOption"
+            :options="options"
+            label="排序"
+            class="col-auto"
+          />
 
-      <div class="col-11">
-        <q-infinite-scroll @load="onLoad" :offset="250" :disable="stopLoad">
-         <div class="row justify-center q-col-gutter-x-md q-col-gutter-y-lg">
-            <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-auto" v-for="work in works" :key="work.id">
-              <WorkCard :workid="work.id" class="work-card" />
-            </div>
+          <!-- 切换显示模式按钮 -->
+          <q-btn-toggle
+            dense
+            spread
+            rounded
+            v-model="listMode"
+            toggle-color="primary"
+            color="white"
+            text-color="primary"
+            :options="[
+              { icon: 'apps', value: false },
+              { icon: 'list', value: true }
+            ]"
+            style="width: 85px;"
+            class="col-auto"
+          />
+
+          <q-btn-toggle
+            dense
+            spread
+            rounded
+            v-model="showLabel"
+            toggle-color="primary"
+            color="white"
+            text-color="primary"
+            :options="[
+              { icon: 'label', value: true },
+              { icon: 'label_off', value: false }
+            ]"
+            style="width: 85px;"
+            class="col-auto"
+            v-if="windowWidth > 700 && listMode"
+          />
+
+          <q-btn-toggle
+            dense
+            spread
+            rounded
+            :disable="windowWidth < 1120"
+            v-model="detailMode"
+            toggle-color="primary"
+            color="white"
+            text-color="primary"
+            :options="[
+              { icon: 'zoom_in', value: true },
+              { icon: 'zoom_out', value: false },
+            ]"
+            style="width: 85px;"
+            class="col-auto"
+            v-if="windowWidth > 700 && !listMode"
+          />
+
+        </div>
+        
+        <q-list v-if="listMode" bordered separator class="shadow-2">
+          <WorkListItem v-for="work in works" :key="work.id" :workid="work.id" :showLabel="showLabel && windowWidth > 700" />
+        </q-list>
+
+        <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
+          <div class="col-xs-12 col-sm-6 col-md-4 col-lg-3" :class="{'work-card': detailMode}" v-for="work in works" :key="work.id">
+            <WorkCard :workid="work.id" class="fit"/> 
+          </div> 
+        </div>
+        
+        <div v-show="stopLoad" class="q-mt-lg q-mb-xl text-h6 text-bold text-center">END</div>
+
+        <template v-slot:loading>
+          <div class="row justify-center q-my-md">
+            <q-spinner-dots color="primary" size="40px" />
           </div>
-
-          <template v-slot:loading>
-            <div class="row justify-center q-my-md">
-              <q-spinner-dots color="primary" size="40px" />
-            </div>
-          </template>
-        </q-infinite-scroll>
-      </div>
+        </template>
+      </q-infinite-scroll>
     </div>
   </div>
 </template>
 
 <script>
 import WorkCard from 'components/WorkCard'
+import WorkListItem from 'components/WorkListItem'
 
 export default {
   name: 'Works',
 
   components: {
-    WorkCard
+    WorkCard,
+    WorkListItem
   },
 
   props: {
@@ -57,12 +120,17 @@ export default {
 
   data () {
     return {
+      listMode: false,
+      showLabel: true,
+      detailMode: false,
       stopLoad: false,
       works: [],
       pageTitle: '',
       page: 1,
       pagination: {},
-      oderOption: {
+      windowWidth: window.innerWidth,
+      seed: 7, // random sort
+      sortOption: {
         label: '按照发售日期新到老的顺序',
         order: 'release',
         sort: 'desc'
@@ -71,6 +139,11 @@ export default {
         {
           label: '按照发售日期新到老的顺序',
           order: 'release',
+          sort: 'desc'
+        },
+        {
+          label: '按照我的评价排序',
+          order: 'rating',
           sort: 'desc'
         },
         {
@@ -113,12 +186,42 @@ export default {
           order: 'id',
           sort: 'asc'
         },
+        {
+          label: '按照全年龄新作优先的顺序',
+          order: 'nsfw',
+          sort: 'asc'
+        },
+        {
+          label: '随机排序',
+          order: 'random',
+          sort: 'desc'
+        }
       ]
     }
   },
 
   created () {
-    this.refreshPageTitle()
+    this.refreshPageTitle();
+    this.seed = Math.floor(Math.random() * 100);
+  },
+
+  mounted() {
+    if (localStorage.sortOption) {
+      try {
+        this.sortOption = JSON.parse(localStorage.sortOption);
+      } catch {
+        localStorage.removeItem('sortOption');
+      }
+    }
+    if (localStorage.showLabel) {
+      this.showLabel = (localStorage.showLabel === 'true');
+    }
+    if (localStorage.listMode) {
+      this.listMode = (localStorage.listMode === 'true');
+    }
+    if (localStorage.detailMode) {
+      this.detailMode = (localStorage.detailMode === 'true');
+    }
   },
 
   computed: {
@@ -138,9 +241,23 @@ export default {
       this.reset()
     },
 
-    oderOption () {
-      this.reset()
-    }
+    sortOption (newSortOptionSetting) {
+      localStorage.sortOption = JSON.stringify(newSortOptionSetting);
+      this.seed = Math.floor(Math.random() * 100);
+      this.reset();
+    },
+
+    showLabel (newLabelSetting) {
+      localStorage.showLabel = newLabelSetting;
+    },
+
+    listMode (newListModeSetting) {
+      localStorage.listMode = newListModeSetting;
+    },
+
+    detailMode(newModeSetting) {
+      localStorage.detailMode = newModeSetting;
+    },
   },
 
   methods: {
@@ -151,9 +268,10 @@ export default {
 
     requestWorksQueue () {
       const params = {
-        order: this.oderOption.order,
-        sort: this.oderOption.sort,
-        page: this.pagination.currentPage + 1 || 1
+        order: this.sortOption.order,
+        sort: this.sortOption.sort,
+        page: this.pagination.currentPage + 1 || 1,
+        seed: this.seed
       }
 
       return this.$axios.get(this.url, { params })
@@ -235,22 +353,23 @@ export default {
         color: 'negative',
         icon: 'bug_report'
       })
-    }
+    },
   }
 }
 </script>
 
 <style lang="scss" scoped>
+  .list {
+    // 宽度 >= $breakpoint-sm-min
+    @media (min-width: $breakpoint-sm-min) {
+      padding: 0px 20px;
+    }
+  }
+  
   .work-card {
     // 宽度 > $breakpoint-xl-min
-    @media (min-width: $breakpoint-xl-min) {
+    @media (min-width: $breakpoint-md-min) {
       width: 560px;
-      height: 100%;
-    }
-    // 宽度 < $breakpoint-lg-max
-    @media (max-width: $breakpoint-lg-max) {
-      width: 100%;
-      height: 100%;
     }
   }
 </style>

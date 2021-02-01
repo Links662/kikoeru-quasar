@@ -155,6 +155,16 @@
             />
           </q-item-section>
         </q-item>
+        <q-item>
+          <q-item-section>
+            <q-item-label>扫描时不清理音声库</q-item-label>
+            <q-item-label caption>是否跳过清理不存在的音声</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-toggle v-model="config.skipCleanup" />
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-card>
 
@@ -167,11 +177,27 @@
         <q-item>
           <q-item-section>
             <q-item-label>用户验证</q-item-label>
-            <q-item-label caption>是否启用用户验证</q-item-label>
+            <q-item-label caption>是否启用用户验证（更改此设置需要重启程序）</q-item-label>
           </q-item-section>
 
           <q-item-section avatar>
             <q-toggle v-model="config.auth" />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>设置端口号</q-item-label>
+            <q-item-label caption>服务器监听端口号</q-item-label>
+          </q-item-section>
+
+          <q-item-section avatar>
+            <q-input
+              v-model.number="config.listenPort"
+              type="number"
+              input-class="text-right"
+              style="max-width: 100px;"
+            />
           </q-item-section>
         </q-item>
 

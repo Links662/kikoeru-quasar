@@ -24,6 +24,8 @@
         >
           <q-item-section avatar>
             <q-icon size="34px" v-if="item.type === 'folder'" color="amber" name="folder" />
+            <q-icon size="34px" v-else-if="item.type === 'text'" color="info" name="description" />
+            <q-icon size="34px" v-else-if="item.type === 'image'" color="orange" name="photo" />
             <q-btn v-else round dense color="primary" :icon="playIcon(item.hash)" @click="onClickPlayButton(item.hash)" />
           </q-item-section>
 
@@ -34,7 +36,7 @@
 
           <!-- 上下文菜单 -->
           <q-menu
-            v-if="item.type === 'file'"
+            v-if="item.type === 'file' || item.type === 'text' || item.type === 'image'"
             touch-position
             context-menu
             auto-close
@@ -42,12 +44,16 @@
             transition-hide="jump-up"
           >
             <q-list separator>
-              <q-item clickable @click="addToQueue(item)">
+              <q-item clickable @click="addToQueue(item)" v-if="item.type === 'file'">
                 <q-item-section>添加到播放列表</q-item-section>
               </q-item>
 
-              <q-item clickable @click="playNext(item)">
+              <q-item clickable @click="playNext(item)" v-if="item.type === 'file'">
                 <q-item-section>下一曲播放</q-item-section>
+              </q-item>
+
+              <q-item clickable @click="download(item)">
+                <q-item-section>下载文件</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
@@ -58,7 +64,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 
 export default {
   name: 'WorkTree',
@@ -103,22 +109,20 @@ export default {
       return queue
     },
 
-    playIcon () {
-      return function (hash) {
-        return this.playing && this.currentPlayingFile.hash === hash ? "pause" : "play_arrow"        
-      }      
-    },
+    ...mapState('AudioPlayer', [
+      'playing'
+    ]),
 
-    playing () {
-      return this.$store.state.AudioPlayer.playing
-    },
-
-    ...mapGetters({
-      currentPlayingFile: 'AudioPlayer/currentPlayingFile'
-    })
+    ...mapGetters('AudioPlayer', [
+      'currentPlayingFile'
+    ])
   },
 
   methods: {
+    playIcon (hash) {
+      return this.playing && this.currentPlayingFile.hash === hash ? "pause" : "play_arrow"            
+    },
+
     initPath () {
       const initialPath = []
       let fatherFolder = this.tree.concat()
@@ -138,7 +142,9 @@ export default {
 
     onClickItem (item) {
       if (item.type === 'folder') {
-        this.path.push(item.title)
+        this.path.push(item.title);
+      } else if (item.type === 'text' || item.type === 'image') {
+        this.openFile(item);
       } else if (this.currentPlayingFile.hash !== item.hash) {
         this.$store.commit('AudioPlayer/SET_QUEUE', {
           queue: this.queue.concat(),
@@ -166,6 +172,24 @@ export default {
 
     playNext (file) {
       this.$store.commit('AudioPlayer/PLAY_NEXT', file)
+    },
+
+    download (file) {
+      const token = this.$q.localStorage.getItem('jwt-token') || '';
+      const url = `/api/download/${file.hash}?token=${token}`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.target="_blank";
+      link.click();
+    },
+
+    openFile (file) {
+      const token = this.$q.localStorage.getItem('jwt-token') || '';
+      const url = `/api/stream/${file.hash}?token=${token}`;
+      const link = document.createElement('a');
+      link.href = url;
+      link.target="_blank";
+      link.click();
     }
   }
 }
