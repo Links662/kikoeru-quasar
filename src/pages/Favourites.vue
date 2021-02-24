@@ -4,6 +4,7 @@
       <div class="col-lg-3 col-sm-12 col-xs-12">
           <q-btn-toggle
             v-model="mode"
+            @input="changeMode"
             spread
             no-caps
             rounded
@@ -26,6 +27,7 @@
       <q-btn-toggle
         v-if="mode === 'progress'"
         v-model="progressFilter"
+        @input="changeProgressFilter"
         toggle-color="primary"
         color="white"
         text-color="black"
@@ -41,7 +43,8 @@
 
     <div class="q-pt-md">
       <div class="q-px-sm q-py-md">
-        <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" v-if="mode !=='folder'">
+        <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll" v-if="mode !=='folder'">
+          <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
           <q-list bordered separator class="shadow-2" v-if="works.length">
              <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()" :mode="mode"></FavListItem> 
           </q-list>
@@ -60,12 +63,26 @@
 
 <script>
 import FavListItem from 'components/FavListItem'
+import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'Favourites',
 
+  mixins: [NotifyMixin],
+
   components: {
     FavListItem
+  },
+
+  props: {
+    route: {
+      type: String,
+      default: 'review'
+    },
+    progress: {
+      type: String,
+      default: 'marked'
+    }
   },
 
   data() {
@@ -125,6 +142,11 @@ export default {
     }
   },
 
+  created() {
+    this.mode = this.route;
+    this.progressFilter = this.progress;
+  },
+
   mounted() {
     if (localStorage.sortByFavourites) {
       try {
@@ -140,23 +162,42 @@ export default {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
       this.reset();
     },
-    mode() {
+
+    // Browser back and forth
+    route() {
+      this.mode = this.route;
       this.reset();
     },
-    progressFilter() {
+    progress() {
+      this.progressFilter = this.progress;
       this.reset();
     }
   },
 
   methods: {
+    // Split two-way binding
+    changeMode(newMode) {
+      this.$router.push(`/favourites/${newMode}`);
+      this.reset();
+    },
+
+    // Split two-way binding
+    changeProgressFilter(newFilter) {
+      this.$router.push(`/favourites/progress/${newFilter}`);
+      this.reset();
+    },
+
     onLoad (index, done) {
       this.requestWorksQueue()
         .then(() => done())
     },
 
     reset () {
+      // Freeze the scroller first
       this.stopLoad = true
       this.pagination = {}
+      // Manually fetch first page content before enable scroller
+      // Note: the internal API of the infinite scroller does not work well
       this.requestWorksQueue()
         .then(() => {
           this.stopLoad = false
@@ -174,7 +215,7 @@ export default {
         params.filter = this.progressFilter;
       }
 
-      return this.$axios.get('/api/favourites', { params })
+      return this.$axios.get('/api/review', { params })
         .then((response) => {                  
           const works = response.data.works
           this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
@@ -195,14 +236,6 @@ export default {
           }
           this.stopLoad = true
         })
-    },
-
-    showErrNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'negative',
-        icon: 'bug_report'
-      })
     },
   }
 }

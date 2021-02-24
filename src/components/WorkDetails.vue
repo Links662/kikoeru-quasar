@@ -66,7 +66,7 @@
 
           <!-- DLsite链接 -->
           <div class="col-auto">
-            <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" target="_blank">DLsite</a>
+            <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
           </div>
         </div>
       </div>
@@ -154,10 +154,13 @@
 
 <script>
 import CoverSFW from 'components/CoverSFW'
-import  WriteReview from './WriteReview'
+import WriteReview from './WriteReview'
+import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'WorkDetails',
+
+  mixins: [NotifyMixin],
 
   components: {
     CoverSFW,
@@ -268,23 +271,6 @@ export default {
     processReview () {
       this.showReviewDialog = false;
     },
-
-    showSuccNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'positive',
-        icon: 'done',
-        timeout: 500
-      })
-    },
-
-    showErrNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'negative',
-        icon: 'bug_report'
-      })
-    }
   }
 }
 </script>

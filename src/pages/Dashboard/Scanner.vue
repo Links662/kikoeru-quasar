@@ -144,8 +144,12 @@
 </template>
 
 <script>
+import NotifyMixin from '../../mixins/Notification.js'
+
 export default {
   name: 'Scanner',
+
+  mixins: [NotifyMixin],
 
   data () {
     return {
@@ -209,22 +213,19 @@ export default {
     killScanProceess () {
       this.$socket.emit('KILL_SCAN_PROCESS')
     },
-
-    showErrNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'negative',
-        icon: 'bug_report'
-      })
-    }
   },
 
   computed: {
     allLogs () {
-      const resultLogs = this.results.map(res => res.result === 'added'
-        ? { level: 'info', message: `[RJ${res.rjcode}] 添加成功! Added: ${res.count}` }
-        : { level: 'error', message: `[RJ${res.rjcode}] 添加失败! Failed: ${res.count}` }
-      )
+      const resultLogs = this.results.map(res => {
+        if (res.result === 'added') {
+          return { level: 'info', message: `[RJ${res.rjcode}] 添加成功! Added: ${res.count}` }
+        } else if (res.result === 'updated') {
+          return { level: 'info', message: `[RJ${res.rjcode}] 更新成功! Updated: ${res.count}` }
+        } else {
+          return { level: 'error', message: `[RJ${res.rjcode}] 添加失败! Failed: ${res.count}` }
+        }
+      })
       return this.mainLogs.concat(resultLogs)
     }
   },

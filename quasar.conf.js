@@ -52,6 +52,7 @@ module.exports = function (ctx) {
       // Quasar plugins
       plugins: [
         'LocalStorage',
+        'SessionStorage',
         'Notify'
       ]
     },
@@ -80,7 +81,10 @@ module.exports = function (ctx) {
           loader: 'eslint-loader',
           exclude: /[\\/]node_modules[\\/]/
         })
-      }
+      },
+      modern: true,
+      sourceMap: true,
+      devtool: 'source-map'
     },
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
@@ -119,7 +123,8 @@ module.exports = function (ctx) {
         ],
         navigateFallbackBlacklist: [
           /^\/api\/.*$/
-        ]
+        ],
+        importWorkboxFrom: 'local'
       }, // only for GenerateSW
       manifest: {
         name: 'Kikoeru',

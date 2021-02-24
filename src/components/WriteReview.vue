@@ -1,6 +1,6 @@
 <template>
   <div>
-      <q-dialog v-model="showReviewDialog">
+      <q-dialog v-model="showReviewDialog" @hide="closeDialog">
         <q-card>
           <q-card-section class="q-pb-sm">
             <div class="text-body1">我的评论</div>
@@ -73,8 +73,12 @@
 </template>
 
 <script>
+import NotifyMixin from '../mixins/Notification.js'
+
 export default {
   name: 'WriteReview',
+
+  mixins: [NotifyMixin],
 
   props: {
     workid: {
@@ -108,10 +112,14 @@ export default {
 
   methods: {
     closeDialog() {
-      if (this.modified) {
-        this.$emit('closed', true);
-      } else {
-        this.$emit('closed', false);
+      // Do not emit anything if the second dialog is shown
+      // If the user clicks anywhere outside of the main dialog, emit 'closed'
+      if (!this.deleteConfirm) {
+        if (this.modified) {
+          this.$emit('closed', true);
+        } else {
+          this.$emit('closed', false);
+        }
       }
     },
 
@@ -167,23 +175,6 @@ export default {
           }
         })
     },
-
-    showSuccNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'positive',
-        icon: 'done',
-        timeout: 500
-      })
-    },
-
-    showErrNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'negative',
-        icon: 'bug_report'
-      })
-    }
   }
 
 }

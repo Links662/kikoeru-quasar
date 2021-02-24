@@ -67,7 +67,7 @@
       <!-- DLsite链接 -->
       <div class="col-auto">
         <q-icon name="launch" size="xs" />
-        <a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" target="_blank">DLsite</a>
+        <a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
       </div>
     </div>
     
@@ -108,9 +108,12 @@
 <script>
 // import WorkDetails from 'components/WorkDetails'
 import CoverSFW from 'components/CoverSFW'
+import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'WorkCard',
+
+  mixins: [NotifyMixin],
 
   components: {
     CoverSFW,
@@ -207,23 +210,6 @@ export default {
           }
         })
     },
-
-    showSuccNotif (message) {
-        this.$q.notify({
-          message,
-          color: 'positive',
-          icon: 'done',
-          timeout: 500
-        })
-      },
-
-      showErrNotif (message) {
-        this.$q.notify({
-          message,
-          color: 'negative',
-          icon: 'bug_report'
-        })
-      }
   }
 }
 </script>

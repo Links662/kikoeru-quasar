@@ -14,10 +14,13 @@
 
 <script>
 import Lyric from 'lrc-file-parser'
-import { mapState, mapGetters } from 'vuex'
+import { mapState, mapGetters, mapMutations } from 'vuex'
+import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'AudioElement',
+
+  mixins: [NotifyMixin],
 
   data() {
     return {
@@ -34,7 +37,7 @@ export default {
     source () {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.currentPlayingFile.hash ? `/api/stream/${this.currentPlayingFile.hash}?token=${token}` : ""
+      return this.currentPlayingFile.hash ? `/api/media/stream/${this.currentPlayingFile.hash}?token=${token}` : ""
     },
 
     ...mapState('AudioPlayer', [
@@ -43,7 +46,13 @@ export default {
       'queueIndex',
       'playMode',
       'muted',
-      'volume'
+      'volume',
+      'sleepTime',
+      'sleepMode',
+      'rewindSeekTime',
+      'forwardSeekTime',
+      'rewindSeekMode',
+      'forwardSeekMode'
     ]),
 
     ...mapGetters('AudioPlayer', [
@@ -81,13 +90,39 @@ export default {
       
       // 调节音量
       this.player.volume = val
+    },
+    rewindSeekMode(rewind) {
+      if (rewind) {
+        this.player.rewind(this.rewindSeekTime);
+        this.SET_REWIND_SEEK_MODE(false);
+      }
+    },
+    forwardSeekMode(forward) {
+      if (forward) {
+        this.player.forward(this.forwardSeekTime);
+        this.SET_FORWARD_SEEK_MODE(false);
+      }
     }
   },
 
   methods: {
+    ...mapMutations('AudioPlayer', [
+      'SET_DURATION',
+      'SET_CURRENT_TIME',
+      'PAUSE',
+      'PLAY',
+      'SET_TRACK',
+      'NEXT_TRACK',
+      'SET_CURRENT_LYRIC',
+      'SET_VOLUME',
+      'CLEAR_SLEEP_MODE',
+      'SET_REWIND_SEEK_MODE',
+      'SET_FORWARD_SEEK_MODE'
+    ]),
+
     onCanplay () {
       // 缓冲至可播放状态时触发 (只有缓冲至可播放状态, 才能获取媒体文件的播放时长)
-      this.$store.commit('AudioPlayer/SET_DURATION', this.player.duration)
+      this.SET_DURATION(this.player.duration)
 
       // 播放
       if (this.playing && this.player.currentTime !== this.player.duration) {
@@ -97,7 +132,21 @@ export default {
 
     onTimeupdate () {
       // 当目前的播放位置已更改时触发
-      this.$store.commit('AudioPlayer/SET_CURRENT_TIME', this.player.currentTime)
+      this.SET_CURRENT_TIME(this.player.currentTime)
+      if (this.sleepMode && this.sleepTime) {
+        const currentTime = new Date()
+        const currentHourStr = currentTime.getHours().toString().padStart(2, '0')
+        const currentMinuteStr = currentTime.getMinutes().toString().padStart(2, '0')
+        const sleepHourStr = this.sleepTime.match(/\d+/g)[0]
+        const sleepMinuteStr = this.sleepTime.match(/\d+/g)[1]
+        if (currentHourStr === sleepHourStr && currentMinuteStr === sleepMinuteStr) {
+          this.PAUSE()
+          this.CLEAR_SLEEP_MODE()
+          // Persist sleep mode settings
+          this.$q.sessionStorage.set('sleepTime', null)
+          this.$q.sessionStorage.set('sleepMode', false)
+        }
+      }
     },
 
     onEnded () {
@@ -106,20 +155,20 @@ export default {
         case "all repeat":
           // 循环播放
           if (this.queueIndex === this.queue.length - 1) {
-            this.$store.commit('AudioPlayer/SET_TRACK', 0)
+            this.SET_TRACK(0)
           } else {
-            this.$store.commit('AudioPlayer/NEXT_TRACK')
+            this.NEXT_TRACK()
           }
           break
         case "repeat once":
           // 单曲循环
           this.player.currentTime = 0
-          this.$store.commit('AudioPlayer/PLAY')
+          this.PLAY()
           break
         case "shuffle": {
           // 随机播放
           const index = Math.floor(Math.random()*this.queue.length)
-          this.$store.commit('AudioPlayer/SET_TRACK', index)
+          this.SET_TRACK(index)
           if (index === this.queueIndex) {
             this.player.currentTime = 0
           }
@@ -128,9 +177,9 @@ export default {
         default:
           // 顺序播放
           if (this.queueIndex === this.queue.length - 1) {
-            this.$store.commit('AudioPlayer/PAUSE')
+            this.PAUSE()
           } else {
-            this.$store.commit('AudioPlayer/NEXT_TRACK')
+            this.NEXT_TRACK()
           }
       }
     },
@@ -138,6 +187,9 @@ export default {
     onSeeked() {
       if (this.lrcAvailable) {
         this.lrcObj.play(this.player.currentTime * 1000);
+        if (!this.playing) {
+          this.lrcObj.pause();
+        }
       }
     },
 
@@ -155,7 +207,7 @@ export default {
     initLrcObj () {
         this.lrcObj = new Lyric({
           onPlay: (line, text) => {
-            this.$store.commit('AudioPlayer/SET_CURRENT_LYRIC', text);
+            this.SET_CURRENT_LYRIC(text);
           },
         })
     },
@@ -163,7 +215,7 @@ export default {
     loadLrcFile () {
       const token = this.$q.localStorage.getItem('jwt-token') || '';
       const fileHash = this.queue[this.queueIndex].hash;
-      const url = `/api/check-lrc/${fileHash}?token=${token}`;
+      const url = `/api/media/check-lrc/${fileHash}?token=${token}`;
 
       this.$axios.get(url)
         .then((response) => {
@@ -171,7 +223,7 @@ export default {
             // 有lrc歌词文件
             this.lrcAvailable = true;
             console.log('读入歌词');
-            const lrcUrl = `/api/stream/${response.data.hash}?token=${token}`;
+            const lrcUrl = `/api/media/stream/${response.data.hash}?token=${token}`;
             this.$axios.get(lrcUrl)
               .then(response => {
                 console.log('歌词读入成功');
@@ -199,19 +251,11 @@ export default {
           }
         })
     },
-
-    showErrNotif (message) {
-      this.$q.notify({
-        message,
-        color: 'negative',
-        icon: 'bug_report'
-      })
-    }
   },
 
   mounted () {
     // 初始化音量
-    this.$store.commit('AudioPlayer/SET_VOLUME', this.player.volume);
+    this.SET_VOLUME(this.player.volume);
     this.initLrcObj();
     if (this.source) {
       this.loadLrcFile();
