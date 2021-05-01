@@ -99,7 +99,8 @@ module.exports = function (ctx) {
         '/socket.io': {
           target: 'http://localhost:8888',
           ws: true
-        }
+        },
+        '/workbox': 'http://localhost:8888',
       }
     },
 
@@ -119,10 +120,12 @@ module.exports = function (ctx) {
         skipWaiting: true,
         clientsClaim: true,
         exclude: [
-          /manifest\.json$/
+          /manifest\.json$/,
+          /.*.js.map$/
         ],
         navigateFallbackBlacklist: [
-          /^\/api\/.*$/
+          /^\/api\/.*$/,
+          /\/media\/.*$/
         ],
         importWorkboxFrom: 'local'
       }, // only for GenerateSW

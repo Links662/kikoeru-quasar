@@ -216,11 +216,11 @@
         <q-item style="height: 70px;">
           <q-item-section>
             <q-item-label>用户验证</q-item-label>
-            <q-item-label caption>是否启用用户验证</q-item-label>
+            <q-item-label caption>是否启用用户验证（生产环境下无法修改此设置）</q-item-label>
           </q-item-section>
 
           <q-item-section avatar>
-            <q-toggle v-model="config.auth" dense />
+            <q-toggle v-model="config.auth" dense :disable="config.production" />
           </q-item-section>
         </q-item>
 
@@ -291,6 +291,25 @@
               input-class="text-right"
               style="max-width: 100px;"
             />
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-card>
+
+    <q-card class="q-ma-md">
+      <q-toolbar>
+        <q-toolbar-title>安全设置</q-toolbar-title>
+      </q-toolbar>
+
+      <q-list>
+        <q-item style="height: 70px;">
+          <q-item-section>
+            <q-item-label>生产环境</q-item-label>
+            <q-item-label caption>此设置无法在网页端修改，详情请查阅GitHub Wiki中关于配置文件的说明</q-item-label>
+          </q-item-section>
+
+          <q-item-section avatar>
+            <q-toggle v-model="config.production" dense disable />
           </q-item-section>
         </q-item>
       </q-list>

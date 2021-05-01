@@ -18,12 +18,22 @@
                   隐藏封面按钮
                 </q-item-section>
               </q-item>
+              
               <q-item clickable v-ripple @click="swapSeekButton = !swapSeekButton">
                 <q-item-section avatar>
                   <q-icon :name="swapSeekButton ? 'done' : ''" />
                 </q-item-section>
                 <q-item-section>
                   交换进度按钮与切换按钮
+                </q-item-section>
+              </q-item>
+              
+              <q-item clickable v-ripple @click="openWorkDetail()" v-close-popup>
+                <q-item-section avatar>
+                  <!-- placeholder -->
+                </q-item-section>
+                <q-item-section>
+                  打开作品详情
                 </q-item-section>
               </q-item>
             </q-menu>
@@ -35,11 +45,14 @@
         </div>
 
         <!-- 进度条控件 -->
-        <div class="row items-center q-mx-sm" style="height: 40px">
+        <div class="row items-center q-mx-sm q-my-sm" style="height: 40px">
           <div class="col-auto">{{ formatSeconds(currentTime) }}</div>
           <AudioElement class="col" />
           <div class="col-auto">{{ formatSeconds(duration) }}</div>
         </div>
+
+        <!-- Place holder for iOS -->
+        <div style="height: 5px" v-if="$q.platform.is.ios" />
 
         <q-item style="height: 55px; padding: 0px 15px;" class="text-center non-selectable">
           <q-item-section>
@@ -47,6 +60,9 @@
             <q-item-label caption lines="1">{{ currentPlayingFile.workTitle }}</q-item-label>
           </q-item-section>
         </q-item>
+
+        <!-- Place holder for iOS -->
+        <div  style="height: 10px" v-if="$q.platform.is.ios" />
 
         <!-- 播放按钮控件 -->
         <div class="row justify-around" style="height: 65px">
@@ -58,7 +74,8 @@
         </div>
 
         <!-- 音量控件 -->
-        <div class="row items-center q-mx-lg" style="height: 50px">
+        <!-- HTML5 volume in iOS is read-only -->
+        <div class="row items-center q-mx-lg" style="height: 50px" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
           <vue-slider 
             v-model="volume"
@@ -193,6 +210,11 @@ export default {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const hash = this.currentPlayingFile.hash
       return hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : ""
+    },
+
+    workDetailUrl () {
+      const hash = this.currentPlayingFile.hash
+      return hash ? `/work/${hash.split('/')[0]}` : ""
     },
 
     volume: {
@@ -345,6 +367,15 @@ export default {
 
     emptyQueue () {
       this.EMPTY_QUEUE()
+    },
+
+    openWorkDetail () {
+      if (this.workDetailUrl && this.$route.path !== this.workDetailUrl) {
+        this.$router.push(this.workDetailUrl)
+      }
+      if (this.$q.screen.lt.sm) {
+          this.toggleHide()
+      }
     }
   }
 }

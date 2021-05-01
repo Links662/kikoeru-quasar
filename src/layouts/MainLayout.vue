@@ -1,17 +1,17 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="bg-grey-3">
     <q-header class="shadow-4">
-      <q-toolbar>
+      <q-toolbar class="row justify-between">
         <q-btn flat dense round @click="drawerOpen = !drawerOpen" icon="menu" aria-label="Menu" />
 
-        <q-btn flat size="md" icon="arrow_back_ios" @click="back()" v-if="isNotInMain()"/>
+        <q-btn flat size="md" icon="arrow_back_ios" @click="back()" v-if="isNotAtHomePage"/>
 
         <q-toolbar-title class="gt-xs">
           <router-link :to="'/'" class="text-white">
             Kikoeru
           </router-link>
         </q-toolbar-title>
-        
+
         <q-input dark dense rounded standout v-model="keyword" debounce="500" input-class="text-right" class="q-mr-sm">
           <template v-slot:append>
             <q-icon v-if="keyword === ''" name="search" />
@@ -20,7 +20,7 @@
         </q-input>
 
       </q-toolbar>
-      
+
       <AudioPlayer />
     </q-header>
 
@@ -39,7 +39,7 @@
     >
       <q-scroll-area class="fit">
         <q-list>
-          <q-item 
+          <q-item
             clickable
             v-ripple
             exact
@@ -60,7 +60,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item 
+          <q-item
             clickable
             v-ripple
             exact
@@ -78,7 +78,7 @@
             </q-item-section>
           </q-item>
 
-          <q-item 
+          <q-item
             clickable
             v-ripple
             exact
@@ -98,7 +98,7 @@
         </q-list>
 
         <q-list>
-          <q-item 
+          <q-item
             clickable
             v-ripple
             exact
@@ -114,6 +114,7 @@
               <q-item-label class="text-subtitle1">
                 登出
               </q-item-label>
+              <q-item-label caption lines="2">{{ userName }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -138,7 +139,9 @@
 
     <q-page-container>
       <!-- <q-page padding> -->
-        <router-view class="page-content" />
+        <keep-alive include="Works">
+          <router-view />
+        </keep-alive>
       <!-- </q-page> -->
         <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
           <q-btn fab icon="keyboard_arrow_up" color="accent" />
@@ -158,7 +161,7 @@ import AudioPlayer from 'components/AudioPlayer'
 import LyricsBar from 'components/LyricsBar'
 import SleepMode from 'components/SleepMode'
 import NotifyMixin from '../mixins/Notification.js'
-import { mapMutations } from 'vuex'
+import { mapMutations, mapState } from 'vuex'
 
 export default {
   name: 'MainLayout',
@@ -218,7 +221,7 @@ export default {
 
   watch: {
     keyword () {
-      this.$router.push(`/search/${this.keyword}`)
+      this.$router.push(this.keyword ? `/works?keyword=${this.keyword}` : `/works`)
     },
 
     randId () {
@@ -237,9 +240,15 @@ export default {
   },
 
   computed: {
-    authEnabled: function () {
-      return this.$store.state.User.auth;
+    isNotAtHomePage () {
+      const path = this.$route.path
+      return path && path !=='/' && path !=='/works' && path !== '/favourites';
     },
+
+    ...mapState('User', {
+      userName: 'name',
+      authEnabled: 'auth'
+    })
   },
 
   methods: {
@@ -257,9 +266,12 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              this.showWarnNotif(error.response.data.error)
+              // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
-              this.$router.push('/login')
+              const path = this.$router.currentRoute.path
+              if (path !=='/login') {
+                this.$router.push('/login');
+              }
             } else {
               this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
             }
@@ -318,9 +330,12 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              this.showWarnNotif(error.response.data.error)
+              // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
-              this.$router.push('/login')
+              const path = this.$router.currentRoute.path
+              if (path !=='/login') {
+                this.$router.push('/login');
+              }
             } else {
               this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
             }
@@ -362,12 +377,7 @@ export default {
 
     back () {
       this.$router.go(-1)
-    },
-
-    isNotInMain () {
-      let path = this.$router.currentRoute.path
-      return path && path !=='/' && path !== '/favourites';
-    },
+    }
   },
 }
 </script>

@@ -15,7 +15,7 @@
 
       <q-item-label>
         <div class="row q-gutter-x-sm q-gutter-y-xs">
-          <router-link :to="`/circle/${metadata.circle.id}`" class="col-auto text-grey">
+          <router-link :to="`/works?circleId=${metadata.circle.id}`" class="col-auto text-grey">
             {{ metadata.circle.name }}
           </router-link>
 
@@ -23,7 +23,7 @@
 
           <router-link
             v-for="(va, index) in metadata.vas"
-            :to="`/va/${va.id}`"
+            :to="`/works?vaId=${va.id}`"
             :key=index
             class="col-auto text-primary"
           >
@@ -36,7 +36,7 @@
         <div class="row q-gutter-x-sm q-gutter-y-xs">
           <router-link
             v-for="(tag, index) in metadata.tags"
-            :to="`/tag/${tag.id}`"
+            :to="`/works?tagId=${tag.id}`"
             :key=index
             class="col-auto text-grey"
           >
@@ -55,17 +55,11 @@
 export default {
   name: 'WorkListItem',
 
-  // components: {
-    // CoverSFW,
-    // WorkDetails
-  // },
-
   props: {
-    workid: {
-      type: Number,
+    metadata: {
+      type: Object,
       required: true
     },
-
     showLabel: {
       type: Boolean,
       default: true
@@ -74,11 +68,7 @@ export default {
 
   data () {
     return {
-      windowWidth: window.innerWidth,
-      metadata: {
-        id: this.workid,
-        circle: {}
-      }
+      windowWidth: window.innerWidth
     }
   },
 
@@ -86,29 +76,8 @@ export default {
     samCoverUrl () {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.workid ? `/api/cover/${this.workid}?type=sam&token=${token}` : ""
+      return this.metadata.id ? `/api/cover/${this.metadata.id}?type=sam&token=${token}` : ""
     },
-  },
-
-  created () {
-    this.requestMetadata(this.workid)
-  },
-
-  watch: {
-    workid () {
-      this.requestMetadata()
-    }
-  },
-
-  methods: {
-    requestMetadata () {
-      if (this.workid) {
-        this.$axios.get(`/api/work/${this.workid}`)
-          .then((response) => {
-            this.metadata = response.data
-          })
-      } 
-    }
   }
 }
 </script>
