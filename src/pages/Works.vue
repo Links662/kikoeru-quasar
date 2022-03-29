@@ -1,5 +1,7 @@
 <template>
   <div>
+    <RecentList />
+
     <div class="text-h5 text-weight-regular q-ma-md">
       {{pageTitle}}
       <span v-show="pagination.totalCount">
@@ -104,6 +106,7 @@
 import WorkCard from 'components/WorkCard'
 import WorkListItem from 'components/WorkListItem'
 import NotifyMixin from '../mixins/Notification.js'
+import RecentList from 'components/RecentList'
 
 export default {
   name: 'Works',
@@ -112,7 +115,8 @@ export default {
 
   components: {
     WorkCard,
-    WorkListItem
+    WorkListItem,
+    RecentList
   },
 
   data () {
@@ -138,6 +142,12 @@ export default {
           sort: 'desc'
         },
         {
+          label: '按照加入数据库日期新到老的顺序',
+          order: 'id',
+          sort: 'desc'
+        },
+
+        {
           label: '按照我的评价排序',
           order: 'rating',
           sort: 'desc'
@@ -145,6 +155,11 @@ export default {
         {
           label: '按照发售日期老到新的顺序',
           order: 'release',
+          sort: 'asc'
+        },
+        {
+          label: '按照加入数据库日期老到新的顺序',
+          order: 'id',
           sort: 'asc'
         },
         {

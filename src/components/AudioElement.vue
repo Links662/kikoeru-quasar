@@ -1,7 +1,8 @@
 <template>
   <vue-plyr
     ref="plyr"
-    :emit="['canplay', 'timeupdate', 'ended', 'seeked', 'playing', 'waiting', 'pause']"
+    :emit="['loadedmetadata', 'canplay', 'timeupdate', 'ended', 'seeked', 'playing', 'waiting', 'pause']"
+    @loadedmetadata="resumePlayHistory()"
     @canplay="onCanplay()"
     @timeupdate="onTimeupdate()"
     @ended="onEnded()"
@@ -126,6 +127,10 @@ export default {
       // console.log('onPause')
       this.playLrc(false)
       this.PAUSE()
+
+      // save play history on pause
+      this.lastHistoryUpdateTime = this.player.currentTime
+      this.updatePlayHistory(this.player.currentTime, this.player.duration)
     },
     /**
      * 当播放器真正开始播放时会触发本事件
@@ -184,9 +189,22 @@ export default {
           this.$q.sessionStorage.set('sleepMode', false)
         }
       }
+
+      // 更新历史记录
+      const UPDATE_INTERVAL = 30
+      if (this.lastHistoryUpdateTime == null) {
+        this.lastHistoryUpdateTime = this.player.currentTime
+        this.updatePlayHistory(this.player.currentTime, this.player.duration)
+      } else if (this.player.currentTime > this.lastHistoryUpdateTime + UPDATE_INTERVAL) {
+        this.lastHistoryUpdateTime = this.player.currentTime
+        this.updatePlayHistory(this.player.currentTime, this.player.duration)
+      }
+      
     },
 
     onEnded () {
+      console.log("onEnded")
+      this.dontResume = true
       // 当前文件播放结束时触发
       switch (this.playMode.name) {
         case "all repeat":
@@ -286,6 +304,86 @@ export default {
           }
         })
     },
+
+    updatePlayHistory(currentTime = 0, totalTime = 0) {
+      const fileName = this.currentPlayingFile.title
+      const workID = this.currentPlayingFile.hash.split('/')[0]
+      const fileIndex = this.currentPlayingFile.hash.split('/')[1]
+
+      let payload = {
+        "work_id": parseInt(workID),
+        "file_index": parseInt(fileIndex),
+        "file_name": fileName,
+        "play_time": currentTime,
+        "total_time": totalTime
+      }
+
+      this.$axios.put('/api/history', payload)
+
+      console.log(fileName, fileIndex)
+    },
+
+    resumePlayHistory() {
+      if (this.dontResume) {
+        this.dontResume = false
+        return
+      }
+
+      const workID = this.currentPlayingFile.hash.split('/')[0]
+      const fileIndex = this.currentPlayingFile.hash.split('/')[1]
+
+      if (workID == null || fileIndex == null) return
+
+      this.$axios.get('/api/history/getByWorkIdIndex', {
+        params: {
+          work_id: workID,
+          file_index: fileIndex
+        }
+      })
+      .then((response) => {
+        console.log(response)
+        if (response.data.length < 1) {
+          return
+        }
+
+        let continueTime = response.data[0].play_time
+        let totalTime = response.data[0].total_time
+
+        if (continueTime == 0) return
+        if (totalTime <= continueTime) return
+  
+        this.player.currentTime = parseInt(continueTime);
+
+        console.log('set current time to', continueTime)
+        console.log('current time is ', this.player.currentTime)
+        console.log(this.player)
+
+        function formatSeconds (seconds) {
+          let h = Math.floor(seconds / 3600) < 10
+            ? '0' + Math.floor(seconds / 3600)
+            : Math.floor(seconds / 3600)
+
+          let m = Math.floor((seconds / 60 % 60)) < 10
+            ? '0' + Math.floor((seconds / 60 % 60))
+            : Math.floor((seconds / 60 % 60))
+
+          let s = Math.floor((seconds % 60)) < 10
+            ? '0' + Math.floor((seconds % 60))
+            : Math.floor((seconds % 60))
+
+          return h === "00"
+            ? m + ":" + s
+            : h + ":" + m + ":" + s
+        }
+
+        this.showSuccNotif(`继续从${formatSeconds(continueTime)}开始播放`)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+
+    }
+
   },
 
   mounted () {
