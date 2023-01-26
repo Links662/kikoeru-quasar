@@ -199,7 +199,7 @@ export default {
         this.lastHistoryUpdateTime = this.player.currentTime
         this.updatePlayHistory(this.player.currentTime, this.player.duration)
       }
-      
+
     },
 
     onEnded () {
@@ -351,7 +351,7 @@ export default {
 
         if (continueTime == 0) return
         if (totalTime <= continueTime) return
-  
+
         this.player.currentTime = parseInt(continueTime);
 
         console.log('set current time to', continueTime)
@@ -393,6 +393,8 @@ export default {
     if (this.source) {
       this.loadLrcFile();
     }
+    console.log(this.player)
+    this.player.vhs.options_.externHls.MAX_GOAL_BUFFER_LENGTH = 600;
   }
 }
 </script>

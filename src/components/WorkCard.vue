@@ -67,8 +67,12 @@
 
         <!-- DLsite链接 -->
         <div class="col-auto">
-          <q-icon name="launch" size="xs" />
-          <a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
+          <div v-if="metadata.id >= 1000000">
+              <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(8,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
+            </div>
+            <div v-else>
+              <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
+            </div>
         </div>
       </div>
 

@@ -143,7 +143,7 @@ export default {
         },
         {
           label: '按照加入数据库日期新到老的顺序',
-          order: 'id',
+          order: 'insert_time',
           sort: 'desc'
         },
 
@@ -159,7 +159,7 @@ export default {
         },
         {
           label: '按照加入数据库日期老到新的顺序',
-          order: 'id',
+          order: 'insert_time',
           sort: 'asc'
         },
         {

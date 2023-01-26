@@ -95,7 +95,9 @@ export default {
             if (tree[i].children != null) {
               queue.concat(makeQueue(tree[i].children))
             } else {
-              queue.push(tree[i])
+              if (tree[i].type == "audio") {
+                queue.push(tree[i])
+              }
             }
           }
           return queue

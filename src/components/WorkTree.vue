@@ -1,5 +1,9 @@
 <template>
   <div class="q-ma-md " style="">
+    <div class="q-pa-md q-gutter-sm" style="padding-left: 0px; margin-left: 0px;">
+     <q-btn color="white" text-color="black" label="播放全部" @click="playAll"  style="padding-left: 0px; margin-left: 0px;"/>
+    </div>
+
     <q-breadcrumbs gutter="xs" v-if="path.length">
       <q-breadcrumbs-el   >
         <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px;" @click="path = []">ROOT</q-btn>
@@ -195,6 +199,35 @@ export default {
       link.href = url;
       link.target="_blank";
       link.click();
+    },
+
+    playAll () {
+      // 获取playlist
+      let queue = []
+      // children 还能有children
+      function makeQueue (tree) {
+        for (let i=0; i<tree.length; i+=1) {
+          if (tree[i].children != null) {
+            queue.concat(makeQueue(tree[i].children))
+          } else {
+            if (tree[i].type == "audio") {
+              queue.push(tree[i])
+            }
+          }
+        }
+        return queue
+      }
+      queue = makeQueue(this.fatherFolder)
+
+      // 插入playlist
+      let hash = queue[0].hash
+
+      this.$store.commit('AudioPlayer/SET_QUEUE', {
+      queue: queue.concat(),
+      index: queue.findIndex(file => file.hash === hash),
+      resetPlaying: true
+      // 开始播放
+      })
     }
   }
 }
