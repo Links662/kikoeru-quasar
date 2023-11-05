@@ -15,7 +15,6 @@
             :options="[
               {label: '我的评价', value: 'review'},
               {label: '我的进度', value: 'progress'},
-              {label: '分类整理', value: 'folder'}
             ]"
           />
       </div>
@@ -54,7 +53,7 @@
 
     <div class="q-pt-md">
       <div class="q-px-sm q-py-md">
-        <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll" v-if="mode !=='folder'">
+        <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
           <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
           <q-list bordered separator class="shadow-2" v-if="works.length">
              <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()" :mode="mode"></FavListItem> 
@@ -65,8 +64,6 @@
             </div>
           </template>
         </q-infinite-scroll>
-
-        <div v-else class="row justify-center text-grey">尚未实现，敬请期待</div>
       </div>
     </div>
   </q-page>

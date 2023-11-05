@@ -9,7 +9,7 @@
       </span>
     </div>
 
-    <div :class="`row justify-center ${listMode ? 'list' : 'q-mx-md'}`">
+    <div :class="`row justify-center ${listMode == 'list' ? 'list' : 'q-mx-md'}`">
       <q-infinite-scroll @load="onLoad" :offset="250" :disable="stopLoad" style="max-width: 1680px;" class="col">
         <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
           <!-- 排序选择框 -->
@@ -36,8 +36,9 @@
             color="white"
             text-color="primary"
             :options="[
-              { icon: 'apps', value: false },
-              { icon: 'list', value: true }
+              { icon: 'apps', value: 'detail' },
+              { icon: 'view_column', value: 'column' },
+              { icon: 'list', value: 'list' }
             ]"
             style="width: 85px;"
             class="col-auto"
@@ -57,14 +58,14 @@
             ]"
             style="width: 85px;"
             class="col-auto"
-            v-if="$q.screen.width > 700 && listMode"
+            v-if="$q.screen.width > 700 && listMode == 'list'"
           />
 
           <q-btn-toggle
             dense
             spread
             rounded
-            :disable="$q.screen.width < 1120"
+            :disable="$q.screen.width < 700"
             v-model="detailMode"
             toggle-color="primary"
             color="white"
@@ -75,18 +76,24 @@
             ]"
             style="width: 85px;"
             class="col-auto"
-            v-if="$q.screen.width > 700 && !listMode"
+            v-if="$q.screen.width > 700 && listMode !== 'list'"
           />
 
         </div>
 
-        <q-list v-if="listMode" bordered separator class="shadow-2">
+        <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
           <WorkListItem v-for="work in works" :key="work.id" :metadata="work" :showLabel="showLabel && $q.screen.width > 700" />
         </q-list>
 
-        <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
-          <div class="col-xs-12 col-sm-6 col-md-4" :class="detailMode ? 'col-lg-3 col-xl-3': 'col-lg-2 col-xl-2'" v-for="work in works" :key="work.id">
+        <div v-else-if = "listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-lg">
+          <div class="col-xs-12 col-sm-6 col-md-4" :class="detailMode ? 'col-lg-3 col-xl-3': 'col-lg-3 col-xl-3'" v-for="work in works" :key="work.id">
             <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
+          </div>
+        </div>
+
+        <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
+          <div class="col-xs-6 col-sm-4 col-md-3" :class="detailMode ? 'col-lg-2 col-xl-2': 'col-lg-2 col-xl-2'" v-for="work in works" :key="work.id">
+            <WorkCard :metadata="work" :thumbnailMode="!(detailMode && $q.screen.width > 700)" class="fit"/>
           </div>
         </div>
 
@@ -121,7 +128,7 @@ export default {
 
   data () {
     return {
-      listMode: false,
+      listMode: 'detail',
       showLabel: true,
       detailMode: true,
       stopLoad: false,
@@ -131,75 +138,74 @@ export default {
       pagination: { currentPage:0, pageSize:12, totalCount:0 },
       seed: 7, // random sort
       sortOption: {
-        label: '按照发售日期新到老的顺序',
-        order: 'release',
+        label: '最新加入数据库',
+        order: 'insert_time',
         sort: 'desc'
       },
       options: [
         {
-          label: '按照发售日期新到老的顺序',
+          label: '最新发售日期',
           order: 'release',
           sort: 'desc'
         },
         {
-          label: '按照加入数据库日期新到老的顺序',
+          label: '最新加入数据库',
           order: 'insert_time',
           sort: 'desc'
         },
-
+        {
+          label: 'RJ号从大到小',
+          order: 'id',
+          sort: 'desc'
+        },
+        {
+          label: '全年龄新作优先',
+          order: 'nsfw',
+          sort: 'asc'
+        },
         {
           label: '按照我的评价排序',
           order: 'rating',
           sort: 'desc'
         },
         {
-          label: '按照发售日期老到新的顺序',
-          order: 'release',
-          sort: 'asc'
-        },
-        {
-          label: '按照加入数据库日期老到新的顺序',
-          order: 'insert_time',
-          sort: 'asc'
-        },
-        {
-          label: '按照售出数量多到少的顺序',
-          order: 'dl_count',
-          sort: 'desc'
-        },
-        {
-          label: '按照价格便宜到贵的顺序',
-          order: 'price',
-          sort: 'asc'
-        },
-        {
-          label: '按照价格贵到便宜的顺序',
-          order: 'price',
-          sort: 'desc'
-        },
-        {
-          label: '按照评价高到低的顺序',
+          label: '评价从高到低',
           order: 'rate_average_2dp',
           sort: 'desc'
         },
         {
-          label: '按照评论多到少的顺序',
+          label: '售出数量从多到少',
+          order: 'dl_count',
+          sort: 'desc'
+        },
+        {
+          label: '价格从贵到便宜',
+          order: 'price',
+          sort: 'desc'
+        },
+        {
+          label: '评论从多到少',
           order: 'review_count',
           sort: 'desc'
         },
         {
-          label: '按照RJ号大到小的顺序',
-          order: 'id',
-          sort: 'desc'
+          label: '最早加入数据库',
+          order: 'insert_time',
+          sort: 'asc'
         },
         {
-          label: '按照RJ号小到大的顺序',
+          label: '发售日期从老到新',
+          order: 'release',
+          sort: 'asc'
+        },
+        {
+          label: 'RJ号从小到大',
           order: 'id',
           sort: 'asc'
         },
         {
-          label: '按照全年龄新作优先的顺序',
-          order: 'nsfw',
+          label: '价格从便宜到贵',
+          order: 'price',
           sort: 'asc'
         },
         {
@@ -217,20 +223,20 @@ export default {
   },
 
   mounted() {
-    if (localStorage.sortOption) {
+    if (localStorage.getItem("sortOption") != null) {
       try {
         this.sortOption = JSON.parse(localStorage.sortOption);
       } catch {
         localStorage.removeItem('sortOption');
       }
     }
-    if (localStorage.showLabel) {
+    if (localStorage.getItem("showLabel") != null) {
       this.showLabel = (localStorage.showLabel === 'true');
     }
-    if (localStorage.listMode) {
-      this.listMode = (localStorage.listMode === 'true');
+    if (localStorage.getItem("listMode") != null) {
+      this.listMode = localStorage.listMode;
     }
-    if (localStorage.detailMode) {
+    if (localStorage.getItem("detailMode") != null) {
       this.detailMode = (localStorage.detailMode === 'true');
     }
   },
