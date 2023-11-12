@@ -112,7 +112,7 @@ export default {
         password: '',
         group: 'user'
       },
-      groups: ['user', 'guest'],
+      groups: ['user', 'guest', 'administrator'],
       loadingAddNewUser: false,
 
       
