@@ -3,24 +3,25 @@
     <q-card class="q-ma-md">
       <q-form @submit="updateAdminPassword()">
         <q-toolbar>
-          <q-toolbar-title>修改管理员密码</q-toolbar-title>
+          <q-toolbar-title>修改用户密码</q-toolbar-title>
         </q-toolbar>
 
         <div class="q-pa-sm">
+          <q-input outlined dense
+            v-model="userName" label="用户名"
+            required
+            lazy-rules
+            :rules="[
+                val => val.length >= 5 || '用户名长度至少为 5',
+              ]" 
+          />
+          
           <q-input outlined dense type="password" label="新密码"
-            v-model="adminNewPassword"
+            v-model="newPassword"
             lazy-rules
             :rules="[ val => val.length >= 5 || '密码长度至少为 5' ]"
           />
 
-          <q-input outlined dense type="password" label="确认密码"
-            v-model="adminConfirmPassword"
-            lazy-rules
-            :rules="[
-              val => val.length >= 5 || '密码长度至少为 5',
-              val => val === adminNewPassword || '两次密码输入不一致'
-            ]"
-          />
 
           <div class="row justify-end">
             <q-btn :loading="loadingUpdateAdminPassword" type="submit" color="primary" label="修改" />
@@ -115,9 +116,8 @@ export default {
       groups: ['user', 'guest', 'administrator'],
       loadingAddNewUser: false,
 
-      
-      adminNewPassword: '',
-      adminConfirmPassword: '',
+      userName: '',
+      newPassword: '',
       loadingUpdateAdminPassword: false,
 
       confirm: false
@@ -188,8 +188,8 @@ export default {
     updateAdminPassword () {
       this.loadingUpdateAdminPassword = true
       this.$axios.put('/api/credentials/user', {
-        name: 'admin',
-        newPassword: this.adminNewPassword
+        name: this.userName,
+        newPassword: this.newPassword
       })
         .then((response) => {
           this.loadingUpdateAdminPassword = false
