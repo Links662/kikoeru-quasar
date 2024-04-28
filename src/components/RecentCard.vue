@@ -83,30 +83,37 @@ export default {
   },
 
   methods: {
-    onClickPlay () {
+    onClickPlay() {
       // 获取playlist
       this.$axios.get(`/api/tracks/${this.metadata.work_id}`)
-      .then(response => {
-        this.tree = response.data
-        let queue = []
-        // children 还能有children
-        function makeQueue (tree) {
-          for (let i=0; i<tree.length; i+=1) {
-            if (tree[i].children != null) {
-              queue.concat(makeQueue(tree[i].children))
-            } else {
+        .then(response => {
+          let hash = this.metadata.work_id + '/' + this.metadata.file_index
+          this.tree = response.data
+          let queue = []
+          // children 还能有children
+          function pushAudio(tree) {
+            for (let i = 0; i < tree.length; i += 1) {
               if (tree[i].type == "audio") {
                 queue.push(tree[i])
               }
             }
           }
-          return queue
-        }
-        queue = makeQueue(this.tree)
+          function makeQueue(tree) {
+            for (let i = 0; i < tree.length; i += 1) {
+              if (tree[i].children == null) {
+                if (tree[i].type == "audio" && tree[i].hash === hash) {
+                  pushAudio(tree)
+                  return
+                }
+              }
+              else if (tree[i].children != null) {
+                makeQueue(tree[i].children)
+              }
+            }
+          }
+          makeQueue(this.tree)
 
         // 插入playlist
-        let hash = this.metadata.work_id + '/' + this.metadata.file_index
-
         this.$store.commit('AudioPlayer/SET_QUEUE', {
         queue: queue.concat(),
         index: queue.findIndex(file => file.hash === hash),
