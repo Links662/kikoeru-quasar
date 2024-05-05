@@ -296,7 +296,7 @@
       </q-list>
     </q-card>
 
-    <q-card class="q-ma-md">
+    <!-- <q-card class="q-ma-md">
       <q-toolbar>
         <q-toolbar-title>安全设置</q-toolbar-title>
       </q-toolbar>
@@ -313,7 +313,7 @@
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card>
+    </q-card> -->
 
     <q-card class="q-ma-md">
       <q-toolbar>
@@ -321,28 +321,6 @@
       </q-toolbar>
 
       <q-list>
-        <q-item style="height: 70px;">
-          <q-item-section>
-            <q-item-label>检查更新</q-item-label>
-            <q-item-label caption>打开网页时是否检查更新</q-item-label>
-          </q-item-section>
-
-          <q-item-section avatar>
-            <q-toggle v-model="config.checkUpdate" dense />
-          </q-item-section>
-        </q-item>
-
-        <q-item v-if="config.checkUpdate">
-          <q-item-section>
-            <q-item-label>检查测试版更新</q-item-label>
-            <q-item-label caption>是否检查测试版更新</q-item-label>
-          </q-item-section>
-
-          <q-item-section avatar>
-            <q-toggle v-model="config.checkBetaUpdate" dense />
-          </q-item-section>
-        </q-item>
-
         <q-item>
           <q-item-section>
             <q-item-label>数据库使用默认路径</q-item-label>
