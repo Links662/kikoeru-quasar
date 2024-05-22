@@ -2,6 +2,7 @@
   <div>
     <div class="text-h5 text-weight-regular q-ma-md">
       {{pageTitle}}
+      <q-btn color="red" size="xs" label="清除" @click="onClickClearButton()" />
     </div>
 
     <div :class="`row justify-center q-mx-md`">
@@ -94,6 +95,10 @@ export default {
         .then(() => {
           this.stopLoad = false
         })
+    },
+
+    onClickClearButton(){
+      this.$axios.get('/api/history/deleteRecent')
     },
   }
 }
