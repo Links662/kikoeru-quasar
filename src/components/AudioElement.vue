@@ -394,7 +394,6 @@ export default {
       this.loadLrcFile();
     }
     console.log(this.player)
-    this.player.vhs.options_.externHls.MAX_GOAL_BUFFER_LENGTH = 600;
   }
 }
 </script>

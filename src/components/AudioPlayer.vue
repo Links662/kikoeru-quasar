@@ -173,13 +173,6 @@ export default {
     if (this.$q.localStorage.has('swapSeekButton')) {
       this.swapSeekButton = this.$q.localStorage.getItem('swapSeekButton')
     }
-    try {
-      this.setMediaSession()
-    }
-    catch{
-      console.log("加载播放器失败")
-    }
-
   },
 
   watch: {
@@ -217,12 +210,15 @@ export default {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const hash = this.currentPlayingFile.hash
-      try {
-        this.setMediaSession(hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : "")
-    }
-    catch{
-      console.log("加载播放器失败")
-    }
+      if (hash) {
+        try {
+          this.setMediaSession(`/api/cover/${hash.split('/')[0]}?token=${token}`)
+        }
+        catch {
+          console.log("加载播放器失败")
+        }
+      }
+
       return hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : ""
     },
 
