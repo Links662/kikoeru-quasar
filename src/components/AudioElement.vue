@@ -195,7 +195,7 @@ export default {
       if (this.lastHistoryUpdateTime == null) {
         this.lastHistoryUpdateTime = this.player.currentTime
         this.updatePlayHistory(this.player.currentTime, this.player.duration)
-      } else if (this.player.currentTime > this.lastHistoryUpdateTime + UPDATE_INTERVAL) {
+      } else if (this.player.currentTime > this.lastHistoryUpdateTime + UPDATE_INTERVAL && Math.floor(this.player.currentTime)%10==0) {
         this.lastHistoryUpdateTime = this.player.currentTime
         this.updatePlayHistory(this.player.currentTime, this.player.duration)
       }
