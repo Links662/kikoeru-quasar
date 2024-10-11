@@ -29,6 +29,7 @@ export default {
 
   data() {
     return {
+      isLocked: false,
       lrcObj: null,
       lrcAvailable: false,
     }
@@ -124,21 +125,41 @@ export default {
      * 当 外部暂停（线控暂停、软件切换）、用户控制暂停、seek 时会触发本事件
      */
     onPause() {
-      // console.log('onPause')
+      if (this.isLocked)
+      {
+        console.log('wait Pause')
+        return
+      }
+      this.isLocked = true;
+      console.log('onPause')
       this.playLrc(false)
       this.PAUSE()
 
       // save play history on pause
       this.lastHistoryUpdateTime = this.player.currentTime
       this.updatePlayHistory(this.player.currentTime, this.player.duration)
+      setTimeout(() => {
+        this.isLocked = false
+      },100)
     },
     /**
      * 当播放器真正开始播放时会触发本事件
      */
     onPlaying() {
-      // console.log('playing')
+      if (this.isLocked)
+      {
+        console.log('wait Playing')
+        this.player.pause()
+        return
+      }
+
+      this.isLocked = true;
+      console.log('onPlaying')
       this.playLrc(true)
       this.PLAY()
+      setTimeout(() => {
+        this.isLocked = false
+      },100)
     },
     /**
      * 当播放器缓冲区空，被迫暂停加载时会触发本事件
