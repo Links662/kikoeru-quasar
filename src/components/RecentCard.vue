@@ -117,7 +117,7 @@ export default {
         this.$store.commit('AudioPlayer/SET_QUEUE', {
         queue: queue.concat(),
         index: queue.findIndex(file => file.hash === hash),
-        resetPlaying: true
+        resetPlaying: false
         // 开始播放
         })
       })
