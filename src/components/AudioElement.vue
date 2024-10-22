@@ -212,13 +212,15 @@ export default {
       }
 
       // 更新历史记录
+      const UPDATE_INTERVAL = 30
       if (this.lastHistoryUpdateTime == null) {
         this.lastHistoryUpdateTime = this.player.currentTime
         this.updatePlayHistory(this.player.currentTime, this.player.duration)
-      } else if (this.player.currentTime > this.lastHistoryUpdateTime && Math.floor(this.player.currentTime)%10==0) {
+      } else if (this.player.currentTime > this.lastHistoryUpdateTime + UPDATE_INTERVAL) {
         this.lastHistoryUpdateTime = this.player.currentTime
         this.updatePlayHistory(this.player.currentTime, this.player.duration)
       }
+
     },
 
     onEnded () {
