@@ -8,103 +8,57 @@
         ({{pagination.totalCount}})
       </span>
     </div>
+    <div style="max-width: 1680px;" class="col">
+      <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
+        <!-- 排序选择框 -->
+        <q-select dense rounded outlined bg-color="white" transition-show="scale" transition-hide="scale"
+          v-model="sortOption" :options="options" label="排序" class="col-auto" />
 
-    <div :class="`row justify-center ${listMode == 'list' ? 'list' : 'q-mx-md'}`">
-      <q-infinite-scroll @load="onLoad" :offset="250" :disable="stopLoad" style="max-width: 1680px;" class="col">
-        <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
-          <!-- 排序选择框 -->
-          <q-select
-            dense
-            rounded
-            outlined
-            bg-color="white"
-            transition-show="scale"
-            transition-hide="scale"
-            v-model="sortOption"
-            :options="options"
-            label="排序"
-            class="col-auto"
-          />
-
-          <!-- 切换显示模式按钮 -->
-          <q-btn-toggle
-            dense
-            spread
-            rounded
-            v-model="listMode"
-            toggle-color="primary"
-            color="white"
-            text-color="primary"
-            :options="[
+        <!-- 切换显示模式按钮 -->
+        <q-btn-toggle dense spread rounded v-model="listMode" toggle-color="primary" color="white" text-color="primary"
+          :options="[
               { icon: 'apps', value: 'detail' },
               { icon: 'view_column', value: 'column' },
               { icon: 'list', value: 'list' }
-            ]"
-            style="width: 85px;"
-            class="col-auto"
-          />
+            ]" style="width: 85px;" class="col-auto" />
 
-          <q-btn-toggle
-            dense
-            spread
-            rounded
-            v-model="showLabel"
-            toggle-color="primary"
-            color="white"
-            text-color="primary"
-            :options="[
+        <q-btn-toggle dense spread rounded v-model="showLabel" toggle-color="primary" color="white" text-color="primary"
+          :options="[
               { icon: 'label', value: true },
               { icon: 'label_off', value: false }
-            ]"
-            style="width: 85px;"
-            class="col-auto"
-            v-if="$q.screen.width > 700 && listMode == 'list'"
-          />
+            ]" style="width: 85px;" class="col-auto" v-if="$q.screen.width > 700 && listMode == 'list'" />
 
-          <q-btn-toggle
-            dense
-            spread
-            rounded
-            :disable="$q.screen.width < 700"
-            v-model="detailMode"
-            toggle-color="primary"
-            color="white"
-            text-color="primary"
-            :options="[
+        <q-btn-toggle dense spread rounded :disable="$q.screen.width < 700" v-model="detailMode" toggle-color="primary"
+          color="white" text-color="primary" :options="[
               { icon: 'zoom_in', value: true },
               { icon: 'zoom_out', value: false },
-            ]"
-            style="width: 85px;"
-            class="col-auto"
-            v-if="$q.screen.width > 700 && listMode !== 'list'"
-          />
+            ]" style="width: 85px;" class="col-auto" v-if="$q.screen.width > 700 && listMode !== 'list'" />
 
+      </div>
+
+      <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
+        <WorkListItem v-for="work in works" :key="work.id" :metadata="work"
+          :showLabel="showLabel && $q.screen.width > 700" />
+      </q-list>
+
+      <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-lg">
+        <div class="col-xs-12 col-sm-6 col-md-4" :class="detailMode ? 'col-lg-3 col-xl-3': 'col-lg-3 col-xl-3'"
+          v-for="work in works" :key="work.id">
+          <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit" />
         </div>
+      </div>
 
-        <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
-          <WorkListItem v-for="work in works" :key="work.id" :metadata="work" :showLabel="showLabel && $q.screen.width > 700" />
-        </q-list>
-
-        <div v-else-if = "listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-lg">
-          <div class="col-xs-12 col-sm-6 col-md-4" :class="detailMode ? 'col-lg-3 col-xl-3': 'col-lg-3 col-xl-3'" v-for="work in works" :key="work.id">
-            <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
-          </div>
+      <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
+        <div class="col-xs-6 col-sm-4 col-md-3" :class="detailMode ? 'col-lg-2 col-xl-2': 'col-lg-2 col-xl-2'"
+          v-for="work in works" :key="work.id">
+          <WorkCard :metadata="work" :thumbnailMode="!(detailMode && $q.screen.width > 700)" class="fit" />
         </div>
-
-        <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
-          <div class="col-xs-6 col-sm-4 col-md-3" :class="detailMode ? 'col-lg-2 col-xl-2': 'col-lg-2 col-xl-2'" v-for="work in works" :key="work.id">
-            <WorkCard :metadata="work" :thumbnailMode="!(detailMode && $q.screen.width > 700)" class="fit"/>
-          </div>
-        </div>
-
-        <div v-show="stopLoad" class="q-mt-lg q-mb-xl text-h6 text-bold text-center">END</div>
-
-        <template v-slot:loading>
-          <div class="row justify-center q-my-md">
-            <q-spinner-dots color="primary" size="40px" />
-          </div>
-        </template>
-      </q-infinite-scroll>
+      </div>
+      <!-- 分页控件 -->
+      <div class="row justify-center q-my-md">
+        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links
+          color="primary" @input="handlePageChange" input />
+      </div>
     </div>
   </div>
 </template>
@@ -135,7 +89,12 @@ export default {
       works: [],
       pageTitle: '',
       page: 1,
-      pagination: { currentPage:0, pageSize:12, totalCount:0 },
+      pagination: {
+        currentPage: 1, // 当前页码
+        totalPages: 1, // 总页数
+        totalCount: 0, // 总数据量
+        pageSize: 12 // 每页数量
+      },
       seed: 7, // random sort
       sortOption: {
         label: '最新加入数据库',
@@ -223,6 +182,7 @@ export default {
   },
 
   mounted() {
+    this.requestWorksQueue();
     if (localStorage.getItem("sortOption") != null) {
       try {
         this.sortOption = JSON.parse(localStorage.sortOption);
@@ -293,42 +253,45 @@ export default {
   },
 
   methods: {
-    onLoad (index, done) {
-      this.requestWorksQueue()
-        .then(() => done())
-    },
-
-    requestWorksQueue () {
+    requestWorksQueue() {
       const params = {
         order: this.sortOption.order,
         sort: this.sortOption.sort,
-        page: this.pagination.currentPage + 1 || 1,
+        page: this.pagination.currentPage,
+        pageSize: this.pagination.pageSize, // 后端分页，每页多少条
         seed: this.seed
-      }
-
+      };
       return this.$axios.get(this.url, { params })
         .then((response) => {
-          const works = response.data.works
-          this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
-          this.pagination = response.data.pagination
-
-          if (this.works.length >= this.pagination.totalCount) {
-            this.stopLoad = true
-          }
+          console.log("API 响应数据:", response.data); // 确保数据正确
+          const works = response.data.works;
+          this.works = works; // 直接覆盖，不再追加
+          this.pagination.totalCount = response.data.pagination.totalCount;
+          this.pagination.pageSize = response.data.pagination.pageSize;
+          this.pagination.totalPages = Math.ceil(this.pagination.totalCount / this.pagination.pageSize);
+          this.stopLoad = this.pagination.currentPage >= this.pagination.totalPages;
         })
         .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            if (error.response.status !== 401) {
-              this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-            }
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-          this.stopLoad = true
-        })
+          this.handleRequestError(error);
+        });
     },
 
+    // **分页变化**
+    handlePageChange(page) {
+      console.log("当前页码:", page); // 确保页码有更新
+      this.pagination.currentPage = page;
+      this.requestWorksQueue();
+    },
+    handleRequestError(error) {
+      if (error.response) {
+        if (error.response.status !== 401) {
+          this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`);
+        }
+      } else {
+        this.showErrNotif(error.message || error);
+      }
+      this.stopLoad = true;
+    },
     refreshPageTitle () {
       if (this.$route.query.circleId || this.$route.query.tagId || this.$route.query.vaId) {
         let url = '', restrict = ''
@@ -383,7 +346,7 @@ export default {
     reset () {
       this.stopLoad = true
       this.refreshPageTitle()
-      this.pagination = { currentPage:0, pageSize:12, totalCount:0 }
+      this.pagination = { currentPage:1, pageSize:12, totalCount:0 }
       this.requestWorksQueue()
         .then(() => {
           this.stopLoad = false
