@@ -8,7 +8,7 @@
         ({{pagination.totalCount}})
       </span>
     </div>
-    <div style="max-width: 1680px;" class="col">
+    <div style="padding: 0 20px;" class="col justify-center">
       <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
         <!-- 排序选择框 -->
         <q-select dense rounded outlined bg-color="white" transition-show="scale" transition-hide="scale"
@@ -18,7 +18,6 @@
         <q-btn-toggle dense spread rounded v-model="listMode" toggle-color="primary" color="white" text-color="primary"
           :options="[
               { icon: 'apps', value: 'detail' },
-              { icon: 'view_column', value: 'column' },
               { icon: 'list', value: 'list' }
             ]" style="width: 85px;" class="col-auto" />
 
@@ -26,13 +25,13 @@
           :options="[
               { icon: 'label', value: true },
               { icon: 'label_off', value: false }
-            ]" style="width: 85px;" class="col-auto" v-if="$q.screen.width > 700 && listMode == 'list'" />
+            ]" style="width: 85px;" class="col-auto" v-if="listMode == 'list'" />
 
-        <q-btn-toggle dense spread rounded :disable="$q.screen.width < 700" v-model="detailMode" toggle-color="primary"
-          color="white" text-color="primary" :options="[
+        <q-btn-toggle dense spread rounded v-model="detailMode" toggle-color="primary" color="white"
+          text-color="primary" :options="[
               { icon: 'zoom_in', value: true },
               { icon: 'zoom_out', value: false },
-            ]" style="width: 85px;" class="col-auto" v-if="$q.screen.width > 700 && listMode !== 'list'" />
+            ]" style="width: 85px;" class="col-auto" v-if="listMode !== 'list'" />
 
       </div>
 
@@ -42,22 +41,15 @@
       </q-list>
 
       <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-lg">
-        <div class="col-xs-12 col-sm-6 col-md-4" :class="detailMode ? 'col-lg-3 col-xl-3': 'col-lg-3 col-xl-3'"
+        <div class="col-sm-6 col-lg-3 col-xl-2" :class="detailMode ? 'col-xs-12 col-md-4' : 'col-xs-6 col-md-3'"
           v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit" />
         </div>
       </div>
-
-      <div v-else class="row q-col-gutter-x-md q-col-gutter-y-lg">
-        <div class="col-xs-6 col-sm-4 col-md-3" :class="detailMode ? 'col-lg-2 col-xl-2': 'col-lg-2 col-xl-2'"
-          v-for="work in works" :key="work.id">
-          <WorkCard :metadata="work" :thumbnailMode="!(detailMode && $q.screen.width > 700)" class="fit" />
-        </div>
-      </div>
       <!-- 分页控件 -->
       <div class="row justify-center q-my-md">
-        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links
-          color="primary" @input="handlePageChange" input />
+        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
+          @input="handlePageChange" input />
       </div>
     </div>
   </div>
@@ -269,6 +261,7 @@ export default {
           this.pagination.totalCount = response.data.pagination.totalCount;
           this.pagination.pageSize = response.data.pagination.pageSize;
           this.pagination.totalPages = Math.ceil(this.pagination.totalCount / this.pagination.pageSize);
+          this.pagination.currentPage = response.data.pagination.currentPage;
           this.stopLoad = this.pagination.currentPage >= this.pagination.totalPages;
         })
         .catch((error) => {
@@ -279,7 +272,7 @@ export default {
     // **分页变化**
     handlePageChange(page) {
       console.log("当前页码:", page); // 确保页码有更新
-      this.pagination.currentPage = page;
+      this.pagination.currentPage = page || 1;
       this.requestWorksQueue();
     },
     handleRequestError(error) {

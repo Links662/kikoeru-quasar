@@ -416,11 +416,16 @@ export default {
       navigator.mediaSession.setActionHandler('play', this.togglePlaying);
       navigator.mediaSession.setActionHandler('pause', this.togglePlaying);
       navigator.mediaSession.setActionHandler('stop', this.togglePlaying);
-      navigator.mediaSession.setActionHandler('seekbackward', this.rewind);
-      navigator.mediaSession.setActionHandler('seekforward', this.forward);
       // navigator.mediaSession.setActionHandler('seekto', function() {console.log(this.seekTime)});
       navigator.mediaSession.setActionHandler('previoustrack', this.previousTrack);
       navigator.mediaSession.setActionHandler('nexttrack', this.nextTrack);
+      // iOS 可能不支持的操作
+      try {
+        navigator.mediaSession.setActionHandler('seekbackward', () => this.rewind());
+        navigator.mediaSession.setActionHandler('seekforward', () => this.forward());
+      } catch (e) {
+        console.log('iOS 不支持 seekbackward/seekforward');
+      }
     }
   }
 }

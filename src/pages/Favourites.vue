@@ -1,62 +1,28 @@
 <template>
   <q-page padding>
     <div class="fit row wrap justify-between items-start q-px-sm">
-      <div class="col-lg-3 col-sm-12 col-xs-12">
-          <q-btn-toggle
-            v-model="mode"
-            @input="changeMode"
-            spread
-            no-caps
-            rounded
-            toggle-color="primary"
-            color="white"
-            class="text-bold"
-            text-color="black"
-            :options="[
-              {label: '我的评价', value: 'review'},
-              {label: '我的进度', value: 'progress'},
-            ]"
-          />
+      <q-btn-toggle v-model="progressFilter" @input="changeProgressFilter" toggle-color="primary" color="white"
+        text-color="black" rounded :options="[
+          { label: '想听', value: 'marked' },
+          { label: '在听', value: 'listening' },
+          { label: '听过', value: 'listened' },
+          { label: '重听', value: 'replay' },
+          { label: '搁置', value: 'postponed' }
+        ]" />
+      <div class="col-auto gt-xs row">
+        <q-select dense rounded outlined v-model="sortBy" :options="sortOptions" bg-color="white" class="q-mx-sm" />
+        <q-btn :disable="sortButtonDisabled" dense rounded color="white"
+          :text-color="sortButtonDisabled ? 'grey' : 'black'" :icon="direction ? 'arrow_downward' : 'arrow_upward'"
+          @click="switchSortMode" />
       </div>
-      <div class="col-auto gt-sm row">
-        <q-select dense rounded outlined v-model="sortBy" :options="sortOptions" bg-color="white" class="q-mx-sm"/>
-        <q-btn
-          :disable="sortButtonDisabled"
-          dense
-          rounded
-          color="white"
-          :text-color="sortButtonDisabled? 'grey': 'black'"
-          :icon="direction? 'arrow_downward' : 'arrow_upward'"
-          @click="switchSortMode" 
-        />
-      </div>
-
     </div>
-    <div class="q-pt-md q-px-sm">
-      <q-btn-toggle
-        v-if="mode === 'progress'"
-        v-model="progressFilter"
-        @input="changeProgressFilter"
-        toggle-color="primary"
-        color="white"
-        text-color="black"
-        rounded
-        :options="[
-          {label: '想听', value: 'marked'},
-          {label: '在听', value: 'listening'},
-          {label: '听过', value: 'listened'},
-          {label: '重听', value: 'replay'},
-          {label: '搁置', value: 'postponed'}
-        ]"
-      />
-    </div>
-
     <div class="q-pt-md">
       <div class="q-px-sm q-py-md">
         <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
           <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
           <q-list bordered separator class="shadow-2" v-if="works.length">
-             <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()" :mode="mode"></FavListItem> 
+            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()"
+              :mode="mode"></FavListItem>
           </q-list>
           <template v-slot:loading>
             <div class="row justify-center q-my-md">
@@ -85,7 +51,7 @@ export default {
   props: {
     route: {
       type: String,
-      default: 'review'
+      default: 'progress'
     },
     progress: {
       type: String,
@@ -105,7 +71,7 @@ export default {
 
   data() {
     return {
-      mode: 'review',
+      mode: 'progress',
       progressFilter: 'marked',
       works: [],
       stopLoad: false,
@@ -149,7 +115,7 @@ export default {
   },
 
   created() {
-    this.mode = this.route;
+    this.mode = "progress";
     this.progressFilter = this.progress;
   },
 
@@ -175,7 +141,7 @@ export default {
 
     // Browser back and forth
     route() {
-      this.mode = this.route;
+      this.mode = "progress";
       this.reset();
     },
     progress() {
@@ -185,15 +151,10 @@ export default {
   },
 
   methods: {
-    // Split two-way binding
-    changeMode(newMode) {
-      this.$router.push(`/favourites/${newMode}`);
-      this.reset();
-    },
 
     // Split two-way binding
     changeProgressFilter(newFilter) {
-      this.$router.push(`/favourites/progress/${newFilter}`);
+      this.$router.push(`/progress/${newFilter}`);
       this.reset();
     },
 

@@ -10,10 +10,10 @@
       @load="onLoad"
       :offset="250"
       :disable="stopLoad"
-      style="max-width: 1680px; overflow-x: scroll; padding: 15px;"
+      style="overflow-x: scroll; padding: 15px;"
       class="col">
         <div class="row q-col-gutter-x-md q-col-gutter-y-lg no-wrap">
-          <div class="col-md-2 col-xs-6 col-sm-4" v-for="recentwork in recentworks" :key="recentwork.id"  style="display: inline-block">
+          <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks" :key="recentwork.id"  style="display: inline-block">
             <RecentCard :metadata="recentwork" class="fit"/>
           </div>
         </div>
