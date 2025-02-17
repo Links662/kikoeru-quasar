@@ -8,7 +8,7 @@
         ({{pagination.totalCount}})
       </span>
     </div>
-    <div style="max-width: 1680px;" class="col">
+    <div style="max-width: 1680px; padding: 0 20px;" class="col">
       <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
         <!-- 排序选择框 -->
         <q-select dense rounded outlined bg-color="white" transition-show="scale" transition-hide="scale"
