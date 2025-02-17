@@ -190,9 +190,9 @@ export default {
           path: '/'
         },
         {
-          title: '我的收藏',
-          icon: 'favorite',
-          path: '/favourites'
+          title: '我的进度',
+          icon: 'list',
+          path: '/progress'
         },
         {
           title: '社团',
@@ -211,7 +211,7 @@ export default {
         },
         {
           title: '设定',
-          icon: 'tune',
+          icon: 'settings',
           path: '/admin'
         },
       ],
@@ -311,12 +311,17 @@ export default {
 
     requestRandomWork () {
       const params = {
-        order: 'betterRandom'
+        order: 'betterRandom',
+        filter: 'marked',
+        page : 0,        
       }
-      this.$axios.get('/api/works', { params })
+      this.$axios.get('/api/review', { params })
         .then((response) => {
           const works = response.data.works
           this.randId = works.length ? works[0].id : null;
+          if(works.length === 0){
+            this.showErrNotif("想听列表中无作品，请增加后再使用此功能")
+          }
         })
         .catch((error) => {
           if (error.response) {

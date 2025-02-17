@@ -56,7 +56,7 @@
           </q-card>
         </q-item-label>
 
-        <q-item-label class="q-pt-xs" v-if="mode === 'progress'">
+        <q-item-label class="q-mt-auto" v-if="mode === 'progress'">
           <q-btn-toggle
             v-if="mode === 'progress'"
             v-model="progress"
@@ -67,7 +67,7 @@
             toggle-color="primary"
             color="white"
             text-color="black"
-            class="q-pa-sm"
+            class="q-pa-none"
             :options="[
               {label: '想听', value: 'marked'},
               {label: '在听', value: 'listening'},
