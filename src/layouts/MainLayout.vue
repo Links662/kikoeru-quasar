@@ -190,9 +190,9 @@ export default {
           path: '/'
         },
         {
-          title: '我的收藏',
-          icon: 'favorite',
-          path: '/favourites'
+          title: '我的进度',
+          icon: 'list',
+          path: '/progress'
         },
         {
           title: '社团',
@@ -211,7 +211,7 @@ export default {
         },
         {
           title: '设定',
-          icon: 'tune',
+          icon: 'settings',
           path: '/admin'
         },
       ],

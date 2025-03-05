@@ -76,52 +76,35 @@ const routes = [
         props: { restrict: "vas" },
         component: List
       },
-      ...prefixRoutes('favourites', [
+      ...prefixRoutes('progress', [
         {
           path: '',
-          props: { route: 'review'},
+          props: { route: 'progress', progress: 'marked'},
           component: Favourites,
         },
         {
-          path: '/review',
-          props: { route: 'review'},
+          path: '/marked',
+          props: { route: 'progress', progress: 'marked'},
           component: Favourites,
         },
-        ...prefixRoutes('/progress', [
-          {
-            path: '',
-            props: { route: 'progress', progress: 'marked'},
-            component: Favourites,
-          },
-          {
-            path: '/marked',
-            props: { route: 'progress', progress: 'marked'},
-            component: Favourites,
-          },
-          {
-            path: '/listening',
-            props: { route: 'progress', progress: 'listening'},
-            component: Favourites,
-          },
-          {
-            path: '/listened',
-            props: { route: 'progress', progress: 'listened'},
-            component: Favourites,
-          },
-          {
-            path: '/replay',
-            props: { route: 'progress', progress: 'replay'},
-            component: Favourites,
-          },
-          {
-            path: '/postponed',
-            props: { route: 'progress', progress: 'postponed'},
-            component: Favourites,
-          },
-        ]),
         {
-          path: '/folder',
-          props: { route: 'folder'},
+          path: '/listening',
+          props: { route: 'progress', progress: 'listening'},
+          component: Favourites,
+        },
+        {
+          path: '/listened',
+          props: { route: 'progress', progress: 'listened'},
+          component: Favourites,
+        },
+        {
+          path: '/replay',
+          props: { route: 'progress', progress: 'replay'},
+          component: Favourites,
+        },
+        {
+          path: '/postponed',
+          props: { route: 'progress', progress: 'postponed'},
           component: Favourites,
         },
       ]),
