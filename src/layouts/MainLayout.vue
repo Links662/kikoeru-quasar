@@ -311,9 +311,11 @@ export default {
 
     requestRandomWork () {
       const params = {
-        order: 'betterRandom'
+        order: 'betterRandom',
+        filter: 'marked',
+        page : 0,        
       }
-      this.$axios.get('/api/works', { params })
+      this.$axios.get('/api/review', { params })
         .then((response) => {
           const works = response.data.works
           this.randId = works.length ? works[0].id : null;

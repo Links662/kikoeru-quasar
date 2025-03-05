@@ -269,6 +269,7 @@ export default {
           this.pagination.totalCount = response.data.pagination.totalCount;
           this.pagination.pageSize = response.data.pagination.pageSize;
           this.pagination.totalPages = Math.ceil(this.pagination.totalCount / this.pagination.pageSize);
+          this.pagination.currentPage = response.data.pagination.currentPage;
           this.stopLoad = this.pagination.currentPage >= this.pagination.totalPages;
         })
         .catch((error) => {
@@ -279,7 +280,7 @@ export default {
     // **分页变化**
     handlePageChange(page) {
       console.log("当前页码:", page); // 确保页码有更新
-      this.pagination.currentPage = page;
+      this.pagination.currentPage = page || 1;
       this.requestWorksQueue();
     },
     handleRequestError(error) {
