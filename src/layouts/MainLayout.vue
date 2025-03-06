@@ -319,6 +319,9 @@ export default {
         .then((response) => {
           const works = response.data.works
           this.randId = works.length ? works[0].id : null;
+          if(works.length === 0){
+            this.showErrNotif("想听列表中无作品，请增加后再使用此功能")
+          }
         })
         .catch((error) => {
           if (error.response) {
