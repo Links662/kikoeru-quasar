@@ -8,9 +8,9 @@
         ({{pagination.totalCount}})
       </span>
     </div>
-    <div style="max-width: 1680px; padding: 0 20px;" class="col">
+    <div style="padding: 0 20px;" class="col justify-center">
       <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
-        <!-- 排序选择框 -->
+        <!-- 排序选择框 -->  
         <q-select dense rounded outlined bg-color="white" transition-show="scale" transition-hide="scale"
           v-model="sortOption" :options="options" label="排序" class="col-auto" />
 
