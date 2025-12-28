@@ -20,9 +20,11 @@
     "kikoeru"
   ],
   "scripts": {
-    "test": "node_modules/.bin/eslint ."
+    "test": "node_modules/.bin/eslint .",
+    "dev": "quasar dev"
   },
   "dependencies": {
+    "@quasar/cli": "^2.5.0",
     "@quasar/extras": "^1.10.4",
     "axios": "^0.21.1",
     "lrc-file-parser": "^1.0.7",
