@@ -70,10 +70,7 @@ export default {
     requestRecentWorks () {
         this.$axios.get('/api/history/recent')
         .then((response) => {
-            console.log(response)
-
             this.recentworks = response.data
-
             this.stopLoad = true
         })
         .catch((error) => {
