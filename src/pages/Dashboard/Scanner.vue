@@ -204,6 +204,7 @@ export default {
         level: 'info',
         message: payload.message
       })
+      this.$socket.emit('COUNT_UPDATE')
     },
     SCAN_ERROR () {
       this.state = 'error'

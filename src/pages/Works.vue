@@ -44,12 +44,12 @@
         <div class="col-sm-6 col-lg-3 col-xl-2" :class="detailMode ? 'col-xs-12 col-md-4' : 'col-xs-6 col-md-3'"
           v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit" />
-        </div>
+       </div>
       </div>
       <!-- 分页控件 -->
       <div class="row justify-center q-my-md">
         <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
-          @input="handlePageChange" input />
+          input />
       </div>
     </div>
   </div>
@@ -80,7 +80,6 @@ export default {
       stopLoad: false,
       works: [],
       pageTitle: '',
-      page: 1,
       pagination: {
         currentPage: 1, // 当前页码
         totalPages: 1, // 总页数
@@ -174,6 +173,7 @@ export default {
   },
 
   mounted() {
+    this.pagination.currentPage = 1;
     this.requestWorksQueue();
     if (localStorage.getItem("sortOption") != null) {
       try {
@@ -223,6 +223,10 @@ export default {
   watch: {
     url () {
       this.reset()
+    },
+
+    'pagination.currentPage'(page) {
+      this.handlePageChange(page);
     },
 
     sortOption (newSortOptionSetting) {
