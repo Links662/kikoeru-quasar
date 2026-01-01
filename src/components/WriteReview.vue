@@ -1,6 +1,6 @@
 <template>
   <div>
-      <q-dialog v-model="showReviewDialog" @hide="closeDialog">
+      <q-dialog v-model="showReviewDialog">
         <q-card>
           <q-card-section class="q-pb-sm">
             <div class="text-body1">我的评论</div>
@@ -48,12 +48,12 @@
           
           <div class="row justify-between">
             <q-card-actions  class="text-red">
-              <q-btn flat label="删除标记" v-close-popup @click="deleteConfirm = true" />
+              <q-btn flat label="删除标记" @click="deleteConfirm = true" />
             </q-card-actions>
 
             <q-card-actions align="right" class="text-primary">
-              <q-btn flat label="确定" v-close-popup @click="submitReview()" />
-              <q-btn flat label="取消" v-close-popup @click="closeDialog()" />
+              <q-btn flat label="确定" @click="submitReview" />
+              <q-btn flat label="取消" @click="$emit('closed')" />
             </q-card-actions>
           </div>
         </q-card>
@@ -66,8 +66,8 @@
           </q-card-section>
 
           <q-card-actions align="right" class="bg-white text-teal">
-              <q-btn flat label="确定" v-close-popup @click="deleteReview()" />
-              <q-btn flat label="取消" v-close-popup @click="closeDialog()"/>
+              <q-btn flat label="确定" @click="deleteReview" />
+              <q-btn flat label="取消" v-close-popup/>
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -99,55 +99,57 @@ export default {
       deleteConfirm: false,
       rating: 0,
       reviewText: '',
-      modified: false,
       progress: '',
     }
   },
 
   mounted() {
-    if (this.metadata.userRating) {
-      this.rating = this.metadata.userRating;
+    if (!this.metadata) return;
+
+    if (this.metadata.rating != null) {
+      this.rating = this.metadata.rating;
     }
-      this.progress = this.metadata.progress;
-    this.reviewText = this.metadata.review_text;
+    this.progress = this.metadata.progress || '';
+    this.reviewText = this.metadata.reviewText || '';
   },
 
   methods: {
-    closeDialog() {
-      // Do not emit anything if the second dialog is shown
-      // If the user clicks anywhere outside of the main dialog, emit 'closed'
-      if (!this.deleteConfirm) {
-        if (this.modified) {
-          this.$emit('closed', true);
-        } else {
-          this.$emit('closed', false);
-        }
-      }
-    },
-
-    reviewPayload () {
-      const submitPayload = {
-        'user_name': this.$store.state.User.name, // 用户名不会被后端使用
+    modifyData() {
+      const payload = {
         'work_id': this.workid,
         'rating': this.rating,
-        'review_text': this.reviewText,
-        'progress': this.progress
+        'reviewText': this.reviewText,
+        'progress': this.progress,
+        'deleted': false,
       };
-      return submitPayload;
+      this.$emit('modifydata', payload);
+    },
+
+    deleteData() {
+      const payload = {
+        work_id: this.workid,
+        deleted: true
+      }
+      this.$emit('modifydata', payload)
     },
 
     submitReview () {
       const params = {
         starOnly: false
       }
-      const payload = this.reviewPayload();
+      const payload = {
+        'user_name': this.$store.state.User.name, // 用户名不会被后端使用
+        'work_id': this.workid,
+        'rating': this.rating,
+        'review_text': this.reviewText,
+        'progress': this.progress,
+        'deleted': false,
+      };
       this.$axios.put('/api/review', payload, {params})
         .then((response) => {
-          this.modified =true
-          // TODO 修复callback graph
-            this.showSuccNotif(response.data.message)
+          this.showSuccNotif(response.data.message)
+          this.modifyData()
         })
-        .then(()=> this.closeDialog())
         .catch((error) => {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
@@ -164,10 +166,10 @@ export default {
       }
       this.$axios.delete('/api/review', {params})
         .then((response) => {
-          this.modified = true
           this.showSuccNotif(response.data.message)
+          this.deleteConfirm = false
+          this.deleteData()
         })
-        .then(() => this.closeDialog())
         .catch((error) => {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内

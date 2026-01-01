@@ -21,7 +21,7 @@
         <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
           <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
           <q-list bordered separator class="shadow-2" v-if="works.length">
-            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()"></FavListItem>
+            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @deleteItem="removeFavItem"></FavListItem>
           </q-list>
           <template v-slot:loading>
             <div class="row justify-center q-my-md">
@@ -133,6 +133,13 @@ export default {
         this.sortMode = 'asc'
       } else {
         this.sortMode = 'desc'
+      }
+    },
+
+    removeFavItem(workId){
+      const index = this.works.findIndex(w => w.id === workId)
+      if (index !== -1) {
+        this.works.splice(index, 1)
       }
     },
 
