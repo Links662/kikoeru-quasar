@@ -48,17 +48,12 @@
           <span class="col-auto text-grey ">{{metadata.updated_at}}</span>
         </div>
 
-        <q-item-label class="q-pt-sm" v-if="mode === 'review'">
-          <q-card class="my-card col-auto" @click="showReviewDialog = true" v-show="metadata.review_text" >
-            <q-card-section class="q-pa-sm">
-              <pre class="q-ma-none">{{metadata.review_text}}</pre>
-            </q-card-section>
-          </q-card>
+        <q-item-label class="q-mt-auto">
+          <pre class="q-ma-none">{{metadata.review_text}}</pre>
         </q-item-label>
 
-        <q-item-label class="q-mt-auto" v-if="mode === 'progress'">
+        <q-item-label class="q-mt-auto">
           <q-btn-toggle
-            v-if="mode === 'progress'"
             v-model="progress"
             @input="setProgress"
             dense
@@ -105,10 +100,6 @@ export default {
       metadata: {
         type: Object,
         required: true
-      },
-      mode: {
-        type: String,
-        default: 'review'
       }
   },
 

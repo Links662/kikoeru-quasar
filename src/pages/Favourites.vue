@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div class="fit row wrap justify-between items-start q-px-sm">
-      <q-btn-toggle v-model="progressFilter" @input="changeProgressFilter" toggle-color="primary" color="white"
+      <q-btn-toggle v-model="progressFilter" toggle-color="primary" color="white"
         text-color="black" rounded :options="[
           { label: '想听', value: 'marked' },
           { label: '在听', value: 'listening' },
@@ -21,8 +21,7 @@
         <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
           <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
           <q-list bordered separator class="shadow-2" v-if="works.length">
-            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()"
-              :mode="mode"></FavListItem>
+            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()"></FavListItem>
           </q-list>
           <template v-slot:loading>
             <div class="row justify-center q-my-md">
@@ -48,17 +47,6 @@ export default {
     FavListItem
   },
 
-  props: {
-    route: {
-      type: String,
-      default: 'progress'
-    },
-    progress: {
-      type: String,
-      default: 'marked'
-    }
-  },
-
   computed: {
     direction () {
       return this.sortMode === 'desc'
@@ -71,7 +59,6 @@ export default {
 
   data() {
     return {
-      mode: 'progress',
       progressFilter: 'marked',
       works: [],
       stopLoad: false,
@@ -101,22 +88,12 @@ export default {
         {
           label: '售出数量',
           order: 'dl_count'
-        },
-        {
-          label: '全年龄新作',
-          order: 'allage'
-        },
-        {
-          label: '18禁新作',
-          order: 'nsfw'
         }
       ]
     }
   },
 
   created() {
-    this.mode = "progress";
-    this.progressFilter = this.progress;
   },
 
   mounted() {
@@ -132,31 +109,25 @@ export default {
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
-      this.reset();
+      this.pagination.currentPage = 0
     },
 
     sortMode() {
-      this.reset();
+      this.pagination.currentPage = 0
     },
 
-    // Browser back and forth
-    route() {
-      this.mode = "progress";
-      this.reset();
+    progressFilter(){
+      this.pagination.currentPage = 0
     },
-    progress() {
-      this.progressFilter = this.progress;
-      this.reset();
-    }
+
+    'pagination.currentPage'() {
+      if (this.pagination.currentPage === 0) {
+        this.reset();
+      }
+    },
   },
 
   methods: {
-
-    // Split two-way binding
-    changeProgressFilter(newFilter) {
-      this.$router.push(`/progress/${newFilter}`);
-    },
-
     switchSortMode() {
       if(this.sortMode ==='desc') {
         this.sortMode = 'asc'
@@ -165,7 +136,7 @@ export default {
       }
     },
 
-    onLoad(index, done) {
+    onLoad (index, done) {
       this.requestWorksQueue()
         .finally(() => {
           done()
@@ -174,8 +145,6 @@ export default {
 
     reset() {
       this.stopLoad = true
-      this.pagination.currentPage = 1
-      this.pagination.pageSize = 12
       this.works = []
 
       this.$nextTick(() => {
@@ -192,21 +161,7 @@ export default {
         sort: this.sortMode,
         page: this.pagination.currentPage + 1 || 1
       }
-
-      if (this.sortBy.order === 'allage') {
-        params.order = 'nsfw'
-        params.sort = 'asc'
-      }
-
-      if (this.sortBy.order === 'nsfw') {
-        params.order = 'nsfw'
-        params.sort = 'desc'
-      }
-
-      if (this.mode === 'progress') {
-        params.filter = this.progressFilter;
-      }
-
+      params.filter = this.progressFilter;
       return this.$axios.get('/api/review', { params })
         .then((response) => {                  
           const works = response.data.works
