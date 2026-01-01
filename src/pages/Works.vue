@@ -77,7 +77,6 @@ export default {
       listMode: 'detail',
       showLabel: true,
       detailMode: true,
-      stopLoad: false,
       works: [],
       pageTitle: '',
       pagination: {
@@ -174,7 +173,6 @@ export default {
 
   mounted() {
     this.pagination.currentPage = 1;
-    this.requestWorksQueue();
     if (localStorage.getItem("sortOption") != null) {
       try {
         this.sortOption = JSON.parse(localStorage.sortOption);
@@ -196,33 +194,29 @@ export default {
   computed: {
     url () {
       const query = this.$route.query
+      let result = ""
       if (query.circleId) {
-        return `/api/circles/${this.$route.query.circleId}/works`
+        result = `/api/circles/${this.$route.query.circleId}/works`
       } else if (query.tagId) {
-        return `/api/tags/${this.$route.query.tagId}/works`
+        result = `/api/tags/${this.$route.query.tagId}/works`
       } else if (query.vaId) {
-        return `/api/vas/${this.$route.query.vaId}/works`
+        result = `/api/vas/${this.$route.query.vaId}/works`
       } else if (query.keyword) {
-        return `/api/search/${query.keyword}`
+        result = `/api/search/${query.keyword}`
       } else {
-        return '/api/works'
+        result = '/api/works'
       }
+      // console.log(`url recomputed ${result}`)
+      return result
     }
   },
 
-  // keep-alive hooks
-  // <keep-alive /> is set in MainLayout
-  activated () {
-    this.stopLoad = false
-  },
-
-  deactivated () {
-    this.stopLoad = true
-  },
-
   watch: {
-    url () {
-      this.reset()
+    url: {
+      immediate: true,
+      handler() {
+        this.reset();
+      }
     },
 
     'pagination.currentPage'(page) {
@@ -259,7 +253,7 @@ export default {
       };
       return this.$axios.get(this.url, { params })
         .then((response) => {
-          console.log("API 响应数据:", response.data); // 确保数据正确
+          // console.log("API 响应数据:", response.data); // 确保数据正确
           const works = response.data.works;
           this.works = works; // 直接覆盖，不再追加
           this.pagination.totalCount = response.data.pagination.totalCount;
@@ -341,9 +335,11 @@ export default {
     },
 
     reset () {
+      // console.log("reset")
       this.stopLoad = true
       this.refreshPageTitle()
-      this.pagination = { currentPage:1, pageSize:12, totalCount:0 }
+      this.pagination.currentPage = 1
+      this.pagination.pageSize = 12
       this.requestWorksQueue()
         .then(() => {
           this.stopLoad = false

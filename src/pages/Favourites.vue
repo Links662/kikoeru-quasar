@@ -155,7 +155,6 @@ export default {
     // Split two-way binding
     changeProgressFilter(newFilter) {
       this.$router.push(`/progress/${newFilter}`);
-      this.reset();
     },
 
     switchSortMode() {
