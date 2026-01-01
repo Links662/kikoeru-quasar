@@ -165,19 +165,26 @@ export default {
       }
     },
 
-    onLoad (index, done) {
+    onLoad(index, done) {
       this.requestWorksQueue()
-        .then(() => done())
+        .finally(() => {
+          done()
+        })
     },
 
-    reset () {
-      // Freeze the scroller first
+    reset() {
       this.stopLoad = true
-      this.pagination = { currentPage:0, pageSize:12, hasMore:false }
-      // Manually fetch first page content before enable scroller
-      // Note: the internal API of the infinite scroller does not work well
-      this.requestWorksQueue()
+      this.pagination.currentPage = 1
+      this.pagination.pageSize = 12
+      this.works = []
+
+      this.$nextTick(() => {
+        this.stopLoad = false
+        this.$refs.scroll.reset()
+        this.$refs.scroll.resume()
+      })
     },
+
 
     requestWorksQueue () {
       const params = {
