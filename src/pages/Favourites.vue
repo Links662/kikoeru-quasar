@@ -1,36 +1,34 @@
 <template>
   <q-page padding>
-    <div class="fit row wrap justify-between items-start q-px-sm">
-      <q-btn-toggle v-model="progressFilter" @input="changeProgressFilter" toggle-color="primary" color="white"
-        text-color="black" rounded :options="[
-          { label: '想听', value: 'marked' },
-          { label: '在听', value: 'listening' },
-          { label: '听过', value: 'listened' },
-          { label: '重听', value: 'replay' },
-          { label: '搁置', value: 'postponed' }
-        ]" />
-      <div class="col-auto gt-xs row">
-        <q-select dense rounded outlined v-model="sortBy" :options="sortOptions" bg-color="white" class="q-mx-sm" />
-        <q-btn :disable="sortButtonDisabled" dense rounded color="white"
-          :text-color="sortButtonDisabled ? 'grey' : 'black'" :icon="direction ? 'arrow_downward' : 'arrow_upward'"
-          @click="switchSortMode" />
+    <div class="fit row wrap justify-between items-center q-px-sm">
+      <div class="col-auto gt-xs">
+        <q-btn-toggle v-model="progressFilter" toggle-color="primary" color="white" text-color="black" rounded
+          :options="progressOptions" />
+      </div>
+      <div class="col-4 lt-sm">
+        <q-select dense rounded outlined behavior="menu" v-model="progressFilter" :options="progressOptions"
+          option-label="label" option-value="value" emit-value map-options label="进度筛选" bg-color="white" />
+      </div>
+      <div class="col-auto row items-start q-ml-sm">
+        <q-select dense rounded outlined behavior="menu" v-model="sortBy" :options="sortOptions" bg-color="white"
+          class="q-mx-sm" />
+        <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
+          :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
       </div>
     </div>
-    <div class="q-pt-md">
-      <div class="q-px-sm q-py-md">
-        <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
-          <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
-          <q-list bordered separator class="shadow-2" v-if="works.length">
-            <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work" @reset="reset()"
-              :mode="mode"></FavListItem>
-          </q-list>
-          <template v-slot:loading>
-            <div class="row justify-center q-my-md">
-              <q-spinner-dots color="primary" size="40px" />
-            </div>
-          </template>
-        </q-infinite-scroll>
-      </div>
+    <div class="q-px-sm q-py-sm">
+      <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
+        <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
+        <q-list bordered separator class="shadow-2" v-if="works.length">
+          <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work"
+            @deleteItem="removeFavItem"></FavListItem>
+        </q-list>
+        <template v-slot:loading>
+          <div class="row justify-center q-my-md">
+            <q-spinner-dots color="primary" size="40px" />
+          </div>
+        </template>
+      </q-infinite-scroll>
     </div>
   </q-page>
 </template>
@@ -48,33 +46,25 @@ export default {
     FavListItem
   },
 
-  props: {
-    route: {
-      type: String,
-      default: 'progress'
-    },
-    progress: {
-      type: String,
-      default: 'marked'
-    }
-  },
-
   computed: {
     direction () {
       return this.sortMode === 'desc'
     },
-
-    sortButtonDisabled () {
-      return this.sortBy.order === 'allage' || this.sortBy.order === 'nsfw'
-    }
   },
 
   data() {
     return {
-      mode: 'progress',
       progressFilter: 'marked',
+      progressOptions: [
+        { label: '想听', value: 'marked' },
+        { label: '在听', value: 'listening' },
+        { label: '听过', value: 'listened' },
+        { label: '重听', value: 'replay' },
+        { label: '搁置', value: 'postponed' }
+      ],
       works: [],
       stopLoad: false,
+      requestId: 0,
       pagination: { currentPage:0, pageSize:12, totalCount:0 },
       sortMode: 'desc',
       sortBy: {
@@ -101,22 +91,12 @@ export default {
         {
           label: '售出数量',
           order: 'dl_count'
-        },
-        {
-          label: '全年龄新作',
-          order: 'allage'
-        },
-        {
-          label: '18禁新作',
-          order: 'nsfw'
         }
       ]
     }
   },
 
   created() {
-    this.mode = "progress";
-    this.progressFilter = this.progress;
   },
 
   mounted() {
@@ -132,31 +112,29 @@ export default {
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
-      this.reset();
+      this.requestId++
+      this.pagination.currentPage = 0
+
     },
 
     sortMode() {
-      this.reset();
+      this.requestId++
+      this.pagination.currentPage = 0
     },
 
-    // Browser back and forth
-    route() {
-      this.mode = "progress";
-      this.reset();
+    progressFilter(){
+      this.requestId++
+      this.pagination.currentPage = 0
     },
-    progress() {
-      this.progressFilter = this.progress;
-      this.reset();
-    }
+
+    'pagination.currentPage'() {
+      if (this.pagination.currentPage === 0) {
+        this.reset();
+      }
+    },
   },
 
   methods: {
-
-    // Split two-way binding
-    changeProgressFilter(newFilter) {
-      this.$router.push(`/progress/${newFilter}`);
-    },
-
     switchSortMode() {
       if(this.sortMode ==='desc') {
         this.sortMode = 'asc'
@@ -165,7 +143,14 @@ export default {
       }
     },
 
-    onLoad(index, done) {
+    removeFavItem(workId){
+      const index = this.works.findIndex(w => w.id === workId)
+      if (index !== -1) {
+        this.works.splice(index, 1)
+      }
+    },
+
+    onLoad (index, done) {
       this.requestWorksQueue()
         .finally(() => {
           done()
@@ -174,8 +159,6 @@ export default {
 
     reset() {
       this.stopLoad = true
-      this.pagination.currentPage = 1
-      this.pagination.pageSize = 12
       this.works = []
 
       this.$nextTick(() => {
@@ -187,28 +170,16 @@ export default {
 
 
     requestWorksQueue () {
+      const currentRequestId = this.requestId
       const params = {
         order: this.sortBy.order,
         sort: this.sortMode,
-        page: this.pagination.currentPage + 1 || 1
+        page: this.pagination.currentPage + 1
       }
-
-      if (this.sortBy.order === 'allage') {
-        params.order = 'nsfw'
-        params.sort = 'asc'
-      }
-
-      if (this.sortBy.order === 'nsfw') {
-        params.order = 'nsfw'
-        params.sort = 'desc'
-      }
-
-      if (this.mode === 'progress') {
-        params.filter = this.progressFilter;
-      }
-
+      params.filter = this.progressFilter;
       return this.$axios.get('/api/review', { params })
-        .then((response) => {                  
+        .then((response) => {
+          if (currentRequestId !== this.requestId) return
           const works = response.data.works
           this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
           this.pagination = response.data.pagination
@@ -228,4 +199,15 @@ export default {
     },
   }
 }
+
 </script>
+<style>
+  .sort-btn {
+    height: 40px;
+      min-height: 40px;
+      width: 40px;
+    
+      border: 1px solid rgba(0, 0, 0, 0.23);
+      box-shadow: none;
+  }
+</style>

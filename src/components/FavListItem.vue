@@ -35,8 +35,8 @@
 
         <div class="row items-center q-gutter-x-xs">
           <q-rating
-            v-if="!hideRating"
-            v-model="rating"
+            v-if="reviewData.rating"
+            v-model="reviewData.rating"
             @input="setRating"
             size="sm"
             color="blue"
@@ -48,18 +48,13 @@
           <span class="col-auto text-grey ">{{metadata.updated_at}}</span>
         </div>
 
-        <q-item-label class="q-pt-sm" v-if="mode === 'review'">
-          <q-card class="my-card col-auto" @click="showReviewDialog = true" v-show="metadata.review_text" >
-            <q-card-section class="q-pa-sm">
-              <pre class="q-ma-none">{{metadata.review_text}}</pre>
-            </q-card-section>
-          </q-card>
+        <q-item-label class="q-mt-auto" v-if="reviewData.reviewText">
+          <pre class="q-ma-none">{{reviewData.reviewText}}</pre>
         </q-item-label>
 
-        <q-item-label class="q-mt-auto" v-if="mode === 'progress'">
+        <q-item-label class="q-mt-auto">
           <q-btn-toggle
-            v-if="mode === 'progress'"
-            v-model="progress"
+            v-model="reviewData.progress"
             @input="setProgress"
             dense
             no-caps
@@ -79,7 +74,7 @@
           </q-item-label>
       </q-item-section>
 
-      <WriteReview v-if="showReviewDialog" @closed="processReview" :workid="workid" :metadata="metadata"></WriteReview>
+      <WriteReview v-if="showReviewDialog" @modifydata="processReview" @closed="closed" :workid="workid" :metadata="reviewData"></WriteReview>
 
   </q-item>
 </template>
@@ -105,19 +100,17 @@ export default {
       metadata: {
         type: Object,
         required: true
-      },
-      mode: {
-        type: String,
-        default: 'review'
       }
   },
 
   data () {
     return {
-      rating: 0,
       showReviewDialog: false,
-      hideRating: false,
-      progress: ''
+      reviewData: {
+        rating: 0,
+        progress: '',
+        reviewText: ''
+      }
     }
   },
 
@@ -142,26 +135,33 @@ export default {
   },
 
   methods: {
-    setMetadata () {
-      if (this.metadata.userRating) {
-        this.rating = this.metadata.userRating;
-      } else {
-        this.hideRating = true;
+    normalizeReview(raw) {
+      return {
+        rating: raw.userRating || 0,
+        progress: raw.progress || '',
+        reviewText: raw.review_text || ''
       }
-      if (!this.rating) {
-        this.hideRating = true;
-      } else {
-        this.hideRating = false;
-      }
-
-      this.progress = this.metadata.progress;
     },
 
-    processReview (modified) {
-      if (modified) {
-        this.calledFromChild = true;
-        this.$emit('reset');
+    setMetadata() {
+      this.reviewData = this.normalizeReview(this.metadata)
+    },
+
+    processReview (payload) {
+      if(payload.deleted || this.reviewData.progress != payload.progress){
+        this.$emit('deleteItem', payload.work_id);
       }
+      else{
+        this.reviewData = {
+          rating: payload.rating,
+          progress: payload.progress,
+          reviewText: payload.reviewText
+        }
+      }
+      this.closed()
+    },
+
+    closed() {
       this.showReviewDialog = false;
     },
 
@@ -185,7 +185,9 @@ export default {
         .then((response) => {
           this.showSuccNotif(response.data.message)
         })
-        .then(()=> this.$emit('reset'))
+        .then(()=> {
+          this.reviewData.rating = payload.rating
+        })
         .catch((error) => {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
@@ -214,7 +216,7 @@ export default {
         .then((response) => {
           this.showSuccNotif(response.data.message)
         })
-        .then(()=> this.$emit('reset'))
+        .then(()=> {this.$emit('deleteItem', payload.work_id)})
         .catch((error) => {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
