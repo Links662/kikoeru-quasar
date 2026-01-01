@@ -127,11 +127,9 @@ export default {
     onPause() {
       if (this.isLocked)
       {
-        console.log('wait Pause')
         return
       }
       this.isLocked = true;
-      console.log('onPause')
       this.playLrc(false)
       this.PAUSE()
 
@@ -148,13 +146,11 @@ export default {
     onPlaying() {
       if (this.isLocked)
       {
-        console.log('wait Playing')
         this.player.pause()
         return
       }
 
       this.isLocked = true;
-      console.log('onPlaying')
       this.playLrc(true)
       this.PLAY()
       setTimeout(() => {
@@ -165,7 +161,6 @@ export default {
      * 当播放器缓冲区空，被迫暂停加载时会触发本事件
      */
     onWaiting() {
-      // console.log('waiting')
       this.playLrc(false)
       this.PLAY()
     },
@@ -224,7 +219,6 @@ export default {
     },
 
     onEnded () {
-      console.log("onEnded")
       this.dontResume = true
       // 当前文件播放结束时触发
       switch (this.playMode.name) {
@@ -340,8 +334,6 @@ export default {
       }
 
       this.$axios.put('/api/history', payload)
-
-      console.log(fileName, fileIndex)
     },
 
     resumePlayHistory() {
@@ -362,7 +354,6 @@ export default {
         }
       })
       .then((response) => {
-        console.log(response)
         if (response.data.length < 1) {
           return
         }
@@ -374,10 +365,6 @@ export default {
         if (totalTime <= continueTime) return
 
         this.player.currentTime = parseInt(continueTime);
-
-        console.log('set current time to', continueTime)
-        console.log('current time is ', this.player.currentTime)
-        console.log(this.player)
 
         function formatSeconds (seconds) {
           let h = Math.floor(seconds / 3600) < 10
@@ -414,7 +401,6 @@ export default {
     if (this.source) {
       this.loadLrcFile();
     }
-    console.log(this.player)
   }
 }
 </script>

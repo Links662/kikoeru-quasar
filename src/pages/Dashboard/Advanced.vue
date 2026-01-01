@@ -293,28 +293,23 @@
             />
           </q-item-section>
         </q-item>
-      </q-list>
-    </q-card>
-
-    <!-- <q-card class="q-ma-md">
-      <q-toolbar>
-        <q-toolbar-title>安全设置</q-toolbar-title>
-      </q-toolbar>
-
-      <q-list>
-        <q-item style="height: 70px;">
+        <q-item>
           <q-item-section>
-            <q-item-label>生产环境</q-item-label>
-            <q-item-label caption>此设置无法在网页端修改，详情请查阅GitHub Wiki中关于配置文件的说明</q-item-label>
+            <q-item-label>历史记录显示数量</q-item-label>
+            <q-item-label caption>默认 20</q-item-label>
           </q-item-section>
 
           <q-item-section avatar>
-            <q-toggle v-model="config.production" dense disable />
+            <q-input
+              v-model.number="config.recentCount"
+              type="number"
+              input-class="text-right"
+              style="max-width: 100px;"
+            />
           </q-item-section>
         </q-item>
       </q-list>
-    </q-card> -->
-
+    </q-card>
     <q-card class="q-ma-md">
       <q-toolbar>
         <q-toolbar-title>其它设置</q-toolbar-title>

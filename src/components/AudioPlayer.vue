@@ -397,8 +397,6 @@ export default {
       let artist = ""
       let album = this.currentPlayingFile.workTitle
       let artwork = coverUrl
-      console.log(this.$store)
-      console.log("new media metadata: ", title, artist, album, artwork)
       navigator.mediaSession.metadata = new window.MediaMetadata(
         {
           title: title,
@@ -416,7 +414,6 @@ export default {
       navigator.mediaSession.setActionHandler('play', this.togglePlaying);
       navigator.mediaSession.setActionHandler('pause', this.togglePlaying);
       navigator.mediaSession.setActionHandler('stop', this.togglePlaying);
-      // navigator.mediaSession.setActionHandler('seekto', function() {console.log(this.seekTime)});
       navigator.mediaSession.setActionHandler('previoustrack', this.previousTrack);
       navigator.mediaSession.setActionHandler('nexttrack', this.nextTrack);
       // iOS 可能不支持的操作
