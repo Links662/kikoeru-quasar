@@ -312,15 +312,13 @@ export default {
     requestRandomWork () {
       const params = {
         order: 'betterRandom',
-        filter: 'marked',
-        page : 0,        
       }
-      this.$axios.get('/api/review', { params })
+      this.$axios.get('/api/works', { params })
         .then((response) => {
           const works = response.data.works
           this.randId = works.length ? works[0].id : null;
           if(works.length === 0){
-            this.showErrNotif("想听列表中无作品，请增加后再使用此功能")
+            this.showErrNotif("列表中无作品，请增加后再使用此功能")
           }
         })
         .catch((error) => {

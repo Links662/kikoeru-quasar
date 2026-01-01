@@ -174,13 +174,10 @@ export default {
     reset () {
       // Freeze the scroller first
       this.stopLoad = true
-      this.pagination = { currentPage:0, pageSize:12, totalCount:0 }
+      this.pagination = { currentPage:0, pageSize:12, hasMore:false }
       // Manually fetch first page content before enable scroller
       // Note: the internal API of the infinite scroller does not work well
       this.requestWorksQueue()
-        .then(() => {
-          this.stopLoad = false
-        })
     },
 
     requestWorksQueue () {
@@ -209,10 +206,7 @@ export default {
           const works = response.data.works
           this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
           this.pagination = response.data.pagination
-
-          if (this.works.length >= this.pagination.totalCount) {
-            this.stopLoad = true
-          }
+          this.stopLoad = !this.pagination.hasMore
         })
         .catch((error) => {
           if (error.response) {
