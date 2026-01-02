@@ -39,20 +39,34 @@ import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'Favourites',
-
   mixins: [NotifyMixin],
-
   components: {
     FavListItem
   },
 
   computed: {
     direction () {
-      return this.sortMode === 'desc'
+      return this.sortBy.sort === 'desc'
     },
   },
 
   data() {
+    const storedSort = localStorage.getItem("sortByFavourites");
+    let sortOption = null;
+    if (storedSort) {
+      try {
+        sortOption = JSON.parse(storedSort);
+      } catch {
+        localStorage.removeItem('sortByFavourites');
+      }
+    }
+    else {
+      sortOption = {
+        label: '标记时间',
+        order: 'updated_at',
+        sort: 'desc'
+      }
+    }
     return {
       progressFilter: 'marked',
       progressOptions: [
@@ -66,31 +80,27 @@ export default {
       stopLoad: false,
       requestId: 0,
       pagination: { currentPage:0, pageSize:12, totalCount:0 },
-      sortMode: 'desc',
-      sortBy: {
-          label: '标记时间',
-          order: 'updated_at'
-        },
+      sortBy: sortOption,
       sortOptions: [
         {
           label: '标记时间',
-          order: 'updated_at'
+          order: 'updated_at',
+          sort: 'desc'
         },
         {
-          label: '评价',
-          order: 'userRating'
+          label: '评价排序',
+          order: 'userRating',
+          sort: 'desc'
         },
         {
           label: '发布时间',
-          order: 'release'
+          order: 'release',
+          sort: 'desc'
         },
         {
-          label: '评论数量',
-          order: 'review_count'
-        },
-        {
-          label: '售出数量',
-          order: 'dl_count'
+          label: '销量排序',
+          order: 'dl_count',
+          sort: 'desc'
         }
       ]
     }
@@ -100,24 +110,11 @@ export default {
   },
 
   mounted() {
-    if (localStorage.sortByFavourites) {
-      try {
-        this.sortBy = JSON.parse(localStorage.sortByFavourites);
-      } catch {
-        localStorage.removeItem('sortByFavourites');
-      }
-    }
   },
 
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
-      this.requestId++
-      this.pagination.currentPage = 0
-
-    },
-
-    sortMode() {
       this.requestId++
       this.pagination.currentPage = 0
     },
@@ -136,10 +133,9 @@ export default {
 
   methods: {
     switchSortMode() {
-      if(this.sortMode ==='desc') {
-        this.sortMode = 'asc'
-      } else {
-        this.sortMode = 'desc'
+      this.sortBy = {
+        ...this.sortBy,
+        sort: this.sortBy.sort === 'desc' ? 'asc' : 'desc'
       }
     },
 
@@ -173,7 +169,7 @@ export default {
       const currentRequestId = this.requestId
       const params = {
         order: this.sortBy.order,
-        sort: this.sortMode,
+        sort: this.sortBy.sort,
         page: this.pagination.currentPage + 1
       }
       params.filter = this.progressFilter;

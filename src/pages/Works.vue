@@ -75,6 +75,22 @@ export default {
   },
 
   data () {
+    const storedSort = localStorage.getItem("sortOption");
+    let sortOption = null;
+    if (storedSort) {
+      try {
+        sortOption = JSON.parse(storedSort);
+      } catch {
+        localStorage.removeItem('sortOption');
+      }
+    }
+    else {
+      sortOption = {
+        label: '加入时间',
+        order: 'insert_time',
+        sort: 'desc'
+      }
+    }
     return {
       listMode: 'detail',
       showLabel: true,
@@ -88,11 +104,7 @@ export default {
         pageSize: 12 // 每页数量
       },
       seed: 7, // random sort
-      sortOption: {
-        label: '加入时间',
-        order: 'insert_time',
-        sort: 'desc'
-      },
+      sortOption: sortOption,
       options: [
         {
           label: '加入时间',
@@ -135,13 +147,6 @@ export default {
 
   mounted() {
     this.pagination.currentPage = 1;
-    if (localStorage.getItem("sortOption") != null) {
-      try {
-        this.sortOption = JSON.parse(localStorage.sortOption)
-      } catch {
-        localStorage.removeItem('sortOption');
-      }
-    }
     if (localStorage.getItem("showLabel") != null) {
       this.showLabel = (localStorage.showLabel === 'true');
     }
@@ -209,15 +214,10 @@ export default {
 
   methods: {
     switchSortMode() {
-      if (this.sortOption.sort === 'desc') {
-        this.sortOption.sort = 'asc'
-      } else {
-        this.sortOption.sort = 'desc'
-      }
       this.sortOption = {
-        ...JSON.parse(localStorage.sortOption),
-        sort: this.sortOption.sort
-      };
+        ...this.sortOption,
+        sort: this.sortOption.sort === 'desc' ? 'asc' : 'desc'
+      }
     },
     requestWorksQueue() {
       const params = {

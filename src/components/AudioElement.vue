@@ -358,8 +358,8 @@ export default {
           return
         }
 
-        let continueTime = response.data[0].play_time
-        let totalTime = response.data[0].total_time
+        let continueTime = response.data.play_time
+        let totalTime = response.data.total_time
 
         if (continueTime == 0) return
         if (totalTime <= continueTime) return
