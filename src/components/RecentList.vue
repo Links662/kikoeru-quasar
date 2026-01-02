@@ -1,24 +1,15 @@
 <template>
   <div>
     <!-- 标题 -->
-    <div class="text-h5 text-weight-regular q-ma-md">
+    <div class="text-h5 text-weight-regular q-mx-md q-mt-md">
       {{ pageTitle }}
     </div>
 
     <div class="row justify-center q-mx-md">
-      <!-- 横向滚动容器 -->
-      <div
-        class="col"
-        style="overflow-x: auto; padding: 15px;"
-        @wheel.prevent="onHorizontalWheel"
-      >
-        <div class="row q-col-gutter-x-md q-col-gutter-y-lg no-wrap">
-          <div
-            class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4"
-            v-for="recentwork in recentworks"
-            :key="recentwork.id"
-            style="flex: 0 0 auto"
-          >
+      <div class="col q-pa-md" style="overflow-x: auto;" @wheel.prevent="onHorizontalWheel">
+        <div class="row q-col-gutter-x-md no-wrap">
+          <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
+            :key="recentwork.id">
             <RecentCard :metadata="recentwork" />
           </div>
         </div>

@@ -202,12 +202,12 @@ export default {
 
 </script>
 <style>
-  .sort-btn {
-    height: 40px;
-      min-height: 40px;
-      width: 40px;
-    
-      border: 1px solid rgba(0, 0, 0, 0.23);
-      box-shadow: none;
-  }
+.sort-btn {
+  height: 40px;
+  min-height: 40px;
+  width: 40px;
+
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  box-shadow: none;
+}
 </style>
