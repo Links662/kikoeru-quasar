@@ -1,14 +1,8 @@
 <template>
   <div>
+    <!-- 标题 -->
     <div class="text-h5 text-weight-regular q-ma-md">
       {{ pageTitle }}
-      <q-btn
-        color="red"
-        size="xs"
-        label="清除"
-        class="q-ml-sm"
-        @click="onClickClearButton"
-      />
     </div>
 
     <div class="row justify-center q-mx-md">
@@ -82,27 +76,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .list {
-    // 宽度 >= $breakpoint-sm-min
-    @media (min-width: $breakpoint-sm-min) {
-      padding: 0px 20px;
-    }
-  }
 
-  .work-card {
-    // 宽度 > $breakpoint-xl-min
-    @media (min-width: $breakpoint-md-min) {
-      width: 560px;
-    }
-  }
-
-  .btn-right {
-    float: right;
-    font-size:32px;
-    position: relative;
-    top: -75px;
-    background: rgba(71, 71, 71, 0.548);
-    cursor: hand;
-    z-index: 1000;
-  }
 </style>

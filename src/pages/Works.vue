@@ -3,12 +3,12 @@
     <RecentList />
 
     <div class="text-h5 text-weight-regular q-ma-md">
-      {{pageTitle}}
+      {{ pageTitle }}
       <span v-show="pagination.totalCount">
-        ({{pagination.totalCount}})
+        ({{ pagination.totalCount }})
       </span>
     </div>
-    <div style="padding: 0 20px;" class="col justify-center">
+    <div class="col justify-center q-ma-md">
       <div v-show="works.length" class="row justify-between q-mb-md q-mr-sm">
         <!-- 排序选择框 -->
         <q-select dense rounded outlined bg-color="white" transition-show="scale" transition-hide="scale"
@@ -17,34 +17,33 @@
         <!-- 切换显示模式按钮 -->
         <q-btn-toggle dense spread rounded v-model="listMode" toggle-color="primary" color="white" text-color="primary"
           :options="[
-              { icon: 'apps', value: 'detail' },
-              { icon: 'list', value: 'list' }
-            ]" style="width: 85px;" class="col-auto" />
+            { icon: 'apps', value: 'detail' },
+            { icon: 'list', value: 'list' }
+          ]" style="width: 85px;" class="col-auto" />
 
         <q-btn-toggle dense spread rounded v-model="showLabel" toggle-color="primary" color="white" text-color="primary"
           :options="[
-              { icon: 'label', value: true },
-              { icon: 'label_off', value: false }
-            ]" style="width: 85px;" class="col-auto" v-if="listMode == 'list'" />
+            { icon: 'label', value: true },
+            { icon: 'label_off', value: false }
+          ]" style="width: 85px;" class="col-auto" v-if="listMode == 'list'" />
 
         <q-btn-toggle dense spread rounded v-model="detailMode" toggle-color="primary" color="white"
           text-color="primary" :options="[
-              { icon: 'zoom_in', value: true },
-              { icon: 'zoom_out', value: false },
-            ]" style="width: 85px;" class="col-auto" v-if="listMode !== 'list'" />
+            { icon: 'zoom_in', value: true },
+            { icon: 'zoom_out', value: false },
+          ]" style="width: 85px;" class="col-auto" v-if="listMode !== 'list'" />
 
       </div>
 
       <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
-        <WorkListItem v-for="work in works" :key="work.id" :metadata="work"
-          :showLabel="showLabel && $q.screen.width > 700" />
+        <WorkListItem v-for="work in works" :key="work.id" :metadata="work" :showLabel="showLabel" />
       </q-list>
 
       <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-lg">
         <div class="col-sm-6 col-lg-3 col-xl-2" :class="detailMode ? 'col-xs-12 col-md-4' : 'col-xs-6 col-md-3'"
           v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit" />
-       </div>
+        </div>
       </div>
       <!-- 分页控件 -->
       <div class="row justify-center q-my-md">
