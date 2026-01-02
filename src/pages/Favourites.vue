@@ -62,6 +62,7 @@ export default {
       progressFilter: 'marked',
       works: [],
       stopLoad: false,
+      requestId: 0,
       pagination: { currentPage:0, pageSize:12, totalCount:0 },
       sortMode: 'desc',
       sortBy: {
@@ -109,14 +110,18 @@ export default {
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
+      this.requestId++
       this.pagination.currentPage = 0
+
     },
 
     sortMode() {
+      this.requestId++
       this.pagination.currentPage = 0
     },
 
     progressFilter(){
+      this.requestId++
       this.pagination.currentPage = 0
     },
 
@@ -163,14 +168,16 @@ export default {
 
 
     requestWorksQueue () {
+      const currentRequestId = this.requestId
       const params = {
         order: this.sortBy.order,
         sort: this.sortMode,
-        page: this.pagination.currentPage + 1 || 1
+        page: this.pagination.currentPage + 1
       }
       params.filter = this.progressFilter;
       return this.$axios.get('/api/review', { params })
-        .then((response) => {                  
+        .then((response) => {
+          if (currentRequestId !== this.requestId) return
           const works = response.data.works
           this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
           this.pagination = response.data.pagination
