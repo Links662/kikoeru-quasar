@@ -32,7 +32,7 @@
         </div>
       </q-item-label>
 
-      <q-item-label v-if="showLabel && $q.screen.width> 700">
+      <q-item-label v-if="showLabel">
         <div class="row q-gutter-x-sm q-gutter-y-xs">
           <router-link
             v-for="(tag, index) in metadata.tags"

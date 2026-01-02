@@ -1,30 +1,15 @@
 <template>
   <div>
-    <div class="text-h5 text-weight-regular q-ma-md">
+    <!-- 标题 -->
+    <div class="text-h5 text-weight-regular q-mx-md q-mt-md">
       {{ pageTitle }}
-      <q-btn
-        color="red"
-        size="xs"
-        label="清除"
-        class="q-ml-sm"
-        @click="onClickClearButton"
-      />
     </div>
 
     <div class="row justify-center q-mx-md">
-      <!-- 横向滚动容器 -->
-      <div
-        class="col"
-        style="overflow-x: auto; padding: 15px;"
-        @wheel.prevent="onHorizontalWheel"
-      >
-        <div class="row q-col-gutter-x-md q-col-gutter-y-lg no-wrap">
-          <div
-            class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4"
-            v-for="recentwork in recentworks"
-            :key="recentwork.id"
-            style="flex: 0 0 auto"
-          >
+      <div class="col q-pa-md" style="overflow-x: auto;" @wheel.prevent="onHorizontalWheel">
+        <div class="row q-col-gutter-x-md no-wrap">
+          <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
+            :key="recentwork.id">
             <RecentCard :metadata="recentwork" />
           </div>
         </div>
@@ -82,27 +67,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .list {
-    // 宽度 >= $breakpoint-sm-min
-    @media (min-width: $breakpoint-sm-min) {
-      padding: 0px 20px;
-    }
-  }
 
-  .work-card {
-    // 宽度 > $breakpoint-xl-min
-    @media (min-width: $breakpoint-md-min) {
-      width: 560px;
-    }
-  }
-
-  .btn-right {
-    float: right;
-    font-size:32px;
-    position: relative;
-    top: -75px;
-    background: rgba(71, 71, 71, 0.548);
-    cursor: hand;
-    z-index: 1000;
-  }
 </style>
