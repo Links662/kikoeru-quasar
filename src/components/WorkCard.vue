@@ -113,7 +113,6 @@
 </template>
 
 <script>
-// import WorkDetails from 'components/WorkDetails'
 import CoverSFW from 'components/CoverSFW'
 import NotifyMixin from '../mixins/Notification.js'
 

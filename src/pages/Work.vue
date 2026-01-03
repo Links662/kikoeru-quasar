@@ -1,14 +1,12 @@
 <template>
   <div>
     <WorkDetails :metadata="metadata" @reset="requestData()" />
-    <!-- <WorkQueue :queue="tracks" :editable="false" /> -->
     <WorkTree :tree="tree" :editable="false" />
   </div>
 </template>
 
 <script>
 import WorkDetails from 'components/WorkDetails'
-// import WorkQueue from 'components/WorkQueue'
 import WorkTree from 'components/WorkTree'
 import NotifyMixin from '../mixins/Notification.js'
 
@@ -19,7 +17,6 @@ export default {
 
   components: {
     WorkDetails,
-    // WorkQueue,
     WorkTree
   },
 

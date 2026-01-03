@@ -35,7 +35,6 @@
 </template>
 
 <script>
-// import WorkDetails from 'components/WorkDetails'
 import NotifyMixin from '../mixins/Notification.js'
 
 export default {
