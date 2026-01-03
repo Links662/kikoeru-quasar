@@ -1,12 +1,12 @@
 <template>
   <div>
     <!-- 标题 -->
-    <div class="text-h5 text-weight-regular q-mx-md q-mt-md">
+    <div class="text-h5 text-weight-regular">
       {{ pageTitle }}
     </div>
 
-    <div class="row justify-center q-mx-md">
-      <div class="col q-pa-md" style="overflow-x: auto;" @wheel.prevent="onHorizontalWheel">
+    <div class="justify-center">
+      <div class="q-pa-md" style="overflow-x: auto;" @wheel.prevent="onHorizontalWheel">
         <div class="row q-col-gutter-x-md no-wrap">
           <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
             :key="recentwork.id">
@@ -30,7 +30,7 @@ export default {
   data () {
     return {
       recentworks: [],
-      pageTitle: '最近播放'
+      pageTitle: 'RecentList'
     }
   },
 
