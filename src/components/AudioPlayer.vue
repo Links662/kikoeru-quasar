@@ -167,12 +167,8 @@ export default {
   },
 
   mounted() {
-    if (this.$q.localStorage.has('hideSeekButton')) {
-      this.hideSeekButton = this.$q.localStorage.getItem('hideSeekButton')
-    }
-    if (this.$q.localStorage.has('swapSeekButton')) {
-      this.swapSeekButton = this.$q.localStorage.getItem('swapSeekButton')
-    }
+    this.hideSeekButton = this.$q.localStorage.getItem('hideSeekButton') === 'true'
+    this.swapSeekButton = this.$q.localStorage.getItem('swapSeekButton') === 'true'
   },
 
   watch: {
@@ -232,15 +228,12 @@ export default {
         return this.$store.state.AudioPlayer.volume
       },
       set(val) {
-        this.SET_VOLUME(val)
+        this.setVolume(val)
       }
     },
 
-    queue: {
-      get() {
-        return this.$store.state.AudioPlayer.queue
-      },
-      set() { }
+    queue() {
+      return this.$store.state.AudioPlayer.queue
     },
 
     playModeIcon() {
@@ -314,15 +307,13 @@ export default {
       previousTrack: 'PREVIOUS_TRACK',
       changePlayMode: 'CHANGE_PLAY_MODE',
       rewind: 'SET_REWIND_SEEK_MODE',
-      forward: 'SET_FORWARD_SEEK_MODE'
+      forward: 'SET_FORWARD_SEEK_MODE',
+      setTrack: 'SET_TRACK',
+      setQueue: 'SET_QUEUE',
+      removeFromQueue: 'REMOVE_FROM_QUEUE',
+      emptyQueue: 'EMPTY_QUEUE',
+      setVolume: 'SET_VOLUME',
     }),
-    ...mapMutations('AudioPlayer', [
-      'SET_TRACK',
-      'SET_QUEUE',
-      'REMOVE_FROM_QUEUE',
-      'EMPTY_QUEUE',
-      'SET_VOLUME'
-    ]),
 
     formatSeconds(seconds) {
       let h = Math.floor(seconds / 3600) < 10
@@ -350,7 +341,7 @@ export default {
 
     onClickTrack(index) {
       if (!this.editCurrentPlayList) {
-        this.SET_TRACK(index)
+        this.setTrack(index)
         this.showCurrentPlayList = false
       }
     },
@@ -367,21 +358,12 @@ export default {
         index = this.queueIndex
       }
 
-      this.SET_QUEUE({
+      this.setQueue({
         queue: this.queueCopy.concat(),
         index: index,
         resetPlaying: false
       })
     },
-
-    removeFromQueue(index) {
-      this.REMOVE_FROM_QUEUE(index)
-    },
-
-    emptyQueue() {
-      this.EMPTY_QUEUE()
-    },
-
     openWorkDetail() {
       if (this.workDetailUrl && this.$route.path !== this.workDetailUrl) {
         this.$router.push(this.workDetailUrl)
