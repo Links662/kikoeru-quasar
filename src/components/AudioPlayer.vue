@@ -313,7 +313,6 @@ export default {
       nextTrack: 'NEXT_TRACK',
       previousTrack: 'PREVIOUS_TRACK',
       changePlayMode: 'CHANGE_PLAY_MODE',
-      setVolume: 'SET_VOLUME',
       rewind: 'SET_REWIND_SEEK_MODE',
       forward: 'SET_FORWARD_SEEK_MODE'
     }),
@@ -391,38 +390,51 @@ export default {
         this.toggleHide()
       }
     },
-
     setMediaSession(coverUrl) {
-      let title = this.currentPlayingFile.title
-      let artist = ""
-      let album = this.currentPlayingFile.workTitle
-      let artwork = coverUrl
-      navigator.mediaSession.metadata = new window.MediaMetadata(
-        {
-          title: title,
-          artist: artist,
-          album: album,
-          artwork: [
-            {
-              src: artwork,
-              sizes: "128x128",
-              type: "image/jpeg"
-            }
-          ]
+      if (!('mediaSession' in navigator)) return
+
+      const file = this.currentPlayingFile
+      if (!file || !file.hash) return
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: file.title || '',
+        album: file.workTitle || '',
+        artwork: [
+          {
+            src: coverUrl,
+            sizes: '128x128',
+            type: 'image/jpeg'
+          }
+        ]
+      })
+
+      const ms = navigator.mediaSession
+
+      ms.setActionHandler('play', () => {
+        if (!this.playing) {
+          this.togglePlaying()
         }
-      );
-      navigator.mediaSession.setActionHandler('play', this.togglePlaying);
-      navigator.mediaSession.setActionHandler('pause', this.togglePlaying);
-      navigator.mediaSession.setActionHandler('stop', this.togglePlaying);
-      navigator.mediaSession.setActionHandler('previoustrack', this.previousTrack);
-      navigator.mediaSession.setActionHandler('nexttrack', this.nextTrack);
-      // iOS 可能不支持的操作
-      try {
-        navigator.mediaSession.setActionHandler('seekbackward', () => this.rewind());
-        navigator.mediaSession.setActionHandler('seekforward', () => this.forward());
-      } catch (e) {
-        console.log('iOS 不支持 seekbackward/seekforward');
-      }
+      })
+
+      ms.setActionHandler('pause', () => {
+        if (this.playing) {
+          this.togglePlaying()
+        }
+      })
+
+      //播放列表语义（关键）
+      ms.setActionHandler('nexttrack', () => {
+        this.nextTrack()
+      })
+
+      ms.setActionHandler('previoustrack', () => {
+        this.previousTrack()
+      })
+
+      //明确禁用播客行为
+      ms.setActionHandler('seekforward', null)
+      ms.setActionHandler('seekbackward', null)
+      ms.setActionHandler('stop', null)
     }
   }
 }
