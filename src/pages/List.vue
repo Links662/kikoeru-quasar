@@ -1,22 +1,22 @@
 <template>
-  <div>
-    <div class="text-h5 text-weight-regular q-ma-md">
-      All {{restrict}}s
+  <div class="q-ma-md">
+    <div class="text-h5 text-weight-regular q-mb-sm">
+      All {{ restrict }}
     </div>
 
-    <div class="row justify-center q-pb-xl q-pt-none">
-      <div class="col-11">
-        <q-input dense rounded outlined v-model="keyword" :placeholder="`Search for a ${restrict}...`" class="q-mb-md">
+    <div class="row justify-center">
+      <div class="col-12 q-mb-sm">
+        <q-input dense rounded outlined v-model="keyword" :placeholder="`Search for a ${restrict}...`">
           <template v-slot:append>
             <q-icon v-if="keyword === ''" name="search" />
             <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
           </template>
         </q-input>
-
+      </div>
+      <div class="col-12">
         <div class="row justify-center q-gutter-sm">
-          <div class="col-auto" v-for="item in (keyword ? filteredItems : items)" :key="item.id">
-            <q-btn no-caps rounded color="primary" :label="`${item.name} (${item.count})`" :to="`/works?${queryField}=${item.id}`" />
-          </div>
+          <q-btn v-for="item in (keyword ? filteredItems : items)" :key="item.id" no-caps rounded color="primary"
+            :label="`${item.name} (${item.count})`" :to="`/works?${queryField}=${item.id}`" />
         </div>
       </div>
     </div>

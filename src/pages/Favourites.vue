@@ -1,6 +1,9 @@
 <template>
-  <q-page padding>
-    <div class="fit row wrap justify-between items-center q-px-sm">
+  <q-page class="q-mx-md q-mt-md">
+    <div class="text-h5 text-weight-regular q-mb-sm">
+      {{ pageTitle }}
+    </div>
+    <div class="row wrap justify-between items-center q-mb-sm">
       <div class="col-auto gt-xs">
         <q-btn-toggle v-model="progressFilter" toggle-color="primary" color="white" text-color="black" rounded
           :options="progressOptions" />
@@ -9,14 +12,14 @@
         <q-select dense rounded outlined behavior="menu" v-model="progressFilter" :options="progressOptions"
           option-label="label" option-value="value" emit-value map-options label="进度筛选" bg-color="white" />
       </div>
-      <div class="col-auto row items-start q-ml-sm">
+      <div class="col-auto row items-center q-ml-sm">
         <q-select dense rounded outlined behavior="menu" v-model="sortBy" :options="sortOptions" bg-color="white"
           class="q-mx-sm" />
         <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
           :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
       </div>
     </div>
-    <div class="q-px-sm q-py-sm">
+    <div>
       <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
         <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
         <q-list bordered separator class="shadow-2" v-if="works.length">
@@ -68,6 +71,7 @@ export default {
       }
     }
     return {
+      pageTitle: 'Progress',
       progressFilter: 'marked',
       progressOptions: [
         { label: '想听', value: 'marked' },

@@ -1,41 +1,50 @@
 <template>
-  <div>
+  <div class="q-mx-md q-mt-md">
     <RecentList />
 
-    <div class="text-h5 text-weight-regular q-mx-md q-my-sm">
+    <div class="text-h5 text-weight-regular q-my-sm">
       {{ pageTitle }}
       <span v-show="pagination.totalCount">
         ({{ pagination.totalCount }})
       </span>
     </div>
-    <div class="col justify-center q-mx-md q-my-sm">
-      <div v-show="works.length" class="row justify-between q-mb-sm">
+    <div class="q-my-sm">
+      <div v-if="works.length" class="row justify-between q-mb-sm">
         <!-- 排序选择框 -->
-        <div class="col-auto row">
-        <q-select dense rounded outlined behavior="menu" bg-color="white" transition-show="scale" transition-hide="scale"
-          v-model="sortOption" :options="options" label="排序" class="q-mr-sm"/>
-        <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
-          :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
+        <div class="row">
+          <q-select dense rounded outlined behavior="menu" bg-color="white" transition-show="scale"
+            transition-hide="scale" v-model="sortOption" :options="options" label="排序" class="q-mr-sm" />
+          <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
+            :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
         </div>
-        <!-- 切换显示模式按钮 -->
-        <q-btn-toggle dense spread rounded v-model="listMode" toggle-color="primary" color="white" text-color="primary"
-          :options="[
-            { icon: 'apps', value: 'detail' },
-            { icon: 'list', value: 'list' }
-          ]" style="width: 85px;" class="col-auto" />
+        <div class="row items-center q-gutter-x-sm">
+          <!-- 切换显示模式 -->
+          <div class="col-auto" style="width: 85px">
+            <q-btn-toggle dense rounded spread v-model="listMode" toggle-color="primary" color="white"
+              text-color="primary" :options="[
+                { icon: 'apps', value: 'detail' },
+                { icon: 'list', value: 'list' }
+              ]" />
+          </div>
 
-        <q-btn-toggle dense spread rounded v-model="showLabel" toggle-color="primary" color="white" text-color="primary"
-          :options="[
-            { icon: 'label', value: true },
-            { icon: 'label_off', value: false }
-          ]" style="width: 85px;" class="col-auto" v-if="listMode == 'list'" />
+          <!-- 列表模式：标签开关 -->
+          <div class="col-auto" style="width: 85px" v-if="listMode === 'list'">
+            <q-btn-toggle dense rounded spread v-model="showLabel" toggle-color="primary" color="white"
+              text-color="primary" :options="[
+                { icon: 'label', value: true },
+                { icon: 'label_off', value: false }
+              ]" />
+          </div>
 
-        <q-btn-toggle dense spread rounded v-model="detailMode" toggle-color="primary" color="white"
-          text-color="primary" :options="[
-            { icon: 'zoom_in', value: true },
-            { icon: 'zoom_out', value: false },
-          ]" style="width: 85px;" class="col-auto" v-if="listMode !== 'list'" />
-
+          <!-- 详情模式：缩放开关 -->
+          <div class="col-auto" style="width: 85px" v-if="listMode !== 'list'">
+            <q-btn-toggle dense rounded spread v-model="detailMode" toggle-color="primary" color="white"
+              text-color="primary" :options="[
+                { icon: 'zoom_in', value: true },
+                { icon: 'zoom_out', value: false }
+              ]" />
+          </div>
+        </div>
       </div>
 
       <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
@@ -43,9 +52,13 @@
       </q-list>
 
       <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-md">
-        <div class="col-sm-6 col-lg-3 col-xl-2" :class="detailMode ? 'col-xs-12 col-md-4' : 'col-xs-6 col-md-3'"
-          v-for="work in works" :key="work.id">
-          <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit" />
+        <div :class="[
+          'col',
+          detailMode
+            ? 'col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2'
+            : 'col-xs-6 col-sm-4 col-md-3 col-lg-2 col-xl-2'
+        ]" v-for="work in works" :key="work.id">
+          <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
         </div>
       </div>
       <!-- 分页控件 -->
@@ -280,13 +293,13 @@ export default {
 
             switch (restrict) {
               case 'tags':
-                pageTitle = 'Works tagged with '
+                pageTitle = 'Works of tag: '
                 break
               case 'vas':
-                pageTitle = 'Works voiced by '
+                pageTitle = 'Works of vas: '
                 break
               case 'circles':
-                pageTitle = 'Works by '
+                pageTitle = 'Works of circles: '
                 break
             }
             pageTitle += name || ''
