@@ -30,7 +30,7 @@ export default {
   data () {
     return {
       recentworks: [],
-      pageTitle: 'RecentList'
+      pageTitle: 'Recent Track'
     }
   },
 

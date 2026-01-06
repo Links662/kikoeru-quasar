@@ -195,11 +195,9 @@ export default {
       this.$q.localStorage.set('swapSeekButton', option)
     },
 
-    currentPlayingFile: {
-      deep: true,
-      handler(newFile) {
-        // 更新UI
-        this.setMediaSession(newFile)
+    duration(newVal) {
+      if (newVal > 0) {
+        this.setMediaSession()
       }
     },
   },
@@ -362,9 +360,10 @@ export default {
         this.toggleHide()
       }
     },
-    setMediaSession(file) {
+    setMediaSession() {
       if (!('mediaSession' in navigator)) return
 
+      const file = this.currentPlayingFile
       if (!file || !file.hash) return
 
       navigator.mediaSession.metadata = new MediaMetadata({
