@@ -1,16 +1,8 @@
 <template>
-  <vue-plyr
-    ref="plyr"
+  <vue-plyr ref="plyr"
     :emit="['loadedmetadata', 'canplay', 'timeupdate', 'ended', 'seeked', 'playing', 'waiting', 'pause']"
-    @loadedmetadata="resumePlayHistory()"
-    @canplay="onCanplay()"
-    @timeupdate="onTimeupdate()"
-    @ended="onEnded()"
-    @seeked="onSeeked()"
-    @playing="onPlaying()"
-    @waiting="onWaiting()"
-    @pause="onPause()"
-  >
+    @loadedmetadata="resumePlayHistory()" @canplay="onCanplay()" @timeupdate="onTimeupdate()" @ended="onEnded()"
+    @seeked="onSeeked()" @playing="onPlaying()" @waiting="onWaiting()" @pause="onPause()">
     <audio crossorigin="anonymous" >
       <source v-if="source" :src="source" />
     </audio>
@@ -24,7 +16,6 @@ import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'AudioElement',
-
   mixins: [NotifyMixin],
 
   data() {
@@ -40,18 +31,9 @@ export default {
       return this.$refs.plyr.player
     },
 
-    source () {
-      // 从 LocalStorage 中读取 token
+    source() {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      // New API
-      if (this.currentPlayingFile.mediaStreamUrl) {
-        return `${this.currentPlayingFile.mediaStreamUrl}?token=${token}`
-      } else if (this.currentPlayingFile.hash) {
-        // Fallback to be compatible with old backend
-        return `/api/media/stream/${this.currentPlayingFile.hash}?token=${token}`
-      } else {
-        return ""
-      }
+      return this.currentPlayingFile.mediaStreamUrl ? `${this.currentPlayingFile.mediaStreamUrl}?token=${token}` : "";
     },
 
     ...mapState('AudioPlayer', [
@@ -149,7 +131,6 @@ export default {
         this.player.pause()
         return
       }
-
       this.isLocked = true;
       this.playLrc(true)
       this.PLAY()
@@ -256,14 +237,7 @@ export default {
     },
 
     onSeeked() {
-      // if (this.lrcAvailable) {
-      //   this.lrcObj.play(this.player.currentTime * 1000);
-      //   if (!this.playing) {
-      //     this.lrcObj.pause();
-      //   }
-      // }
     },
-
 
     playLrc (playStatus) {
       if (this.lrcAvailable) {
@@ -398,7 +372,7 @@ export default {
     // 初始化音量
     this.SET_VOLUME(this.player.volume);
     this.initLrcObj();
-    if (this.source) {
+    if (this.playing) {
       this.loadLrcFile();
     }
   }

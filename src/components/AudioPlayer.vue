@@ -195,26 +195,18 @@ export default {
       this.$q.localStorage.set('swapSeekButton', option)
     },
 
-    '$store.state.AudioPlayer': function() {
-      console.log("cpf changed")
-    }
+    duration(newVal) {
+      if (newVal > 0) {
+        this.setMediaSession()
+      }
+    },
   },
 
   computed: {
     coverUrl() {
-
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const hash = this.currentPlayingFile.hash
-      if (hash) {
-        try {
-          this.setMediaSession(`/api/cover/${hash.split('/')[0]}?token=${token}`)
-        }
-        catch {
-          console.log("加载播放器失败")
-        }
-      }
-
       return hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : ""
     },
 
@@ -293,10 +285,6 @@ export default {
     ...mapGetters('AudioPlayer', [
       'currentPlayingFile'
     ]),
-
-    cpf() {
-      return this.currentPlayingFile
-    }
   },
 
   methods: {
@@ -372,7 +360,7 @@ export default {
         this.toggleHide()
       }
     },
-    setMediaSession(coverUrl) {
+    setMediaSession() {
       if (!('mediaSession' in navigator)) return
 
       const file = this.currentPlayingFile
@@ -383,7 +371,7 @@ export default {
         album: file.workTitle || '',
         artwork: [
           {
-            src: coverUrl,
+            src: this.coverUrl,
             sizes: '128x128',
             type: 'image/jpeg'
           }
