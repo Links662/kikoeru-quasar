@@ -1,9 +1,12 @@
 const getters = {
+  // 当前播放文件，包含 metadata
   currentPlayingFile: (state) => {
-    return state.queue[state.queueIndex] || {
-      hash: '',
-      title: '',
-      workTitle: ''
+    return state.currentPlayingFile || {
+      hash: null,
+      title: "",
+      workTitle: "",
+      mediaStreamUrl: "",
+      mediaDownloadUrl: ""
     }
   }
 }
