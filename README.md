@@ -1,30 +1,46 @@
-# Kikoeru (kikoeru-quasar)
-### TODO
-- [ ] iOS端设备播放第一首时为播客状态，后续为音乐状态
-A self-hosted web media player for listening to your DLsite voice works.
+# Kikoeru前端
 
-[![unstable build status](https://github.com/umonaca/kikoeru-quasar/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/umonaca/kikoeru-quasar/actions)
 
-## Install the dependencies
+### 源码安装
+#### 后端安装
 ```bash
+# 安装依赖
 npm install
+# 启动服务器
+npm start
+# Express listening on http://[::]:8888
 ```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+#### 前端启动
 ```bash
 quasar dev
+# 或者
+npm run dev
 ```
 
+### Docker安装
+将kikoeru-quasar源码文件夹复制到kikoeru-express文件夹内，目录结构如下：
 
-### Build the app for production
-If you prefer SPA:
 ```bash
-quasar build
-```
-If you prefer PWA:
-```
-quasar build -m pwa
+kikoeru-express
+├── ...
+├── kikoeru-quasar
+└── ...
 ```
 
-### Customize the configuration
-See [Configuring quasar.conf.js](https://quasar.dev/quasar-cli/quasar-conf-js).
+手动编译构建镜像
+```bash
+docker build -t links/kikoeru-dev .
+```
+
+调整`docker-compose.yml`内的挂载位置，启动服务
+```bash
+docker compose up -d
+```
+
+## 其他
+### TODO
+- [x] 兼容iOS端设备展示播放信息
+- [ ] 重构播放状态，兼容iOS端设备播放拖动功能
+- [x] 前端页面优化，减少接口重复调用
+
