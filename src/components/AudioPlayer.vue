@@ -290,6 +290,8 @@ export default {
   methods: {
     ...mapMutations('AudioPlayer', {
       toggleHide: 'TOGGLE_HIDE',
+      play:'PLAY',
+      pause:'PAUSE',
       togglePlaying: 'TOGGLE_PLAYING',
       nextTrack: 'NEXT_TRACK',
       previousTrack: 'PREVIOUS_TRACK',
@@ -382,15 +384,11 @@ export default {
       const ms = navigator.mediaSession
 
       ms.setActionHandler('play', () => {
-        if (!this.playing) {
-          this.togglePlaying()
-        }
+        this.play()
       })
 
       ms.setActionHandler('pause', () => {
-        if (this.playing) {
-          this.togglePlaying()
-        }
+        this.pause()
       })
 
       //播放列表语义（关键）
