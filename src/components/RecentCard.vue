@@ -12,22 +12,22 @@
     >
       <div class="absolute-top-left transparent" style="padding: 0;">
         <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
-          {{`RJ${metadata.work_id}`}}
+          {{`RJ${recentwork.work_id}`}}
         </q-chip>
       </div>
 
       <div class="absolute-bottom-right" style="padding: 5px;">
-        {{'上次播放到: ' + this.formatSeconds(metadata.play_time)}}
+        {{'上次播放到: ' + this.formatSeconds(recentwork.play_time)}}
       </div>
 
       <div class="text">
-        {{metadata.file_name}}
+        {{recentwork.file_name}}
       </div>
     </q-img>
 
     <div class="underline-text">
       <span class="mover-1">
-        {{metadata.file_name}}
+        {{recentwork.file_name}}
       </span>
     </div>
 
@@ -46,7 +46,7 @@ export default {
   },
 
   props: {
-    metadata: {
+    recentwork: {
       type: Object,
       required: true
     }
@@ -76,78 +76,86 @@ export default {
     coverUrl () {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.metadata.work_id ? `/api/cover/${this.metadata.work_id}?token=${token}` : ""
+      return this.recentwork.work_id ? `/api/cover/${this.recentwork.work_id}?token=${token}` : ""
     },
-
   },
 
   methods: {
-    onClickPlay() {
-      // 获取playlist
-      this.$axios.get(`/api/tracks/${this.metadata.work_id}`)
-        .then(response => {
-          let hash = this.metadata.work_id + '/' + this.metadata.file_index
-          this.tree = response.data
-          let queue = []
-          // children 还能有children
-          function pushAudio(tree) {
-            for (let i = 0; i < tree.length; i += 1) {
-              if (tree[i].type == "audio") {
-                queue.push(tree[i])
+    async onClickPlay() {
+      try {
+        // 1. 先获取 metadata
+        const metadataResponse = await this.$axios.get(`/api/work/${this.recentwork.work_id}`);
+        let metadata = metadataResponse.data;
+        // 2. 再获取 tracks
+        const tracksResponse = await this.$axios.get(`/api/tracks/${this.recentwork.work_id}`);
+        this.tree = tracksResponse.data;
+
+        const hash = this.recentwork.work_id + '/' + this.recentwork.file_index;
+        let queue = [];
+        let targetFound = false;
+
+        const traverseTree = (tree, metadata) => {
+          for (const item of tree) {
+            if (item.type === "audio") {
+              queue.push({
+                ...item,
+                artist: metadata.circle.name || '',
+                album: metadata.title || '',
+              });
+              if (item.hash === hash) {
+                targetFound = true;
               }
             }
-          }
-          function makeQueue(tree) {
-            for (let i = 0; i < tree.length; i += 1) {
-              if (tree[i].children == null) {
-                if (tree[i].type == "audio" && tree[i].hash === hash) {
-                  pushAudio(tree)
-                  return
-                }
-              }
-              else if (tree[i].children != null) {
-                makeQueue(tree[i].children)
-              }
+            if (item.children) {
+              traverseTree(item.children, metadata);
             }
           }
-          makeQueue(this.tree)
+        };
+        traverseTree(this.tree, metadata);
+
+        // 如果找到了目标，设置播放队列
+        if (targetFound) {
+          const targetIndex = queue.findIndex(file => file.hash === hash);
 
           this.$store.commit('AudioPlayer/SET_QUEUE', {
-            queue: queue.concat(),
-            index: queue.findIndex(file => file.hash === hash),
-          })
-          this.$store.commit('AudioPlayer/PLAY')
-        })
-        .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-        })
+            queue: [...queue],
+            index: targetIndex,
+          });
+
+          this.$store.commit('AudioPlayer/PLAY');
+        } else {
+          // 如果没有找到目标文件，显示错误
+          this.showErrNotif('找不到目标音频文件');
+        }
+
+      } catch (error) {
+        let errorMessage = error.message || error;
+        if (error.response) {
+          errorMessage = error.response.data.error
+            || `${error.response.status} ${error.response.statusText}`;
+        }
+        this.showErrNotif(errorMessage);
+      }
     },
 
-    formatSeconds (seconds) {
-          let h = Math.floor(seconds / 3600) < 10
-            ? '0' + Math.floor(seconds / 3600)
-            : Math.floor(seconds / 3600)
+    formatSeconds(seconds) {
+      let h = Math.floor(seconds / 3600) < 10
+        ? '0' + Math.floor(seconds / 3600)
+        : Math.floor(seconds / 3600)
 
-          let m = Math.floor((seconds / 60 % 60)) < 10
-            ? '0' + Math.floor((seconds / 60 % 60))
-            : Math.floor((seconds / 60 % 60))
+      let m = Math.floor((seconds / 60 % 60)) < 10
+        ? '0' + Math.floor((seconds / 60 % 60))
+        : Math.floor((seconds / 60 % 60))
 
-          let s = Math.floor((seconds % 60)) < 10
-            ? '0' + Math.floor((seconds % 60))
-            : Math.floor((seconds % 60))
+      let s = Math.floor((seconds % 60)) < 10
+        ? '0' + Math.floor((seconds % 60))
+        : Math.floor((seconds % 60))
 
-          return h === "00"
-            ? m + ":" + s
-            : h + ":" + m + ":" + s
-        }
+      return h === "00"
+        ? m + ":" + s
+        : h + ":" + m + ":" + s
+    }
   },
-
-
 }
 </script>
 
