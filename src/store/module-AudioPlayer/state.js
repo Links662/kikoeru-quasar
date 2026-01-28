@@ -17,8 +17,9 @@ export default {
   currentPlayingFile: { // 只存 metadata，source 预加载但不自动播放
     hash: null,
     title: "",
-    workTitle: "",
-    mediaStreamUrl:"",
-    mediaDownloadUrl:""
+    album: "",
+    artist: "",
+    mediaStreamUrl: "",
+    mediaDownloadUrl: ""
   }
 }

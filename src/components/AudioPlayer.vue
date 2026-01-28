@@ -64,7 +64,7 @@
         <q-item style="height: 55px; padding: 0px 15px;" class="text-center non-selectable">
           <q-item-section>
             <q-item-label lines="2" class="text-bold">{{ currentPlayingFile.title }}</q-item-label>
-            <q-item-label caption lines="1">{{ currentPlayingFile.workTitle }}</q-item-label>
+            <q-item-label caption lines="1">{{ currentPlayingFile.album }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -129,7 +129,7 @@
 
               <q-item-section>
                 <q-item-label lines="1">{{ track.title }}</q-item-label>
-                <q-item-label caption lines="1">{{ track.workTitle }}</q-item-label>
+                <q-item-label caption lines="1">{{ track.album }}</q-item-label>
               </q-item-section>
 
               <q-item-section side class="handle" v-show="editCurrentPlayList">
@@ -371,7 +371,8 @@ export default {
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title: file.title || '',
-        album: file.workTitle || '',
+        album: file.album || '',
+        artist: file.artist || '',
         artwork: [
           {
             src: this.coverUrl,

@@ -56,7 +56,8 @@ const mutations = {
     state.currentPlayingFile = {
       hash: null,
       title: "",
-      workTitle: "",
+      album: "",
+      artist: "",
       mediaStreamUrl: "",
       mediaDownloadUrl: ""
     };
@@ -75,7 +76,8 @@ const mutations = {
       state.currentPlayingFile = {
         hash: null,
         title: "",
-        workTitle: "",
+        album: "",
+        artist: "",
         mediaStreamUrl: "",
         mediaDownloadUrl: ""
       };

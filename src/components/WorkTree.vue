@@ -83,6 +83,10 @@ export default {
       type: Array,
       required: true,
     },
+    metadata: {
+      type: Object,
+      required: true
+    }
   },
 
   watch: {
@@ -105,7 +109,11 @@ export default {
       const queue = []
       this.fatherFolder.forEach(item => {
         if (item.type === 'audio') {
-          queue.push(item)
+          queue.push({
+            ...item,
+            artist: this.metadata.circle.name || '',
+            album: this.metadata.title || '',
+          })
         }
       })
 
