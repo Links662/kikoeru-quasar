@@ -13,8 +13,7 @@ export default {
   sleepMode: false,
   rewindSeekTime: 5,
   forwardSeekTime: 30,
-  rewindSeekMode: false,
-  forwardSeekMode: false,
+  seekTime: -1,
   currentPlayingFile: { // 只存 metadata，source 预加载但不自动播放
     hash: null,
     title: "",

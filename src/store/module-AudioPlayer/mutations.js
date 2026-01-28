@@ -121,14 +121,21 @@ const mutations = {
   SET_REWIND_SEEK_TIME(state, value) {
     state.rewindSeekTime = value;
   },
+
   SET_FORWARD_SEEK_TIME(state, value) {
     state.forwardSeekTime = value;
   },
-  SET_REWIND_SEEK_MODE(state, value) {
-    state.rewindSeekMode = value;
+
+  SET_REWIND(state) {
+    state.seekTime = Math.max(state.currentTime - state.rewindSeekTime, 0);
   },
-  SET_FORWARD_SEEK_MODE(state, value) {
-    state.forwardSeekMode = value;
+
+  SET_FORWARD(state) {
+    state.seekTime = Math.min(state.currentTime + state.forwardSeekTime, state.duration);
+  },
+
+  SET_SEEKTIME(state, value) {
+    state.seekTime = value
   },
 
   SET_CURRENT_LYRIC(state, line) {

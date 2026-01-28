@@ -47,8 +47,7 @@ export default {
       'sleepMode',
       'rewindSeekTime',
       'forwardSeekTime',
-      'rewindSeekMode',
-      'forwardSeekMode'
+      'seekTime',
     ]),
 
     ...mapGetters('AudioPlayer', [
@@ -88,18 +87,13 @@ export default {
       // 调节音量
       this.player.volume = val
     },
-    rewindSeekMode(rewind) {
-      if (rewind) {
-        this.player.rewind(this.rewindSeekTime);
-        this.SET_REWIND_SEEK_MODE(false);
+
+    seekTime(time) {
+      if (time >= 0) {
+        this.player.currentTime = time;
+        this.SET_SEEKTIME(-1);
       }
     },
-    forwardSeekMode(forward) {
-      if (forward) {
-        this.player.forward(this.forwardSeekTime);
-        this.SET_FORWARD_SEEK_MODE(false);
-      }
-    }
   },
 
   methods: {
@@ -148,6 +142,7 @@ export default {
     ...mapMutations('AudioPlayer', [
       'SET_DURATION',
       'SET_CURRENT_TIME',
+      'SET_SEEKTIME',
       'PAUSE',
       'PLAY',
       'SET_TRACK',
@@ -155,8 +150,6 @@ export default {
       'SET_CURRENT_LYRIC',
       'SET_VOLUME',
       'CLEAR_SLEEP_MODE',
-      'SET_REWIND_SEEK_MODE',
-      'SET_FORWARD_SEEK_MODE'
     ]),
 
     onCanplay () {
