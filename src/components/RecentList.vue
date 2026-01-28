@@ -10,7 +10,7 @@
         <div class="row q-col-gutter-x-md no-wrap">
           <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
             :key="recentwork.id">
-            <RecentCard :metadata="recentwork" />
+            <RecentCard :recentwork="recentwork" />
           </div>
         </div>
       </div>
