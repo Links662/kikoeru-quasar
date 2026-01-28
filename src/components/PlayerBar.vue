@@ -8,7 +8,7 @@
         
         <q-item-section>
           <q-item-label lines="2">{{ currentPlayingFile.title }}</q-item-label>
-          <q-item-label caption lines="1">{{ currentPlayingFile.workTitle }}</q-item-label>
+          <q-item-label caption lines="1">{{currentPlayingFile.artist + ' - ' + currentPlayingFile.album }}</q-item-label>
         </q-item-section>
       </q-item>
 

@@ -4,7 +4,8 @@ const getters = {
     return state.currentPlayingFile || {
       hash: null,
       title: "",
-      workTitle: "",
+      album: "",
+      artist: "",
       mediaStreamUrl: "",
       mediaDownloadUrl: ""
     }
