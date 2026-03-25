@@ -249,7 +249,6 @@ export default {
           this.pagination.pageSize = response.data.pagination.pageSize;
           this.pagination.totalPages = Math.ceil(this.pagination.totalCount / this.pagination.pageSize);
           this.pagination.currentPage = response.data.pagination.currentPage;
-          this.stopLoad = this.pagination.currentPage >= this.pagination.totalPages;
         })
         .catch((error) => {
           this.handleRequestError(error);
@@ -261,6 +260,11 @@ export default {
       console.log("当前页码:", page); // 确保页码有更新
       this.pagination.currentPage = page || 1;
       this.requestWorksQueue();
+      // 添加回到顶部的功能
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // 平滑滚动
+      });
     },
     handleRequestError(error) {
       if (error.response) {
@@ -270,7 +274,6 @@ export default {
       } else {
         this.showErrNotif(error.message || error);
       }
-      this.stopLoad = true;
     },
     refreshPageTitle () {
       if (this.$route.query.circleId || this.$route.query.tagId || this.$route.query.vaId) {
@@ -324,15 +327,10 @@ export default {
     },
 
     reset () {
-      // console.log("reset")
-      this.stopLoad = true
       this.refreshPageTitle()
       this.pagination.currentPage = 1
       this.pagination.pageSize = 12
       this.requestWorksQueue()
-        .then(() => {
-          this.stopLoad = false
-        })
     },
   }
 }
