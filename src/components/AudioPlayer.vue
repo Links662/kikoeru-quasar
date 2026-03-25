@@ -43,10 +43,10 @@
           </q-btn>
           <div class="row absolute q-pl-md q-pr-md col-12 justify-between">
             <q-btn v-if="!hideSeekButton" round size="lg" color="white" text-color="dark" style="opacity: 0.8"
-              @click="swapSeekButton ? previousTrack() : rewind(true)"
+              @click="swapSeekButton ? previousTrack() : rewind()"
               :icon="swapSeekButton ? 'skip_previous' : rewindIcon" />
             <q-btn v-if="!hideSeekButton" round size="lg" color="white" text-color="dark" style="opacity: 0.8"
-              @click="swapSeekButton ? nextTrack() : forward(true)"
+              @click="swapSeekButton ? nextTrack() : forward()"
               :icon="swapSeekButton ? 'skip_next' : forwardIcon" />
           </div>
         </div>
@@ -64,7 +64,7 @@
         <q-item style="height: 55px; padding: 0px 15px;" class="text-center non-selectable">
           <q-item-section>
             <q-item-label lines="2" class="text-bold">{{ currentPlayingFile.title }}</q-item-label>
-            <q-item-label caption lines="1">{{ currentPlayingFile.workTitle }}</q-item-label>
+            <q-item-label caption lines="1">{{ currentPlayingFile.album }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -76,11 +76,11 @@
           <q-btn flat dense size="md" icon="queue_music" @click="showCurrentPlayList = !showCurrentPlayList"
             style="width: 55px" class="col-auto" />
           <q-btn flat dense size="lg" :icon="swapSeekButton ? rewindIcon : 'skip_previous'"
-            @click="swapSeekButton ? rewind(true) : previousTrack()" style="width: 55px" class="col-auto" />
+            @click="swapSeekButton ? rewind() : previousTrack()" style="width: 55px" class="col-auto" />
           <q-btn flat dense size="28px" :icon="playingIcon" @click="togglePlaying()" style="width: 65px"
             class="col-auto" />
           <q-btn flat dense size="lg" :icon="swapSeekButton ? forwardIcon : 'skip_next'"
-            @click="swapSeekButton ? forward(true) : nextTrack()" style="width: 55px" class="col-auto" />
+            @click="swapSeekButton ? forward() : nextTrack()" style="width: 55px" class="col-auto" />
           <q-btn flat dense size="md" :icon="playModeIcon" @click="changePlayMode()" style="width: 55px"
             class="col-auto" />
         </div>
@@ -129,7 +129,7 @@
 
               <q-item-section>
                 <q-item-label lines="1">{{ track.title }}</q-item-label>
-                <q-item-label caption lines="1">{{ track.workTitle }}</q-item-label>
+                <q-item-label caption lines="1">{{ track.album }}</q-item-label>
               </q-item-section>
 
               <q-item-section side class="handle" v-show="editCurrentPlayList">
@@ -290,17 +290,20 @@ export default {
   methods: {
     ...mapMutations('AudioPlayer', {
       toggleHide: 'TOGGLE_HIDE',
+      play:'PLAY',
+      pause:'PAUSE',
       togglePlaying: 'TOGGLE_PLAYING',
       nextTrack: 'NEXT_TRACK',
       previousTrack: 'PREVIOUS_TRACK',
       changePlayMode: 'CHANGE_PLAY_MODE',
-      rewind: 'SET_REWIND_SEEK_MODE',
-      forward: 'SET_FORWARD_SEEK_MODE',
+      rewind: 'SET_REWIND',
+      forward: 'SET_FORWARD',
       setTrack: 'SET_TRACK',
       setQueue: 'SET_QUEUE',
       removeFromQueue: 'REMOVE_FROM_QUEUE',
       emptyQueue: 'EMPTY_QUEUE',
       setVolume: 'SET_VOLUME',
+      setSeekTime: 'SET_SEEKTIME',
     }),
 
     formatSeconds(seconds) {
@@ -368,7 +371,8 @@ export default {
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title: file.title || '',
-        album: file.workTitle || '',
+        album: file.album || '',
+        artist: file.artist || '',
         artwork: [
           {
             src: this.coverUrl,
@@ -381,15 +385,11 @@ export default {
       const ms = navigator.mediaSession
 
       ms.setActionHandler('play', () => {
-        if (!this.playing) {
-          this.togglePlaying()
-        }
+        this.play()
       })
 
       ms.setActionHandler('pause', () => {
-        if (this.playing) {
-          this.togglePlaying()
-        }
+        this.pause()
       })
 
       //播放列表语义（关键）
@@ -400,7 +400,9 @@ export default {
       ms.setActionHandler('previoustrack', () => {
         this.previousTrack()
       })
-
+      ms.setActionHandler('seekto', (details) => {
+        this.setSeekTime(details.seekTime)
+      })
       //明确禁用播客行为
       ms.setActionHandler('seekforward', null)
       ms.setActionHandler('seekbackward', null)

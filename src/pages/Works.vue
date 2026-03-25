@@ -17,6 +17,11 @@
           <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
             :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
         </div>
+        <!-- 分页控件上 -->
+        <div class="row justify-center q-my-sm">
+          <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
+            input />
+        </div>
         <div class="row items-center q-gutter-x-sm">
           <!-- 切换显示模式 -->
           <div class="col-auto" style="width: 85px">
@@ -169,6 +174,11 @@ export default {
     if (localStorage.getItem("detailMode") != null) {
       this.detailMode = (localStorage.detailMode === 'true');
     }
+    window.addEventListener('keydown', this.handlePageKeyEvent);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handlePageKeyEvent);
   },
 
   computed: {
@@ -331,6 +341,28 @@ export default {
       this.pagination.currentPage = 1
       this.pagination.pageSize = 12
       this.requestWorksQueue()
+    },
+
+    handlePageKeyEvent(e) {
+      if (e.repeat) return;
+      const now = Date.now();
+      if (this._lastKeyTime && (now - this._lastKeyTime < 300)) {
+        return;
+      }
+      this._lastKeyTime = now; // 记录本次触发时间
+      const activeEl = document.activeElement && document.activeElement.tagName
+        ? document.activeElement.tagName.toLowerCase()
+        : '';
+
+      if (['input', 'textarea'].includes(activeEl)) return;
+      const { currentPage, totalPages } = this.pagination;
+
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
+        this.pagination.currentPage--;
+      }
+      else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+        this.pagination.currentPage++;
+      }
     },
   }
 }

@@ -5,8 +5,9 @@
         <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px;" @click="path = []">ROOT</q-btn>
       </q-breadcrumbs-el>
 
-      <q-breadcrumbs-el v-for="(folderName, index) in path"  :key="index"  class="cursor-pointer" >
-        <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px;" @click="onClickBreadcrumb(index)">{{folderName}}</q-btn>
+    <q-breadcrumbs-el v-for="(folderName, index) in path" :key="index" class="cursor-pointer">
+        <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px; " @click="onClickBreadcrumb(index)">{{
+          getDisplayName(folderName) }}</q-btn>
       </q-breadcrumbs-el>
     </q-breadcrumbs>
 
@@ -72,7 +73,8 @@ export default {
 
   data() {
     return {
-      path: []
+      path: [],
+      truncateLength: 5
     }
   },
 
@@ -81,6 +83,10 @@ export default {
       type: Array,
       required: true,
     },
+    metadata: {
+      type: Object,
+      required: true
+    }
   },
 
   watch: {
@@ -103,7 +109,11 @@ export default {
       const queue = []
       this.fatherFolder.forEach(item => {
         if (item.type === 'audio') {
-          queue.push(item)
+          queue.push({
+            ...item,
+            artist: this.metadata.circle.name || '',
+            album: this.metadata.title || '',
+          })
         }
       })
 
@@ -120,6 +130,11 @@ export default {
   },
 
   methods: {
+    getDisplayName(name) {
+      if (name.length <= this.truncateLength) return name
+      return name.slice(0, this.truncateLength) + '...'
+    },
+
     playIcon (hash) {
       return this.playing && this.currentPlayingFile.hash === hash ? "pause" : "play_arrow"
     },
