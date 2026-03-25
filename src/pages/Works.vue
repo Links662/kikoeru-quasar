@@ -18,7 +18,7 @@
             :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
         </div>
         <!-- 分页控件上 -->
-        <div class="row justify-center q-my-sm">
+        <div class="row justify-center gt-sm">
           <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
             input />
         </div>
