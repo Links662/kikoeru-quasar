@@ -18,8 +18,8 @@
             :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
         </div>
         <!-- 分页控件上 -->
-        <div class="row justify-center gt-sm">
-          <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
+        <div class="row justify-center gt-xs">
+          <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" :boundary-links="$q.screen.gt.sm" direction-links color="primary"
             input />
         </div>
         <div class="row items-center q-gutter-x-sm">
@@ -31,7 +31,6 @@
                 { icon: 'list', value: 'list' }
               ]" />
           </div>
-
           <!-- 列表模式：标签开关 -->
           <div class="col-auto" style="width: 85px" v-if="listMode === 'list'">
             <q-btn-toggle dense rounded spread v-model="showLabel" toggle-color="primary" color="white"
