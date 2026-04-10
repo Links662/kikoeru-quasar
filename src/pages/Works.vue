@@ -269,11 +269,6 @@ export default {
       console.log("当前页码:", page); // 确保页码有更新
       this.pagination.currentPage = page || 1;
       this.requestWorksQueue();
-      // 添加回到顶部的功能
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // 平滑滚动
-      });
     },
     handleRequestError(error) {
       if (error.response) {
