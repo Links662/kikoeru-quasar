@@ -104,7 +104,7 @@ export default {
     },
     error(err) {
       // 只有认证相关错误才跳转登录
-      if (err.message?.includes('administrator')) {
+      if (err.message && err.message.includes('administrator')) {
         this.$socket.close()
         this.$router.push('/login')
       } else {

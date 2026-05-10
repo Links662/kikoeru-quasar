@@ -1,42 +1,41 @@
-# This Dockerfile builds SPA and PWA artifacts and starts an Nginx if you run it in standalone mode
-# The Nginx is supposed to serve the following static assets:
-# /var/www for SPA and PWA
-# /storage at example.com/media/stream and example.com/media/download (if offload is enabled)
-# /covers for cover images (if offload is enabled)
-# Nginx should also be configured to reverse proxy to the backend at /api
-# Please refer to docs/nginx for examples
-
-# Build SPA and PWA
-FROM node:14 as build-stage
+# 阶段1：依赖安装层（独立缓存）
+FROM node:14 as dependencies
 WORKDIR /frontend
-# @quasar/app v1 requires node-ass, which takes 30 minutes to compile libsass in CI for arm64 and armv7
-# So I prebuilt the binaries for arm64 and armv7
-# @quasar/app v2 no longer uses this deprecated package, so this line will be removed in the future
 ENV SASS_BINARY_SITE="https://github.com/umonaca/node-sass/releases/download"
-RUN npm install -g @quasar/cli
+
+# 复制依赖声明文件
 COPY package*.json ./
-RUN npm ci
+
+# 安装依赖（这一层只在 package.json 变化时才会重新构建）
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# 单独安装全局工具（避免每次清缓存）
+RUN npm install -g @quasar/cli
+
+# 阶段2：构建层
+FROM dependencies as build-stage
 COPY . .
+
+# 构建 SPA 和 PWA（如果源码未变则使用缓存）
 RUN quasar build && quasar build -m pwa
 
-# We only need the build artifact
+# 阶段3：运行时镜像
 FROM nginx:mainline-alpine
 
-# FRONTEND_TYPE can be spa or pwa
 ARG FRONTEND_TYPE=pwa
 WORKDIR /var/www
+
+# 从构建阶段复制最终产物
 COPY --from=build-stage /frontend/dist/${FRONTEND_TYPE} /var/www
 
-# Mount your own Nginx config
-RUN rm -rf /etc/nginx/conf.d/*
-VOLUME [ "/etc/nginx/conf.d" ]
-EXPOSE 80
+# 清理默认配置，准备挂载点
+RUN rm -rf /etc/nginx/conf.d/* && \
+    mkdir -p /storage /covers
 
-# If you are using Let's Encrypt
-VOLUME [ "/etc/letsencrypt" ]
-EXPOSE 443
+# 声明卷（可写挂载）
+VOLUME [ "/etc/nginx/conf.d", "/etc/letsencrypt", "/storage", "/covers" ]
 
-# Mount offload paths for media files and covers
-VOLUME [ "/storage", "/covers" ]
+EXPOSE 80 443
 
-# Note: ENTRYPOINT and CMD is provided by the nginx base image
+# 使用 nginx 基础镜像的默认 CMD
