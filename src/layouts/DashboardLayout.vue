@@ -95,18 +95,23 @@ export default {
   },
 
   sockets: {
-    success (payload) {
+    success(payload) {
       this.showSuccNotif(payload.message)
       if (payload.auth) {
         this.$store.commit('User/INIT', payload.user)
         this.$store.commit('User/SET_AUTH', payload.auth)
       }
     },
-    error (err) {
-      this.showWarnNotif(err.message || err)
-      this.$socket.close()
-      // 验证失败，跳转到登录页面
-      this.$router.push('/login')
+    error(err) {
+      // 只有认证相关错误才跳转登录
+      if (err.message?.includes('administrator')) {
+        this.$socket.close()
+        this.$router.push('/login')
+      } else {
+        // 其他错误只显示通知，尝试重连
+        this.showWarnNotif('连接异常，正在重试...')
+        this.$socket.connect() // 重连
+      }
     }
   },
 
