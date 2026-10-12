@@ -1,12 +1,12 @@
 <template>
-  <div class="q-ma-md " style="">
+  <div class="q-ma-md">
     <q-breadcrumbs gutter="xs" v-if="path.length">
       <q-breadcrumbs-el   >
-        <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px;" @click="path = []">ROOT</q-btn>
+        <q-btn no-caps flat dense size="md" icon="folder" @click="path = []">ROOT</q-btn>
       </q-breadcrumbs-el>
 
     <q-breadcrumbs-el v-for="(folderName, index) in path" :key="index" class="cursor-pointer">
-        <q-btn no-caps flat dense size="md" icon="folder" style="height: 30px; " @click="onClickBreadcrumb(index)">{{
+        <q-btn no-caps flat dense size="md" icon="folder" @click="onClickBreadcrumb(index)">{{
           getDisplayName(folderName) }}</q-btn>
       </q-breadcrumbs-el>
     </q-breadcrumbs>
@@ -24,10 +24,10 @@
           class="non-selectable"
         >
           <q-item-section avatar>
-            <q-icon size="34px" v-if="item.type === 'folder'" color="amber" name="folder" />
-            <q-icon size="34px" v-else-if="item.type === 'text'" color="info" name="description" />
-            <q-icon size="34px" v-else-if="item.type === 'image'" color="orange" name="photo" />
-            <q-icon size="34px" v-else-if="item.type === 'other'" color="info" name="description" />
+            <q-icon size="md" v-if="item.type === 'folder'" color="amber" name="folder" />
+            <q-icon size="md" v-else-if="item.type === 'text'" color="info" name="description" />
+            <q-icon size="md" v-else-if="item.type === 'image'" color="orange" name="photo" />
+            <q-icon size="md" v-else-if="item.type === 'other'" color="info" name="description" />
             <q-btn v-else round dense color="primary" :icon="playIcon(item.hash)" @click="onClickPlayButton(item.hash)" />
           </q-item-section>
 

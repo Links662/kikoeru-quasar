@@ -16,18 +16,32 @@
         <!-- 当前播放列表：内嵌在封面与播放控件之间，按可用高度微调（至少三行） -->
         <div class="current-play-list bg-white" v-show="showCurrentPlayList">
           <!-- 音频文件列表 -->
-          <q-list class="scroll" style="height: 100%;" @mousewheel.stop @touchmove.stop>
-            <draggable handle=".handle" v-model="queueCopy" @change="val => onMoved(val.moved)">
+          <q-list class="scroll fit" @mousewheel.stop @touchmove.stop>
+            <draggable handle=".handle" :disabled="useArrowReorder" v-model="queueCopy"
+              @change="val => onMoved(val.moved)">
               <q-item clickable v-ripple v-for="(track, index) in queueCopy" :key="index" :active="queueIndex === index"
-                active-class="text-white bg-teal" class="non-selectable" style="height: 48px; padding: 0px 10px;"
+                active-class="text-white bg-teal" class="non-selectable q-py-none q-px-sm"
                 @click="onClickTrack(index)">
-                <q-item-section side>
-                  <q-icon name="clear" :color="queueIndex === index ? 'white' : 'red'" @click.stop="removeFromQueue(index)" />
+                <!-- 鼠标设备：拖拽手柄；触摸设备的排序入口是下面的箭头 -->
+                <q-item-section side class="handle" v-if="!useArrowReorder">
+                  <q-icon name="reorder" :color="queueIndex === index ? 'white' : 'dark'" />
+                </q-item-section>
+
+                <!-- 触摸设备：上下箭头竖排（横排太占宽度），点一下把这条曲目挪一位 -->
+                <q-item-section side v-else class="queue-arrows">
+                  <q-btn dense flat size="sm" padding="2px 0" icon="arrow_upward"
+                    :color="queueIndex === index ? 'white' : 'dark'" :disable="index === 0"
+                    @click.stop="moveTrack(index, -1)" />
+                  <q-btn dense flat size="sm" padding="2px 0" icon="arrow_downward" class="q-mt-xs"
+                    :color="queueIndex === index ? 'white' : 'dark'" :disable="index === queueCopy.length - 1"
+                    @click.stop="moveTrack(index, 1)" />
                 </q-item-section>
 
                 <q-item-section avatar>
-                  <q-img transition="fade" :src="samCoverUrl(track.hash)" style="height: 38px; width: 38px"
-                    class="rounded-borders" />
+                  <!-- 列表项封面：Quasar 的尺寸档位 lg = 38px -->
+                  <q-avatar size="lg" rounded class="col-auto">
+                    <q-img transition="fade" :src="samCoverUrl(track.hash)" class="fit" />
+                  </q-avatar>
                 </q-item-section>
 
                 <q-item-section>
@@ -35,8 +49,9 @@
                   <q-item-label caption lines="1">{{ track.album }}</q-item-label>
                 </q-item-section>
 
-                <q-item-section side class="handle">
-                  <q-icon name="reorder" :color="queueIndex === index ? 'white' : 'dark'" />
+                <q-item-section side>
+                  <q-btn dense flat size="sm" padding="2px 0" icon="clear"
+                    :color="queueIndex === index ? 'white' : 'red'" @click.stop="removeFromQueue(index)" />
                 </q-item-section>
               </q-item>
             </draggable>
@@ -44,16 +59,16 @@
         </div>
 
         <!-- 进度条控件 -->
-        <div class="row items-center q-mx-sm q-my-sm" style="height: 40px">
+        <div class="row items-center q-mx-sm q-my-sm">
           <div class="col-auto">{{ formatSeconds(currentTime) }}</div>
           <AudioElement class="col" />
           <div class="col-auto">{{ formatSeconds(duration) }}</div>
         </div>
 
         <!-- Place holder for iOS -->
-        <div style="height: 5px" v-if="$q.platform.is.ios" />
+        <div class="q-pt-xs" v-if="$q.platform.is.ios" />
 
-        <q-item style="height: 55px; padding: 0px 15px;" class="text-center non-selectable">
+        <q-item class="text-center non-selectable q-py-sm q-px-md">
           <q-item-section>
             <q-item-label lines="2" class="text-bold">{{ currentPlayingFile.title }}</q-item-label>
             <q-item-label caption lines="1">{{ currentPlayingFile.album }}</q-item-label>
@@ -61,7 +76,7 @@
         </q-item>
 
         <!-- Place holder for iOS -->
-        <div style="height: 10px" v-if="$q.platform.is.ios" />
+        <div class="q-pt-sm" v-if="$q.platform.is.ios" />
 
         <!-- 播放按钮控件 -->
         <div class="row justify-around" style="height: 65px">
@@ -178,6 +193,21 @@ export default {
 
     queue() {
       return this.$store.state.AudioPlayer.queue
+    },
+
+    // 触摸优先的设备（手机 / 平板）点不到拖拽手柄，改用上下箭头排序；
+    // 判断依据是「主指针」是不是粗指针，这样带触摸屏的笔记本仍然保留拖拽
+    useArrowReorder() {
+      if (typeof window.matchMedia === 'function') {
+        const coarse = window.matchMedia('(pointer: coarse)').matches
+        const fine = window.matchMedia('(pointer: fine)').matches
+
+        // 浏览器认识 pointer 媒体特性时只会命中一个，不认识时两个都是 false
+        if (coarse !== fine) return coarse
+      }
+
+      // 退路：老浏览器（或 SSR）按 Quasar 的触摸探测决定
+      return this.$q.platform.has.touch
     },
 
     playModeIcon() {
@@ -399,6 +429,23 @@ export default {
         resetPlaying: false
       })
     },
+
+    /**
+     * 触摸设备：点上/下箭头把某条曲目挪一位。
+     * 先就地换位，再复用 onMoved，让「正在播放的那条」的索引跟着一起挪。
+     */
+    moveTrack(index, offset) {
+      const newIndex = index + offset
+
+      if (newIndex < 0 || newIndex >= this.queueCopy.length) return
+
+      const queue = this.queueCopy.concat()
+      queue.splice(newIndex, 0, queue.splice(index, 1)[0])
+      this.queueCopy = queue
+
+      this.onMoved({ oldIndex: index, newIndex })
+    },
+
     openWorkDetail() {
       // /work/:id 会被路由守卫改成打开详情面板，所以这里比较的是面板当前打开的作品
       const workid = this.workDetailUrl
@@ -501,12 +548,15 @@ export default {
   }
 }
 
-// 内嵌在播放器里的当前播放列表：按可用高度微调，最少三行（行高见列表项上的 48px）
+// 当前播放列表的行高：沿用 Quasar q-item 的 min-height，三行刚好放下三条曲目
+$queue-row: 48px;
+
+// 内嵌在播放器里的当前播放列表：按可用高度微调，最少三行
 .current-play-list {
   position: relative;
   z-index: 1;
   flex: 1 1 auto;
-  min-height: 144px;
+  min-height: 3 * $queue-row;
   max-height: 45vh;
   overflow: hidden;
 }
@@ -515,8 +565,8 @@ export default {
 @media (max-height: 470px) {
   .current-play-list {
     flex: 0 0 auto;
-    height: 144px;
-    margin-top: -144px;
+    height: 3 * $queue-row;
+    margin-top: -3 * $queue-row;
   }
 }
 </style>

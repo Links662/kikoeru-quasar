@@ -45,14 +45,14 @@
       <template v-slot:header-cell-count="props">
         <q-th :props="props" class="sortable" @click="props.sort('count')">
           <span>作品数</span>
-          <q-icon name="arrow_upward" size="17px" class="q-table__sort-icon q-table__sort-icon--left" />
+          <q-icon name="arrow_upward" size="xs" class="q-table__sort-icon q-table__sort-icon--left" />
         </q-th>
       </template>
 
       <template v-slot:body-cell-favourite="props">
         <q-td :props="props" class="text-center">
           <q-icon :name="props.row.favourite ? 'star' : 'star_border'"
-            :color="props.row.favourite ? 'amber' : 'grey-6'" size="22px" class="cursor-pointer"
+            :color="props.row.favourite ? 'amber' : 'grey-6'" size="sm" class="cursor-pointer"
             @click.stop.prevent="toggleFavourite(props.row)" />
         </q-td>
       </template>
@@ -273,7 +273,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 /* Quasar 表格默认 th 12px / td 13px、行高 48px，这里整体放大并压低行高 */
 .list-table ::v-deep .q-table {
@@ -281,7 +281,7 @@ export default {
 }
 
 /* 窄屏上让列宽跟着内容走，否则"作品数"列会被压成一条缝 */
-@media (max-width: 599px) {
+@media (max-width: $breakpoint-xs-max) {
   .list-table ::v-deep .q-table {
     table-layout: auto;
   }
@@ -308,7 +308,7 @@ export default {
   width: 300px;
 }
 
-@media (max-width: 599px) {
+@media (max-width: $breakpoint-xs-max) {
   .list-search {
     width: 100%;
   }

@@ -8,7 +8,9 @@
     @mouseover="toggleBlurFlag()"
     @mouseout="toggleBlurFlag()"
   >
-    <div class="absolute-top-left transparent" style="padding: 0;">
+    <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
+         只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px，保留行内写法更直观 -->
+    <div class="absolute-top-left transparent no-padding">
       <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
         {{`RJ${rjcode}`}}
       </q-chip>

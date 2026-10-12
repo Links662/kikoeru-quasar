@@ -6,7 +6,7 @@
       </q-toolbar>
 
       <q-list>
-        <q-item style="height: 70px;">
+        <q-item>
           <q-item-section>
             <q-item-label>后退按钮跳跃秒数</q-item-label>
             <q-item-label caption>播放时后退按钮跳跃秒数</q-item-label>
@@ -44,7 +44,7 @@
       </q-toolbar>
 
       <q-list>
-        <q-item style="height: 70px;">
+        <q-item>
           <q-item-section>
             <q-item-label>标签语言</q-item-label>
             <q-item-label caption>从 DLSite 爬取的标签元数据的语言</q-item-label>
@@ -70,7 +70,7 @@
               v-model.number="config.dlsiteTimeout"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -86,7 +86,7 @@
               v-model.number="config.hvdbTimeout"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -102,7 +102,7 @@
               v-model.number="config.retryDelay"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -118,7 +118,7 @@
               v-model.number="config.retry"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -134,7 +134,7 @@
               v-model.number="config.maxParallelism"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -149,7 +149,7 @@
             <q-input
               v-model="config.httpProxyHost"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -165,7 +165,7 @@
               v-model.number="config.httpProxyPort"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -178,7 +178,7 @@
       </q-toolbar>
 
       <q-list>
-        <q-item style="height: 70px;">
+        <q-item>
           <q-item-section>
             <q-item-label>最大递归扫描深度</q-item-label>
             <q-item-label caption>默认 2</q-item-label>
@@ -189,7 +189,7 @@
               v-model.number="config.scannerMaxRecursionDepth"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -213,7 +213,7 @@
       </q-toolbar>
 
       <q-list>
-        <q-item style="height: 70px;">
+        <q-item>
           <q-item-section>
             <q-item-label>用户验证</q-item-label>
             <q-item-label caption>是否启用用户验证（生产环境下无法修改此设置）</q-item-label>
@@ -246,7 +246,7 @@
               v-model.number="config.listenPort"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -273,7 +273,7 @@
               v-model.number="config.expiresIn"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -289,7 +289,7 @@
               v-model.number="config.pageSize"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -304,7 +304,7 @@
               v-model.number="config.recentCount"
               type="number"
               input-class="text-right"
-              style="max-width: 100px;"
+              class="admin-field"
             />
           </q-item-section>
         </q-item>
@@ -414,3 +414,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 仪表盘里成组的短输入框：Quasar 没有宽度工具类，宽度统一收在这里（6.25rem = 100px）
+.admin-field {
+  max-width: 6.25rem;
+}
+</style>

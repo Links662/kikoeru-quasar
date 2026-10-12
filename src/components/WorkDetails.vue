@@ -103,7 +103,8 @@
         </q-list>
       </q-btn-dropdown>
 
-      <q-btn dense @click="showReviewDialog = true" color="cyan q-mt-sm shadow-4 q-mx-xs q-px-sm" label="写评论" />
+      <!-- 这些是普通 class，不能塞进 color（会变成 bg-cyan q-mt-sm ... 这种拼出来的类名） -->
+      <q-btn dense @click="showReviewDialog = true" color="cyan" class="q-mt-sm shadow-4 q-mx-xs q-px-sm" label="写评论" />
 
       <WriteReview v-if="showReviewDialog" @modifydata="processReview" @closed="closed" :workid="metadata.id"
         :metadata="reviewData"></WriteReview>

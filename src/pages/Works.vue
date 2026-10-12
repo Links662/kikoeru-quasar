@@ -24,7 +24,7 @@
         </div>
         <div class="row items-center q-gutter-x-sm">
           <!-- 切换显示模式 -->
-          <div class="col-auto" style="width: 85px">
+          <div class="col-auto">
             <q-btn-toggle dense rounded spread v-model="listMode" toggle-color="primary" color="white"
               text-color="primary" :options="[
                 { icon: 'apps', value: 'detail' },
@@ -32,7 +32,7 @@
               ]" />
           </div>
           <!-- 列表模式：标签开关 -->
-          <div class="col-auto" style="width: 85px" v-if="listMode === 'list'">
+          <div class="col-auto" v-if="listMode === 'list'">
             <q-btn-toggle dense rounded spread v-model="showLabel" toggle-color="primary" color="white"
               text-color="primary" :options="[
                 { icon: 'label', value: true },
@@ -41,7 +41,7 @@
           </div>
 
           <!-- 详情模式：缩放开关 -->
-          <div class="col-auto" style="width: 85px" v-if="listMode !== 'list'">
+          <div class="col-auto" v-if="listMode !== 'list'">
             <q-btn-toggle dense rounded spread v-model="detailMode" toggle-color="primary" color="white"
               text-color="primary" :options="[
                 { icon: 'zoom_in', value: true },
@@ -388,6 +388,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/* 方形图标按钮：与同排的 dense 选择框（40px）等高，Quasar 没有等价的尺寸类，
+   所以保留显式尺寸；改尺寸时三处（height / min-height / width）要一起改 */
 .sort-btn {
   height: 40px;
   min-height: 40px;

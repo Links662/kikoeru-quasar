@@ -6,7 +6,8 @@
     </div>
 
     <div class="justify-center">
-      <div class="q-pa-md" style="overflow-x: auto;" @wheel.prevent="onHorizontalWheel">
+      <!-- 只横向滚动：overflow-auto 负责 x，overflow-hidden-y 压掉可能出现的竖向滚动条 -->
+      <div class="q-pa-md overflow-auto overflow-hidden-y" @wheel.prevent="onHorizontalWheel">
         <div class="row q-col-gutter-x-md no-wrap">
           <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
             :key="recentwork.id">

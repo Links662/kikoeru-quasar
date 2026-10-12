@@ -28,7 +28,7 @@
         </q-list>
         <template v-slot:loading>
           <div class="row justify-center q-my-md">
-            <q-spinner-dots color="primary" size="40px" />
+            <q-spinner-dots color="primary" size="lg" />
           </div>
         </template>
       </q-infinite-scroll>
@@ -202,6 +202,8 @@ export default {
 
 </script>
 <style>
+/* 方形图标按钮：与同排的 dense 选择框（40px）等高，Quasar 没有等价的尺寸类，
+   所以保留显式尺寸；改尺寸时三处（height / min-height / width）要一起改 */
 .sort-btn {
   height: 40px;
   min-height: 40px;

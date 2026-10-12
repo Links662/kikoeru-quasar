@@ -10,7 +10,9 @@
       @click="onClickPlay()"
       class="square"
     >
-      <div class="absolute-top-left transparent" style="padding: 0;">
+      <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
+           只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px，保留行内写法更直观 -->
+      <div class="absolute-top-left transparent no-padding">
         <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
           {{`RJ${recentwork.work_id}`}}
         </q-chip>
@@ -165,8 +167,6 @@ export default {
 
 <style lang="scss">
   .square {
-    // width: 150px;
-    // height: 100px;
     transition: transform 100ms ease-out, border-radius 200ms ease-out;
     border-radius: 10px 10px 10px 10px;
     margin-right: 10px;
@@ -174,11 +174,8 @@ export default {
   }
 
   .underline-text{
-    // width: 150px;
-    // height: 20px;
     overflow: hidden;
     position: relative;
-    // box-shadow: inset 25px 0px 25px -25px rgba(0,0,0,0.45), inset -25px 0px 25px -25px rgba(0,0,0,0.45);
   }
 
   .underline-text .mover-1 {
@@ -190,13 +187,6 @@ export default {
   @keyframes moveSlideshow {
     from { transform: translate3d(150px, 0, 0); }
     to { transform: translate3d(-100%, 0, 0); }
-  }
-
-  .square .cover {
-    width: 100%;
-    height: 100px;
-    background-size: cover!important;
-    background-position: center!important;
   }
 
   .square .text {
@@ -221,13 +211,5 @@ export default {
 
   .square:hover .text {
     display: inline-block;
-  }
-
-  .square.one .cover {
-    background: url(https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Arrestbygningen_ved_r%C3%A5d-_og_domhuset.jpg/320px-Arrestbygningen_ved_r%C3%A5d-_og_domhuset.jpg), skyblue;
-  }
-
-  .square.one:hover .cover {
-    background: url(https://media.giphy.com/media/lgcUUCXgC8mEo/giphy.gif), url(https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Arrestbygningen_ved_r%C3%A5d-_og_domhuset.jpg/320px-Arrestbygningen_ved_r%C3%A5d-_og_domhuset.jpg), skyblue;
   }
 </style>
