@@ -9,46 +9,38 @@
           <q-img contain transition="fade" :src="coverUrl" :ratio="4 / 3" />
           <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down" @click="toggleHide()"
             class="absolute-top-left q-ma-sm" />
-          <q-btn dense round size="md" color="white" text-color="dark" icon="more_vert"
-            class="absolute-top-right q-ma-sm">
-            <q-menu anchor="bottom right" self="top right">
-              <q-item clickable v-ripple @click="hideSeekButton = !hideSeekButton">
+          <q-btn dense round size="md" color="white" text-color="dark" icon="info_outline"
+            class="absolute-top-right q-ma-sm" @click="openWorkDetail()" />
+        </div>
+
+        <!-- 当前播放列表：内嵌在封面与播放控件之间，按可用高度微调（至少三行） -->
+        <div class="current-play-list bg-white" v-show="showCurrentPlayList">
+          <!-- 音频文件列表 -->
+          <q-list class="scroll" style="height: 100%;" @mousewheel.stop @touchmove.stop>
+            <draggable handle=".handle" v-model="queueCopy" @change="val => onMoved(val.moved)">
+              <q-item clickable v-ripple v-for="(track, index) in queueCopy" :key="index" :active="queueIndex === index"
+                active-class="text-white bg-teal" class="non-selectable" style="height: 48px; padding: 0px 10px;"
+                @click="onClickTrack(index)">
+                <q-item-section side>
+                  <q-icon name="clear" :color="queueIndex === index ? 'white' : 'red'" @click.stop="removeFromQueue(index)" />
+                </q-item-section>
+
                 <q-item-section avatar>
-                  <q-icon :name="hideSeekButton ? 'done' : ''" />
+                  <q-img transition="fade" :src="samCoverUrl(track.hash)" style="height: 38px; width: 38px"
+                    class="rounded-borders" />
                 </q-item-section>
 
                 <q-item-section>
-                  隐藏封面按钮
+                  <q-item-label lines="1">{{ track.title }}</q-item-label>
+                  <q-item-label caption lines="1">{{ track.album }}</q-item-label>
                 </q-item-section>
-              </q-item>
 
-              <q-item clickable v-ripple @click="swapSeekButton = !swapSeekButton">
-                <q-item-section avatar>
-                  <q-icon :name="swapSeekButton ? 'done' : ''" />
-                </q-item-section>
-                <q-item-section>
-                  交换进度按钮与切换按钮
+                <q-item-section side class="handle">
+                  <q-icon name="reorder" :color="queueIndex === index ? 'white' : 'dark'" />
                 </q-item-section>
               </q-item>
-
-              <q-item clickable v-ripple @click="openWorkDetail()" v-close-popup>
-                <q-item-section avatar>
-                  <!-- placeholder -->
-                </q-item-section>
-                <q-item-section>
-                  打开作品详情
-                </q-item-section>
-              </q-item>
-            </q-menu>
-          </q-btn>
-          <div class="row absolute q-pl-md q-pr-md col-12 justify-between">
-            <q-btn v-if="!hideSeekButton" round size="lg" color="white" text-color="dark" style="opacity: 0.8"
-              @click="swapSeekButton ? previousTrack() : rewind()"
-              :icon="swapSeekButton ? 'skip_previous' : rewindIcon" />
-            <q-btn v-if="!hideSeekButton" round size="lg" color="white" text-color="dark" style="opacity: 0.8"
-              @click="swapSeekButton ? nextTrack() : forward()"
-              :icon="swapSeekButton ? 'skip_next' : forwardIcon" />
-          </div>
+            </draggable>
+          </q-list>
         </div>
 
         <!-- 进度条控件 -->
@@ -73,14 +65,23 @@
 
         <!-- 播放按钮控件 -->
         <div class="row justify-around" style="height: 65px">
-          <q-btn flat dense size="md" icon="queue_music" @click="showCurrentPlayList = !showCurrentPlayList"
-            style="width: 55px" class="col-auto" />
-          <q-btn flat dense size="lg" :icon="swapSeekButton ? rewindIcon : 'skip_previous'"
-            @click="swapSeekButton ? rewind() : previousTrack()" style="width: 55px" class="col-auto" />
+          <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
+          <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
+            :color="isPressing('queue') ? 'negative' : (showCurrentPlayList ? 'primary' : undefined)"
+            @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
+            @mouseleave="cancelPress" @contextmenu.prevent
+            style="width: 55px" class="col-auto non-selectable" />
+          <!-- 短按：上一首；长按：后退 -->
+          <q-btn flat dense size="lg" :icon="isPressing('previous') ? rewindIcon : 'skip_previous'"
+            @click="onPressClick('previous')" @mousedown="startPress('previous')"
+            @touchstart="startPress('previous')" @mouseleave="cancelPress"
+            style="width: 55px" class="col-auto non-selectable" />
           <q-btn flat dense size="28px" :icon="playingIcon" @click="togglePlaying()" style="width: 65px"
             class="col-auto" />
-          <q-btn flat dense size="lg" :icon="swapSeekButton ? forwardIcon : 'skip_next'"
-            @click="swapSeekButton ? forward() : nextTrack()" style="width: 55px" class="col-auto" />
+          <!-- 短按：下一首；长按：前进 -->
+          <q-btn flat dense size="lg" :icon="isPressing('next') ? forwardIcon : 'skip_next'"
+            @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
+            @mouseleave="cancelPress" style="width: 55px" class="col-auto non-selectable" />
           <q-btn flat dense size="md" :icon="playModeIcon" @click="changePlayMode()" style="width: 55px"
             class="col-auto" />
         </div>
@@ -95,51 +96,6 @@
         </div>
       </q-card>
     </q-slide-transition>
-
-    <!-- 当前播放列表 -->
-    <q-dialog v-model="showCurrentPlayList">
-      <q-card class="current-play-list">
-        <!-- 操作当前播放列表的控制按钮 -->
-        <div class="row" style="padding: 5px; height: 45px;">
-          <q-btn dense round size="md" icon="edit" color="primary" @click="editCurrentPlayList = !editCurrentPlayList"
-            style="height: 35px; width: 35px;" class="col-auto" />
-          <q-btn dense round size="md" icon="save" color="teal" style="height: 35px; width: 35px;"
-            class="col-auto q-mx-sm" />
-          <q-space />
-          <q-btn dense round size="md" icon="delete_forever" color="red" @click="emptyQueue()"
-            style="height: 35px; width: 35px;" class="col-auto" />
-        </div>
-
-        <q-separator />
-
-        <!-- 音频文件列表 -->
-        <q-list style="max-height: 450px" class="scroll">
-          <draggable handle=".handle" v-model="queueCopy" @change="val => onMoved(val.moved)">
-            <q-item clickable v-ripple v-for="(track, index) in queueCopy" :key="index" :active="queueIndex === index"
-              active-class="text-white bg-teal" class="non-selectable" style="height: 48px; padding: 0px 10px;"
-              @click="onClickTrack(index)">
-              <q-item-section side v-show="editCurrentPlayList">
-                <q-icon name="clear" :color="queueIndex === index ? 'white' : 'red'" @click="removeFromQueue(index)" />
-              </q-item-section>
-
-              <q-item-section avatar>
-                <q-img transition="fade" :src="samCoverUrl(track.hash)" style="height: 38px; width: 38px"
-                  class="rounded-borders" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label lines="1">{{ track.title }}</q-item-label>
-                <q-item-label caption lines="1">{{ track.album }}</q-item-label>
-              </q-item-section>
-
-              <q-item-section side class="handle" v-show="editCurrentPlayList">
-                <q-icon name="reorder" :color="queueIndex === index ? 'white' : 'dark'" />
-              </q-item-section>
-            </q-item>
-          </draggable>
-        </q-list>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
@@ -147,6 +103,14 @@
 import draggable from 'vuedraggable'
 import AudioElement from 'components/AudioElement'
 import { mapState, mapGetters, mapMutations } from 'vuex'
+
+// 长按手势时长表：fire 到点触发动作，feedback 到点进入长按反馈（按钮图标变化），
+// repeat 表示继续按住时按该间隔反复触发
+const LONG_PRESS = {
+  queue: { fire: 2000, feedback: 500 }, // 长按清空播放列表
+  previous: { fire: 1000, feedback: 200, repeat: 1000 }, // 长按后退，按住不放持续后退
+  next: { fire: 1000, feedback: 200, repeat: 1000 } // 长按前进，按住不放持续前进
+}
 
 export default {
   name: 'AudioPlayer',
@@ -159,16 +123,19 @@ export default {
   data() {
     return {
       showCurrentPlayList: false,
-      editCurrentPlayList: false,
       queueCopy: [],
-      hideSeekButton: false,
-      swapSeekButton: false,
+      pressHeld: false, // 正有一次按住（到松手为止，期间忽略其他按钮）
+      pressKey: null, // 当前按住的按钮
+      pressActive: false, // 已进入长按反馈，按钮图标据此变化
+      pressFeedbackTimer: null,
+      pressTimer: null,
+      pressRepeatTimer: null,
+      pressDone: false, // 本次长按已触发，用于吞掉随后的 click
     }
   },
 
-  mounted() {
-    this.hideSeekButton = this.$q.localStorage.getItem('hideSeekButton') === 'true'
-    this.swapSeekButton = this.$q.localStorage.getItem('swapSeekButton') === 'true'
+  beforeDestroy() {
+    this.cancelPress()
   },
 
   watch: {
@@ -178,21 +145,6 @@ export default {
       if (this.queueCopy.length === 0) {
         this.showCurrentPlayList = false
       }
-    },
-
-    showCurrentPlayList(flag) {
-      // 关闭当前播放列表后，重置 editCurrentPlayList 状态为 false
-      if (flag === false) {
-        this.editCurrentPlayList = false
-      }
-    },
-
-    hideSeekButton(option) {
-      this.$q.localStorage.set('hideSeekButton', option)
-    },
-
-    swapSeekButton(option) {
-      this.$q.localStorage.set('swapSeekButton', option)
     },
 
     duration(newVal) {
@@ -331,10 +283,102 @@ export default {
     },
 
     onClickTrack(index) {
-      if (!this.editCurrentPlayList) {
-        this.setTrack(index)
-        this.showCurrentPlayList = false
+      this.setTrack(index)
+    },
+
+    /**
+     * 长按手势：按住超过 LONG_PRESS[key].fire 就触发对应动作。
+     * 松手可能发生在按钮之外（清空播放列表后没有在播曲目，整个播放器会隐藏），
+     * 所以松手监听挂在 window 上，保证能收尾。
+     */
+    startPress(key) {
+      // 计时器触发后会被置空，所以互斥要用 pressHeld 而不是 pressTimer
+      if (this.pressHeld === true) return
+
+      const conf = LONG_PRESS[key]
+
+      this.pressHeld = true
+      this.pressKey = key
+      this.pressDone = false
+
+      // 按住一小会儿才换图标，避免普通点击时闪一下
+      this.pressFeedbackTimer = setTimeout(() => {
+        this.pressFeedbackTimer = null
+        this.pressActive = true
+      }, conf.feedback)
+
+      this.pressTimer = setTimeout(() => {
+        this.pressTimer = null
+        this.pressDone = true
+        this.fireLongPress(key)
+
+        // 继续按住就按固定间隔反复快进/快退
+        if (conf.repeat !== void 0) {
+          this.pressRepeatTimer = setInterval(() => {
+            this.fireLongPress(key)
+          }, conf.repeat)
+        }
+      }, conf.fire)
+
+      window.addEventListener('mouseup', this.cancelPress)
+      window.addEventListener('touchend', this.cancelPress)
+      window.addEventListener('touchcancel', this.cancelPress)
+    },
+
+    fireLongPress(key) {
+      if (key === 'queue') {
+        this.emptyQueue()
+      } else if (key === 'previous') {
+        this.rewind()
+      } else if (key === 'next') {
+        this.forward()
       }
+    },
+
+    cancelPress() {
+      if (this.pressFeedbackTimer !== null) {
+        clearTimeout(this.pressFeedbackTimer)
+        this.pressFeedbackTimer = null
+      }
+
+      if (this.pressTimer !== null) {
+        clearTimeout(this.pressTimer)
+        this.pressTimer = null
+      }
+
+      if (this.pressRepeatTimer !== null) {
+        clearInterval(this.pressRepeatTimer)
+        this.pressRepeatTimer = null
+      }
+
+      window.removeEventListener('mouseup', this.cancelPress)
+      window.removeEventListener('touchend', this.cancelPress)
+      window.removeEventListener('touchcancel', this.cancelPress)
+
+      this.pressHeld = false
+      this.pressActive = false
+      this.pressKey = null
+    },
+
+    // 长按已触发时浏览器补发的 click 要吞掉，否则会再走一次短按动作
+    onPressClick(key) {
+      if (this.pressDone === true) {
+        this.pressDone = false
+        return
+      }
+
+      if (key === 'queue') {
+        this.showCurrentPlayList = !this.showCurrentPlayList
+      } else if (key === 'previous') {
+        this.previousTrack()
+      } else if (key === 'next') {
+        this.nextTrack()
+      }
+    },
+
+    // 模板里用：判断某个按钮是否处于长按反馈中
+    isPressing(key) {
+      return this.pressActive === true && this.pressKey === key
     },
 
     onMoved(moved) {
@@ -421,11 +465,20 @@ export default {
 
 <style lang="scss" scoped>
 .audio-player {
+  // 竖直排布：封面 / 播放列表 / 播放控件；列表展开时由封面收缩让出空间
+  display: flex;
+  flex-direction: column;
+
+  // 除封面外都保持自身高度，不参与压缩
+  > * {
+    flex: 0 0 auto;
+  }
 
   // 宽度 > $breakpoint-sm-min
   @media (min-width: $breakpoint-sm-min) {
     width: 330px;
     margin: 0px 10px 10px 0px;
+    max-height: calc(100vh - 20px);
   }
 
   // 宽度 < $breakpoint-xs-max (599px)
@@ -435,26 +488,35 @@ export default {
   }
 }
 
-.albumart {
+// 封面：空间不足时收缩；移动端吃掉剩余高度
+.audio-player > .albumart {
+  flex: 0 1 auto;
+  min-height: 80px;
+  overflow: hidden;
 
   // 宽度 < $breakpoint-xs-max (599px)
   @media (max-width: $breakpoint-xs-max) {
     width: 100%;
-    height: calc(100% - 230px);
+    flex: 1 1 auto;
   }
 }
 
+// 内嵌在播放器里的当前播放列表：按可用高度微调，最少三行（行高见列表项上的 48px）
 .current-play-list {
-  max-height: 500px;
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 144px;
+  max-height: 45vh;
+  overflow: hidden;
+}
 
-  // 宽度 > $breakpoint-xs-max
-  @media (min-width: $breakpoint-xs-max) {
-    width: 450px;
-  }
-
-  // 宽度 < $breakpoint-xs-max (599px)
-  @media (max-width: $breakpoint-xs-max) {
-    min-width: 280px;
+// 视口太矮，连「封面 + 三行」都放不下时，列表改为盖在封面下沿
+@media (max-height: 470px) {
+  .current-play-list {
+    flex: 0 0 auto;
+    height: 144px;
+    margin-top: -144px;
   }
 }
 </style>

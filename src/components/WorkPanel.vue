@@ -1,19 +1,25 @@
 <template>
   <div class="column no-wrap fit bg-white relative-position">
-    <!-- 悬浮返回按钮（顶部不再占用工具条） -->
-    <q-btn
-      class="work-panel-back absolute-top-right q-ma-sm"
-      round
-      color="primary"
-      text-color="white"
-      :icon="backIcon"
+    <!-- 右侧贴边把手：点一下收起面板；鼠标悬停 / 键盘聚焦时展宽并变主色 -->
+    <button
+      class="panel-grip"
+      type="button"
+      aria-label="收起作品详情"
       @click="$emit('close')"
+      @wheel="onGripWheel"
     >
-      <q-tooltip>返回作品列表</q-tooltip>
-    </q-btn>
+      <span class="panel-grip__bar">
+        <q-icon name="chevron_left" size="12px" />
+      </span>
+
+      <!-- 触屏点按会闪一下 tooltip，所以只在鼠标设备上挂 -->
+      <q-tooltip v-if="!hasTouch" anchor="center right" self="center left" :offset="[8, 0]">
+        收起详情
+      </q-tooltip>
+    </button>
 
     <!-- 详情 + 文件树，独立滚动 -->
-    <div class="col scroll work-panel-scroll">
+    <div ref="scrollBody" class="col scroll work-panel-scroll">
       <WorkDetails :metadata="metadata" @reset="requestData()" />
       <WorkTree :tree="tree" :metadata="metadata" :editable="false" />
     </div>
@@ -39,11 +45,6 @@ export default {
     workid: {
       type: Number,
       required: true
-    },
-
-    backIcon: {
-      type: String,
-      default: 'arrow_back'
     }
   },
 
@@ -63,11 +64,27 @@ export default {
     }
   },
 
+  computed: {
+    // 触屏设备没有 hover，要靠按下态来表达，tooltip 也只在鼠标设备上挂
+    hasTouch () {
+      return this.$q.platform.has.touch === true
+    }
+  },
+
   created () {
     this.requestData()
   },
 
   methods: {
+    // 把手盖在滚动区上面，滚轮落在它身上时手动转发给面板，右边缘不会变成滚动死区
+    onGripWheel (event) {
+      const body = this.$refs.scrollBody
+      if (!body) return
+
+      const step = event.deltaMode === 1 ? 16 : (event.deltaMode === 2 ? body.clientHeight : 1)
+      body.scrollTop += event.deltaY * step
+    },
+
     reset () {
       this.metadata = {
         id: this.workid,
@@ -104,13 +121,73 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 悬浮的返回按钮，始终停留在面板右上角
-.work-panel-back {
+// 右侧贴边把手：可见的是一条细杆，实际命中区比它宽，避免只有几像素难点
+.panel-grip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 5;
-  opacity: 0.9;
+  width: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 
-  &:hover,
-  &:focus {
+  &__bar {
+    position: relative;
+    display: block;
+    flex: 0 0 auto; // 展开时向左长出容器，不要被 16px 的命中区压回去
+    width: 6px;
+    height: 96px;
+    border-radius: 999px 0 0 999px;
+    background: rgba(0, 0, 0, .16);
+    transition: width .18s ease, background-color .18s ease;
+  }
+
+  .q-icon {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    color: #fff;
+    opacity: 0;
+    transition: opacity .18s ease;
+  }
+
+  &:hover &__bar,
+  &:focus-visible &__bar {
+    width: 12px;
+    background: $primary;
+  }
+
+  &:hover .q-icon,
+  &:focus-visible .q-icon {
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: none; // 焦点态由把手自身的展开+主色表达
+  }
+}
+
+// 触屏没有 hover：把手常驻略粗一点，按下时才展开变主色
+@media (hover: none) {
+  .panel-grip__bar {
+    width: 6px;
+    background: rgba(0, 0, 0, .18);
+  }
+
+  .panel-grip:active .panel-grip__bar {
+    width: 12px;
+    background: $primary;
+  }
+
+  .panel-grip:active .q-icon {
     opacity: 1;
   }
 }

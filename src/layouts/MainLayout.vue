@@ -20,18 +20,15 @@
             class="nav-btn"
             :icon="item.icon"
             :label="showNavLabel ? item.title : undefined"
+            :aria-label="showNavLabel ? undefined : item.title"
             :to="item.path"
             exact
             active-class="nav-active"
             @click="item.action && item.action()"
-          >
-            <q-tooltip v-if="!showNavLabel">{{ item.title }}</q-tooltip>
-          </q-btn>
+          />
 
           <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
-            icon="keyboard_arrow_down">
-            <q-tooltip>更多</q-tooltip>
-
+            icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 6]">
               <q-list style="min-width: 150px">
                 <q-item
@@ -80,11 +77,10 @@
             round
             icon="search"
             class="nav-btn"
+            aria-label="搜索"
             :class="{ 'nav-active': keyword !== '' }"
             @click="openSearch"
-          >
-            <q-tooltip>搜索</q-tooltip>
-          </q-btn>
+          />
 
           <q-input
             v-else
