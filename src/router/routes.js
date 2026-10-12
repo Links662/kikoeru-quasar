@@ -2,7 +2,6 @@ import MainLayout from 'layouts/MainLayout'
 import DashboardLayout from 'layouts/DashboardLayout'
 
 import Works from 'pages/Works'
-import Work from 'pages/Work'
 import List from 'pages/List'
 import Login from 'pages/Login'
 import Favourites from 'pages/Favourites'
@@ -49,10 +48,6 @@ const routes = [
         path: 'works',
         name: 'works',
         component: Works
-      },
-      {
-        path: 'work/:id',
-        component: Work
       },
       {
         path: 'circles',

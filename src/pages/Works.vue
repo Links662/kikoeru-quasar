@@ -339,6 +339,8 @@ export default {
 
     handlePageKeyEvent(e) {
       if (e.repeat) return;
+      // 移动端详情面板会盖住作品列表，此时左右方向键不应该翻页
+      if (this.$q.screen.lt.md && this.$store.state.WorkPanel.workId !== null) return;
       const now = Date.now();
       if (this._lastKeyTime && (now - this._lastKeyTime < 300)) {
         return;

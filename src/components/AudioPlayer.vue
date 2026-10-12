@@ -356,8 +356,14 @@ export default {
       })
     },
     openWorkDetail() {
-      if (this.workDetailUrl && this.$route.path !== this.workDetailUrl) {
-        this.$router.push(this.workDetailUrl)
+      // /work/:id 会被路由守卫改成打开详情面板，所以这里比较的是面板当前打开的作品
+      const workid = this.workDetailUrl
+        ? Number(this.workDetailUrl.split('/').pop())
+        : null
+
+      if (workid !== null && this.$store.state.WorkPanel.workId !== workid) {
+        // 被守卫取消的导航会 reject，这里吞掉它
+        this.$router.push(this.workDetailUrl).catch(() => {})
       }
       if (this.$q.screen.lt.sm) {
         this.toggleHide()

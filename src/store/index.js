@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 
 import AudioPlayer from './module-AudioPlayer'
 import User from './module-User'
+import WorkPanel from './module-WorkPanel'
 
 Vue.use(Vuex)
 
@@ -19,7 +20,8 @@ export default function (/* { ssrContext } */) {
   const Store = new Vuex.Store({
     modules: {
       AudioPlayer,
-      User
+      User,
+      WorkPanel
     },
 
     // enable strict mode (adds overhead!)
@@ -36,6 +38,11 @@ export default function (/* { ssrContext } */) {
     module.hot.accept(['./module-User'], () => {
       const newUser = require('./module-User').default
       Store.hotUpdate({ modules: { User: newUser } })
+    })
+
+    module.hot.accept(['./module-WorkPanel'], () => {
+      const newWorkPanel = require('./module-WorkPanel').default
+      Store.hotUpdate({ modules: { WorkPanel: newWorkPanel } })
     })
   }
 

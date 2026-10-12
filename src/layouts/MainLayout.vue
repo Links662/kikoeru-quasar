@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="bg-grey-3">
-    <q-header class="shadow-4">
+    <q-header ref="header" class="shadow-4">
       <q-toolbar class="row justify-between">
         <q-btn flat dense round @click="drawerOpen = !drawerOpen" icon="menu" aria-label="Menu" />
 
@@ -137,18 +137,49 @@
 
     <SleepMode v-model="showTimer" />
 
+    <!-- 作品详情面板（桌面端）：从右侧滑出并顶开内容，左侧作品列表仍可滚动 -->
+    <q-drawer
+      v-if="!isMobilePanel"
+      side="right"
+      :value="workId !== null"
+      @input="onPanelInput"
+      :width="640"
+      bordered
+      elevated
+      content-class="bg-white"
+    >
+      <WorkPanel
+        v-if="workId !== null"
+        :key="workId"
+        :workid="workId"
+        back-icon="arrow_forward"
+        @close="closePanel"
+      />
+    </q-drawer>
+
     <q-page-container>
       <!-- <q-page padding> -->
         <keep-alive include="Works">
           <router-view />
         </keep-alive>
       <!-- </q-page> -->
-        <q-page-scroller position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+        <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
           <q-btn fab icon="keyboard_arrow_up" color="accent" />
         </q-page-scroller>
+
+        <!-- 作品详情面板（移动端）：只覆盖内容区，header/footer 保持可见可操作 -->
+        <transition name="work-panel-slide">
+          <div
+            v-if="isMobilePanel && workId !== null"
+            class="work-panel-mobile bg-white"
+            :style="mobilePanelStyle"
+          >
+            <WorkPanel :key="workId" :workid="workId" @close="closePanel" />
+          </div>
+        </transition>
     </q-page-container>
 
-    <q-footer class="q-pa-none">
+    <q-footer ref="footer" class="q-pa-none">
       <LyricsBar />
       <PlayerBar />
     </q-footer>
@@ -160,6 +191,7 @@ import PlayerBar from 'components/PlayerBar'
 import AudioPlayer from 'components/AudioPlayer'
 import LyricsBar from 'components/LyricsBar'
 import SleepMode from 'components/SleepMode'
+import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
 import { mapMutations, mapState } from 'vuex'
 
@@ -172,7 +204,8 @@ export default {
     PlayerBar,
     AudioPlayer,
     LyricsBar,
-    SleepMode
+    SleepMode,
+    WorkPanel
   },
 
   data () {
@@ -183,6 +216,9 @@ export default {
       confirm: false,
       randId: null,
       showTimer: false,
+      headerHeight: 0,
+      footerHeight: 0,
+      chromeObserver: null,
       links: [
         {
           title: '媒体库',
@@ -225,11 +261,18 @@ export default {
     },
 
     randId () {
-      this.$router.push(`/work/${this.randId}`)
+      // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
+      // 所以这里要吞掉被取消的导航抛出的 promise
+      this.$router.push(`/work/${this.randId}`).catch(() => {})
     },
     sharedConfig (config) {
       this.SET_REWIND_SEEK_TIME(config.rewindSeekTime);
       this.SET_FORWARD_SEEK_TIME(config.forwardSeekTime);
+    },
+
+    // 面板打开期间发生真实跳转（点标签/社团/侧边栏等）时关闭面板
+    $route () {
+      this.closePanel()
     }
   },
 
@@ -237,6 +280,23 @@ export default {
     this.initUser();
     // this.checkUpdate();
     this.readSharedConfig();
+    this.measureChrome();
+
+    window.addEventListener('resize', this.measureChrome);
+    window.addEventListener('keydown', this.handlePanelKeyEvent);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      this.chromeObserver = new ResizeObserver(this.measureChrome);
+      [this.$refs.header, this.$refs.footer].forEach((ref) => {
+        ref && this.chromeObserver.observe(ref.$el);
+      });
+    }
+  },
+
+  beforeDestroy () {
+    window.removeEventListener('resize', this.measureChrome);
+    window.removeEventListener('keydown', this.handlePanelKeyEvent);
+    this.chromeObserver && this.chromeObserver.disconnect();
   },
 
   computed: {
@@ -248,7 +308,23 @@ export default {
     ...mapState('User', {
       userName: 'name',
       authEnabled: 'auth'
-    })
+    }),
+
+    ...mapState('WorkPanel', {
+      workId: 'workId'
+    }),
+
+    isMobilePanel () {
+      return this.$q.screen.lt.md
+    },
+
+    // 移动端面板只覆盖内容区，所以要用 header / footer 的实际高度定位
+    mobilePanelStyle () {
+      return {
+        top: `${this.headerHeight}px`,
+        bottom: `${this.footerHeight}px`
+      }
+    }
   },
 
   methods: {
@@ -256,6 +332,34 @@ export default {
       'SET_REWIND_SEEK_TIME',
       'SET_FORWARD_SEEK_TIME'
     ]),
+    ...mapMutations('WorkPanel', {
+      closeWorkPanel: 'CLOSE'
+    }),
+
+    measureChrome () {
+      const header = this.$refs.header && this.$refs.header.$el;
+      const footer = this.$refs.footer && this.$refs.footer.$el;
+      this.headerHeight = header ? header.offsetHeight : 0;
+      this.footerHeight = footer ? footer.offsetHeight : 0;
+    },
+
+    closePanel () {
+      this.closeWorkPanel();
+    },
+
+    onPanelInput (value) {
+      value === false && this.closePanel();
+    },
+
+    handlePanelKeyEvent (event) {
+      if (event.key !== 'Escape' || this.workId === null) return;
+
+      // 面板里的评论弹层等自己会处理 Esc，不要跟着把面板一起关掉
+      if (document.querySelector('.q-dialog') !== null) return;
+
+      this.closePanel();
+    },
+
     initUser () {
       this.$axios.get('/api/auth/me')
         .then((res) => {
@@ -353,5 +457,24 @@ export default {
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
+  }
+
+// 移动端作品详情面板：只覆盖内容区（header 与 footer 之间）
+  .work-panel-mobile {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 2500;
+  }
+
+// 移动端详情面板的滑入/滑出（从右侧进出）
+  .work-panel-slide-enter-active,
+  .work-panel-slide-leave-active {
+    transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+
+  .work-panel-slide-enter,
+  .work-panel-slide-leave-to {
+    transform: translate3d(100%, 0, 0);
   }
 </style>
