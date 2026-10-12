@@ -1,16 +1,12 @@
 <template>
   <div>
-    <router-link :to="`/work/${metadata.id}`">
-      <CoverSFW :workid="metadata.id" :nsfw="false" :release="metadata.release" />
-    </router-link>
+    <CoverSFW :workid="metadata.id" :nsfw="false" :release="metadata.release" />
 
     <div class="q-pa-sm">
       <div class="q-px-sm q-py-none">
         <!-- 标题 -->
         <div class="text-h6 text-weight-regular">
-          <router-link :to="`/work/${metadata.id}`" class="text-black">
-            {{ metadata.title }}
-          </router-link>
+          {{ metadata.title }}
         </div>
 
         <!-- 社团名 -->

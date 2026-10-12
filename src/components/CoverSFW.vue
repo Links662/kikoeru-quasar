@@ -1,25 +1,23 @@
 <template>
-  <router-link :to="`/work/${workid}`">
-    <q-img
-      :src="coverUrl"
-      :ratio="4/3"
-      :img-class="imgClass"
-      style="max-width: 560px;"
-      transition="fade"
-      @mouseover="toggleBlurFlag()"
-      @mouseout="toggleBlurFlag()"
-    >
-      <div class="absolute-top-left transparent" style="padding: 0;">
-        <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
-          {{`RJ${rjcode}`}}
-        </q-chip>
-      </div>
+  <q-img
+    :src="coverUrl"
+    :ratio="4/3"
+    :img-class="imgClass"
+    style="max-width: 560px;"
+    transition="fade"
+    @mouseover="toggleBlurFlag()"
+    @mouseout="toggleBlurFlag()"
+  >
+    <div class="absolute-top-left transparent" style="padding: 0;">
+      <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
+        {{`RJ${rjcode}`}}
+      </q-chip>
+    </div>
 
-      <div :v-if="release" class="absolute-bottom-right" style="padding: 5px;">
-        {{release}}
-      </div>
-    </q-img>
-  </router-link>   
+    <div v-if="release" class="absolute-bottom-right" style="padding: 5px;">
+      {{release}}
+    </div>
+  </q-img>
 </template>
 
 <script>
@@ -38,7 +36,8 @@ export default {
     },
 
     release: {
-      required: true
+      type: String,
+      default: ''
     }
   },
 
