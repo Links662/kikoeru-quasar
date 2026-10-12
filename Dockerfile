@@ -13,6 +13,11 @@ WORKDIR /frontend
 # So I prebuilt the binaries for arm64 and armv7
 # @quasar/app v2 no longer uses this deprecated package, so this line will be removed in the future
 ENV SASS_BINARY_SITE="https://github.com/umonaca/node-sass/releases/download"
+
+# npm 镜像源：默认走国内 npmmirror，需要用官方源时加 --build-arg NPM_REGISTRY=https://registry.npmjs.org
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+RUN npm config set registry ${NPM_REGISTRY}
+
 RUN npm install -g @quasar/cli
 COPY package*.json ./
 RUN npm ci

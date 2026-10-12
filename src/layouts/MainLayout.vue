@@ -24,7 +24,7 @@
             :to="item.path"
             exact
             active-class="nav-active"
-            @click="item.action && item.action()"
+            @click="onNavClick(item)"
           />
 
           <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
@@ -39,7 +39,7 @@
                   exact
                   :to="item.path"
                   active-class="text-primary text-weight-medium"
-                  @click="item.action && item.action()"
+                  @click="onNavClick(item)"
                 >
                   <q-item-section avatar>
                     <q-icon :name="item.icon" />
@@ -149,7 +149,7 @@
         </keep-alive>
       <!-- </q-page> -->
         <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
-          <q-btn fab icon="keyboard_arrow_up" color="accent" />
+          <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
         </q-page-scroller>
 
         <!-- 作品详情面板（移动端）：只覆盖内容区，header/footer 保持可见可操作 -->
@@ -198,7 +198,6 @@ export default {
       keyword: '',
       searchOpen: false,
       confirm: false,
-      randId: null,
       showTimer: false,
       headerHeight: 0,
       footerHeight: 0,
@@ -245,12 +244,6 @@ export default {
   watch: {
     keyword () {
       this.$router.push(this.keyword ? `/works?keyword=${this.keyword}` : `/works`)
-    },
-
-    randId () {
-      // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
-      // 所以这里要吞掉被取消的导航抛出的 promise
-      this.$router.push(`/work/${this.randId}`).catch(() => {})
     },
 
     // 导航项或按钮文字显隐变化后重新量一次
@@ -373,6 +366,8 @@ export default {
       items.push({
         title: '随心听',
         icon: 'shuffle',
+        // 面板打开时不收起，直接在当前详情里换成随机到的作品
+        keepPanel: true,
         action: this.randomPlay
       })
 
@@ -595,6 +590,15 @@ export default {
         })
     },
 
+    // 详情面板打开时点导航栏上的按钮，等价于点“返回”：先收起面板再执行跳转 / 动作
+    onNavClick (item) {
+      // keepPanel 的动作（随心听）会自己换掉当前详情，收起再展开只会闪一下
+      if (item.keepPanel !== true) {
+        this.closePanel()
+      }
+      item.action && item.action()
+    },
+
     randomPlay() {
       this.requestRandomWork();
     },
@@ -606,10 +610,15 @@ export default {
       this.$axios.get('/api/works', { params })
         .then((response) => {
           const works = response.data.works
-          this.randId = works.length ? works[0].id : null;
-          if(works.length === 0){
+
+          if (works.length === 0) {
             this.showErrNotif("列表中无作品，请增加后再使用此功能")
+            return
           }
+
+          // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
+          // 所以这里要吞掉被取消的导航抛出的 promise
+          this.$router.push(`/work/${works[0].id}`).catch(() => {})
         })
         .catch((error) => {
           if (error.response) {

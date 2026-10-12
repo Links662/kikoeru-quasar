@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CoverSFW :workid="metadata.id" :nsfw="false" :release="metadata.release" />
+    <CoverSFW :workid="metadata.id" :nsfw="false" :release="metadata.release" class="work-cover" />
 
     <div class="q-pa-sm">
       <div class="q-px-sm q-py-none">
@@ -278,3 +278,16 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 详情面板里封面紧贴右侧把手，按住把手时鼠标/手指常常落到封面上。
+// 封面本身（q-img 内部是带背景图的 div）会被浏览器当作可选择内容：
+// 以它为锚点开始拖选，选区扫过封面和正文，拖动/复制时就成了“复制封面图片”。
+// 封面没有需要选中的文字，直接让它不参与选择、拖拽和长按菜单。
+.work-cover {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+</style>

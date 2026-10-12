@@ -137,6 +137,9 @@ export default {
   justify-content: flex-end;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  // 把手自己不能成为选择起点：否则按住它拖动会在面板里拉出一段选区
+  user-select: none;
+  -webkit-user-select: none;
 
   &__bar {
     position: relative;
