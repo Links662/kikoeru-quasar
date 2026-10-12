@@ -56,12 +56,7 @@
       </q-list>
 
       <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-md">
-        <div :class="[
-          'col',
-          detailMode
-            ? 'col-xs-12 col-sm-6 col-md-4 col-lg-3 col-xl-2'
-            : 'col-xs-6 col-sm-4 col-md-3 col-lg-2 col-xl-2'
-        ]" v-for="work in works" :key="work.id">
+        <div :class="['col', columnClass]" v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
         </div>
       </div>
@@ -79,6 +74,7 @@ import WorkCard from 'components/WorkCard'
 import WorkListItem from 'components/WorkListItem'
 import NotifyMixin from '../mixins/Notification.js'
 import RecentList from 'components/RecentList'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Works',
@@ -176,11 +172,16 @@ export default {
     window.addEventListener('keydown', this.handlePageKeyEvent);
   },
 
-  beforeUnmount() {
+  beforeDestroy() {
     window.removeEventListener('keydown', this.handlePageKeyEvent);
   },
 
   computed: {
+    ...mapState('WorkPanel', {
+      workId: 'workId',
+      panelWidth: 'panelWidth'
+    }),
+
     url () {
       const query = this.$route.query
       let result = ""
@@ -200,6 +201,28 @@ export default {
     },
     direction () {
       return this.sortOption.sort === 'desc'
+    },
+
+    // 详情面板打开后会顶开右侧内容，可用的宽度要减掉面板宽度（移动端面板是浮层，不占宽度）
+    availableWidth () {
+      const panelOpen = this.workId !== null && !this.isMobilePanel
+      return this.$q.screen.width - (panelOpen ? this.panelWidth : 0)
+    },
+
+    // 按可用宽度套用与 Quasar 断点一致的规则，面板打开后列数会自动减少
+    columnClass () {
+      const width = this.availableWidth
+      const detail = this.detailMode
+
+      if (width < 600) return detail ? 'col-12' : 'col-6'
+      if (width < 1024) return detail ? 'col-6' : 'col-4'
+      if (width < 1440) return detail ? 'col-4' : 'col-3'
+      if (width < 1920) return detail ? 'col-3' : 'col-2'
+      return 'col-2'
+    },
+
+    isMobilePanel () {
+      return this.$q.screen.lt.md
     },
   },
 

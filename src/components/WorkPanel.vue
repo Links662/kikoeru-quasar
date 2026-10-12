@@ -1,20 +1,19 @@
 <template>
-  <div class="column no-wrap fit bg-white">
-    <!-- 返回作品列表 -->
-    <div class="row items-center no-wrap bg-grey-2 q-pr-sm">
-      <q-btn flat dense round :icon="backIcon" @click="$emit('close')">
-        <q-tooltip>返回作品列表</q-tooltip>
-      </q-btn>
-
-      <div class="col q-ml-sm ellipsis text-subtitle1 text-weight-medium">
-        {{ metadata.title || `RJ${rjcode}` }}
-      </div>
-    </div>
-
-    <q-separator />
+  <div class="column no-wrap fit bg-white relative-position">
+    <!-- 悬浮返回按钮（顶部不再占用工具条） -->
+    <q-btn
+      class="work-panel-back absolute-top-right q-ma-sm"
+      round
+      color="primary"
+      text-color="white"
+      :icon="backIcon"
+      @click="$emit('close')"
+    >
+      <q-tooltip>返回作品列表</q-tooltip>
+    </q-btn>
 
     <!-- 详情 + 文件树，独立滚动 -->
-    <div class="col scroll">
+    <div class="col scroll work-panel-scroll">
       <WorkDetails :metadata="metadata" @reset="requestData()" />
       <WorkTree :tree="tree" :metadata="metadata" :editable="false" />
     </div>
@@ -55,15 +54,6 @@ export default {
         circle: {}
       },
       tree: []
-    }
-  },
-
-  computed: {
-    rjcode () {
-      const workid = this.workid
-      return workid >= 1000000
-        ? (`00000000${workid}`).slice(-8)
-        : (`000000${workid}`).slice(-6)
     }
   },
 
@@ -112,3 +102,27 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 悬浮的返回按钮，始终停留在面板右上角
+.work-panel-back {
+  z-index: 5;
+  opacity: 0.9;
+
+  &:hover,
+  &:focus {
+    opacity: 1;
+  }
+}
+
+// 隐藏滚动条，但保留滚动能力
+.work-panel-scroll {
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // 旧版 Edge / IE
+  overscroll-behavior: contain; // 滚到边界后不要带着背后的页面一起滚
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome / Safari / 新版 Edge
+  }
+}
+</style>

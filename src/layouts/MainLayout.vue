@@ -1,125 +1,115 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="bg-grey-3">
     <q-header ref="header" class="shadow-4">
-      <q-toolbar class="row justify-between">
-        <q-btn flat dense round @click="drawerOpen = !drawerOpen" icon="menu" aria-label="Menu" />
-
-        <!-- <q-btn flat size="md" icon="arrow_back_ios" @click="back()" v-if="isNotAtHomePage"/> -->
-
-        <q-toolbar-title class="gt-xs">
-          <router-link :to="'/'" class="text-white">
+      <q-toolbar>
+        <!-- 屏幕变窄时收掉 Kikoeru 标签，给导航和搜索让位 -->
+        <q-toolbar-title shrink class="gt-xs q-mr-md">
+          <router-link :to="'/'" class="text-white text-weight-bold">
             Kikoeru
           </router-link>
         </q-toolbar-title>
 
-        <q-input dark dense rounded standout v-model="keyword" debounce="500" input-class="text-right" class="q-mr-sm">
-          <template v-slot:append>
-            <q-icon v-if="keyword === ''" name="search" />
-            <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
-          </template>
-        </q-input>
+        <!-- 导航：原先左侧工具栏的内容全部移到这里。
+             固定一行，一行放不下的项收进末尾的下拉菜单 -->
+        <div ref="navRow" class="nav-scroll row no-wrap items-center" v-show="!searchTakesOver">
+          <q-btn
+            v-for="(item, index) in shownNavItems"
+            :key="'nav' + index"
+            flat
+            dense
+            class="nav-btn"
+            :icon="item.icon"
+            :label="showNavLabel ? item.title : undefined"
+            :to="item.path"
+            exact
+            active-class="nav-active"
+            @click="item.action && item.action()"
+          >
+            <q-tooltip v-if="!showNavLabel">{{ item.title }}</q-tooltip>
+          </q-btn>
 
+          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
+            icon="keyboard_arrow_down">
+            <q-tooltip>更多</q-tooltip>
+
+            <q-menu anchor="bottom right" self="top right" :offset="[0, 6]">
+              <q-list style="min-width: 150px">
+                <q-item
+                  v-for="(item, index) in hiddenNavItems"
+                  :key="'more' + index"
+                  clickable
+                  v-ripple
+                  exact
+                  :to="item.path"
+                  active-class="text-primary text-weight-medium"
+                  @click="item.action && item.action()"
+                >
+                  <q-item-section avatar>
+                    <q-icon :name="item.icon" />
+                  </q-item-section>
+
+                  <q-item-section>
+                    {{ item.title }}
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+        </div>
+
+        <!-- 只用来量按钮宽度的隐藏行 -->
+        <div ref="navMeasure" class="nav-measure row no-wrap items-center" aria-hidden="true">
+          <q-btn
+            v-for="(item, index) in navItems"
+            :key="'measure' + index"
+            flat
+            dense
+            class="nav-btn"
+            :icon="item.icon"
+            :label="showNavLabel ? item.title : undefined"
+            tabindex="-1"
+          />
+        </div>
+
+        <!-- 搜索：平时收成一个图标，点击才展开输入框 -->
+        <div class="header-search" :class="{ 'header-search--wide': searchTakesOver }">
+          <q-btn
+            v-if="!searchOpen"
+            flat
+            dense
+            round
+            icon="search"
+            class="nav-btn"
+            :class="{ 'nav-active': keyword !== '' }"
+            @click="openSearch"
+          >
+            <q-tooltip>搜索</q-tooltip>
+          </q-btn>
+
+          <q-input
+            v-else
+            ref="searchInput"
+            dark
+            dense
+            rounded
+            standout
+            v-model="keyword"
+            debounce="500"
+            input-class="text-right"
+            class="search-field"
+            @blur="closeSearch"
+            @keydown.esc="closeSearch"
+          >
+            <template v-slot:append>
+              <q-icon v-if="keyword === ''" name="search" />
+              <q-icon v-else name="clear" class="cursor-pointer" @mousedown.prevent="keyword = ''" />
+            </template>
+          </q-input>
+        </div>
       </q-toolbar>
 
       <AudioPlayer />
     </q-header>
-
-    <q-drawer
-      v-model="drawerOpen"
-      show-if-above
-      :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      mini-to-overlay
-
-      :width="230"
-      :breakpoint="500"
-      bordered
-      content-class="bg-grey-1"
-    >
-      <q-scroll-area class="fit">
-        <q-list>
-          <q-item
-            clickable
-            v-ripple
-            exact
-            :to="link.path"
-            active-class="text-deep-purple text-weight-medium"
-            v-for="(link, index) in links"
-            :key="index"
-            @click="miniState = true"
-          >
-            <q-item-section avatar>
-              <q-icon :name="link.icon" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label class="text-subtitle1">
-                {{link.title}}
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item
-            clickable
-            v-ripple
-            exact
-            active-class="text-deep-purple text-weight-medium"
-            @click="randomPlay"
-          >
-            <q-item-section avatar>
-              <q-icon name="shuffle" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label class="text-subtitle1">
-                随心听
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-
-          <q-item
-            clickable
-            v-ripple
-            exact
-            active-class="text-deep-purple text-weight-medium"
-            @click="showTimer = true"
-          >
-            <q-item-section avatar>
-              <q-icon name="bedtime" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label class="text-subtitle1">
-                睡眠模式
-              </q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-
-        <q-list>
-          <q-item
-            clickable
-            v-ripple
-            exact
-            active-class="text-deep-purple text-weight-medium"
-            @click="confirm = true"
-            v-if="authEnabled"
-          >
-            <q-item-section avatar>
-              <q-icon name="exit_to_app" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label class="text-subtitle1">
-                登出
-              </q-item-label>
-              <q-item-label caption lines="2">{{ userName }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
 
     <q-dialog v-model="confirm" persistent>
       <q-card>
@@ -137,13 +127,13 @@
 
     <SleepMode v-model="showTimer" />
 
-    <!-- 作品详情面板（桌面端）：从右侧滑出并顶开内容，左侧作品列表仍可滚动 -->
+    <!-- 作品详情面板（桌面端）：从左侧滑出并顶开内容，右侧作品列表仍可滚动 -->
     <q-drawer
       v-if="!isMobilePanel"
-      side="right"
+      side="left"
       :value="workId !== null"
       @input="onPanelInput"
-      :width="640"
+      :width="panelWidth"
       bordered
       elevated
       content-class="bg-white"
@@ -152,7 +142,6 @@
         v-if="workId !== null"
         :key="workId"
         :workid="workId"
-        back-icon="arrow_forward"
         @close="closePanel"
       />
     </q-drawer>
@@ -193,7 +182,7 @@ import LyricsBar from 'components/LyricsBar'
 import SleepMode from 'components/SleepMode'
 import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
-import { mapMutations, mapState } from 'vuex'
+import { mapGetters, mapMutations, mapState } from 'vuex'
 
 export default {
   name: 'MainLayout',
@@ -211,19 +200,21 @@ export default {
   data () {
     return {
       keyword: '',
-      drawerOpen: false,
-      miniState: true,
+      searchOpen: false,
       confirm: false,
       randId: null,
       showTimer: false,
       headerHeight: 0,
       footerHeight: 0,
       chromeObserver: null,
+      navRowObserver: null,
+      navMeasureTimer: null,
+      navVisibleCount: null, // null 表示所有导航项都放得下
       links: [
         {
           title: '媒体库',
           icon: 'widgets',
-          path: '/'
+          path: '/works'
         },
         {
           title: '我的进度',
@@ -265,12 +256,46 @@ export default {
       // 所以这里要吞掉被取消的导航抛出的 promise
       this.$router.push(`/work/${this.randId}`).catch(() => {})
     },
+
+    // 导航项或按钮文字显隐变化后重新量一次
+    navItems () {
+      this.scheduleMeasureNav()
+    },
+
+    showNavLabel () {
+      this.scheduleMeasureNav()
+    },
+
     sharedConfig (config) {
       this.SET_REWIND_SEEK_TIME(config.rewindSeekTime);
       this.SET_FORWARD_SEEK_TIME(config.forwardSeekTime);
     },
 
-    // 面板打开期间发生真实跳转（点标签/社团/侧边栏等）时关闭面板
+    // 移动端播放器展开后会盖住详情面板，此时自动收起面板
+    playerExpanded (expanded) {
+      if (expanded === true && this.isMobilePanel === true) {
+        this.closePanel()
+      }
+    },
+
+    // 浮层面板打开时锁住背后页面的滚动，关掉（或切到桌面端抽屉）时解锁。
+    // immediate：直接访问 /work/:id 时，路由守卫会在 Layout 创建前就打开面板
+    mobilePanelOpen: {
+      immediate: true,
+      handler (open) {
+        this.toggleBodyScrollLock(open)
+      }
+    },
+
+    // 窗口从浮层档跨到桌面档时先收起面板：Quasar 的抽屉要用新的布局宽度判断
+    // 自己是不是浮层，旧宽度会让它把自己当成浮层并锁死页面滚动
+    isMobilePanel (isMobile, wasMobile) {
+      if (wasMobile === true && isMobile === false && this.workId !== null) {
+        this.closePanel()
+      }
+    },
+
+    // 面板打开期间发生真实跳转（点标签/社团/顶部导航等）时关闭面板
     $route () {
       this.closePanel()
     }
@@ -291,12 +316,25 @@ export default {
         ref && this.chromeObserver.observe(ref.$el);
       });
     }
+
+    // 导航栏宽度变化（窗口缩放、标题显隐、搜索展开）时重算能放下几个
+    this.$nextTick(this.measureNav);
+    if (typeof ResizeObserver !== 'undefined' && this.$refs.navRow) {
+      this.navRowObserver = new ResizeObserver(this.scheduleMeasureNav);
+      this.navRowObserver.observe(this.$refs.navRow);
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(this.scheduleMeasureNav);
+    }
   },
 
   beforeDestroy () {
     window.removeEventListener('resize', this.measureChrome);
     window.removeEventListener('keydown', this.handlePanelKeyEvent);
     this.chromeObserver && this.chromeObserver.disconnect();
+    this.navRowObserver && this.navRowObserver.disconnect();
+    clearTimeout(this.navMeasureTimer);
+    this.toggleBodyScrollLock(false);
   },
 
   computed: {
@@ -311,8 +349,80 @@ export default {
     }),
 
     ...mapState('WorkPanel', {
-      workId: 'workId'
+      workId: 'workId',
+      panelWidth: 'panelWidth'
     }),
+
+    ...mapState('AudioPlayer', {
+      playerHide: 'hide'
+    }),
+
+    ...mapGetters('AudioPlayer', [
+      'currentPlayingFile'
+    ]),
+
+    // 顶部导航是否显示文字（窄屏只显示图标）
+    showNavLabel () {
+      return this.$q.screen.gt.sm
+    },
+
+    // 顶部导航的全部条目（路由 + 动作），顺序就是显示顺序
+    navItems () {
+      const items = this.links.map(link => ({
+        title: link.title,
+        icon: link.icon,
+        path: link.path
+      }))
+
+      items.push({
+        title: '随心听',
+        icon: 'shuffle',
+        action: this.randomPlay
+      })
+
+      items.push({
+        title: '睡眠模式',
+        icon: 'bedtime',
+        action: () => { this.showTimer = true }
+      })
+
+      if (this.authEnabled === true) {
+        items.push({
+          title: '登出',
+          icon: 'exit_to_app',
+          action: () => { this.confirm = true }
+        })
+      }
+
+      return items
+    },
+
+    shownNavItems () {
+      return this.navVisibleCount === null
+        ? this.navItems
+        : this.navItems.slice(0, this.navVisibleCount)
+    },
+
+    hiddenNavItems () {
+      return this.navVisibleCount === null
+        ? []
+        : this.navItems.slice(this.navVisibleCount)
+    },
+
+    // 手机上展开搜索时让输入框独占这一行
+    searchTakesOver () {
+      return this.searchOpen === true && this.$q.screen.lt.sm
+    },
+
+    // 播放器卡片是否正在展开显示
+    playerExpanded () {
+      return this.playerHide === false && Boolean(this.currentPlayingFile.hash)
+    },
+
+    // 移动端详情面板是浮层，打开时要盖住内容并且不让背后页面滚动
+    mobilePanelOpen () {
+      return this.workId !== null && this.isMobilePanel === true
+    },
 
     isMobilePanel () {
       return this.$q.screen.lt.md
@@ -341,6 +451,86 @@ export default {
       const footer = this.$refs.footer && this.$refs.footer.$el;
       this.headerHeight = header ? header.offsetHeight : 0;
       this.footerHeight = footer ? footer.offsetHeight : 0;
+    },
+
+    scheduleMeasureNav () {
+      clearTimeout(this.navMeasureTimer)
+      this.navMeasureTimer = setTimeout(() => {
+        this.$nextTick(this.measureNav)
+      }, 50)
+    },
+
+    // 量出这一行能放下几个导航项，剩下的交给下拉菜单
+    measureNav () {
+      const nav = this.$refs.navRow
+      const measure = this.$refs.navMeasure
+      if (!nav || !measure) return
+
+      // 导航被临时隐藏（小屏展开搜索）时不重算，保持原样
+      const available = nav.clientWidth
+      if (available === 0) return
+
+      const buttons = measure.children
+      if (buttons.length === 0) return
+
+      // 直接累加按钮自身宽度 + 间距，不能用绝对坐标（隐藏行和导航行起点不同）
+      const widths = []
+      for (let i = 0; i < buttons.length; i++) {
+        const el = buttons[i]
+        const marginRight = parseFloat(getComputedStyle(el).marginRight) || 0
+        widths.push(el.getBoundingClientRect().width + marginRight)
+      }
+
+      let fit = buttons.length
+      let overflowed = false
+      let used = 0
+
+      for (let i = 0; i < buttons.length; i++) {
+        used += widths[i]
+        if (used > available) {
+          fit = i
+          overflowed = true
+          break
+        }
+      }
+
+      if (overflowed === true) {
+        // 末尾还要放一个下拉按钮，按剩下给它的宽度再算一次
+        const moreWidth = 46
+        used = 0
+        for (let i = 0; i < buttons.length; i++) {
+          used += widths[i]
+          if (used + moreWidth > available) {
+            fit = i
+            break
+          }
+        }
+      }
+
+      const next = fit >= buttons.length ? null : fit
+      if (next !== this.navVisibleCount) {
+        this.navVisibleCount = next
+      }
+    },
+
+    openSearch () {
+      this.searchOpen = true
+      this.$nextTick(() => {
+        this.$refs.searchInput && this.$refs.searchInput.focus()
+      })
+    },
+
+    closeSearch () {
+      this.searchOpen = false
+    },
+
+    // 面板打开期间锁住页面滚动，避免滚动"漏"到底下看不到的列表上
+    toggleBodyScrollLock (locked) {
+      if (locked === true) {
+        document.body.classList.add('work-panel-locked')
+      } else {
+        document.body.classList.remove('work-panel-locked')
+      }
     },
 
     closePanel () {
@@ -451,12 +641,61 @@ export default {
 
 
 <style lang="scss">
-// 侧边栏底部按钮
-  aside.q-drawer div.q-scrollarea > div.scroll > div {
+// 顶部导航：固定一行，放不下的项由下拉菜单接管
+  .nav-scroll {
+    flex: 1 1 0%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+// 只用于量宽度，不参与布局
+  .nav-measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .nav-btn {
+    flex: 0 0 auto;
+    margin-right: 4px;
+    color: #fff;
+  }
+
+// 搜索：收起时只占一个图标的宽度，展开后是输入框
+  .header-search {
+    flex: 0 0 auto;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+    align-items: center;
+    margin-left: 12px;
+  }
+
+  .search-field {
+    width: 200px;
+    animation: search-open 0.15s ease;
+  }
+
+// 小屏展开搜索：导航先收起，输入框从右侧图标位置往左展开，不占满整行
+  .header-search--wide {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+
+    .search-field {
+      flex: 0 1 200px;
+      min-width: 120px;
+    }
+  }
+
+  @keyframes search-open {
+    from {
+      opacity: 0;
+      transform: translateX(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
 
 // 移动端作品详情面板：只覆盖内容区（header 与 footer 之间）
@@ -467,7 +706,7 @@ export default {
     z-index: 2500;
   }
 
-// 移动端详情面板的滑入/滑出（从右侧进出）
+// 移动端详情面板的滑入/滑出（与桌面端一致，从左侧进出）
   .work-panel-slide-enter-active,
   .work-panel-slide-leave-active {
     transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -475,6 +714,6 @@ export default {
 
   .work-panel-slide-enter,
   .work-panel-slide-leave-to {
-    transform: translate3d(100%, 0, 0);
+    transform: translate3d(-100%, 0, 0);
   }
 </style>

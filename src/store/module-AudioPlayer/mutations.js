@@ -13,6 +13,11 @@ const mutations = {
     state.playing = !state.playing;
   },
 
+  // 只记录媒体元素的事实状态，绝不反向影响 playing（意图）
+  SET_ELEMENT_PLAYING(state, value) {
+    state.elementPlaying = Boolean(value);
+  },
+
   // 播放队列中的指定 track
   SET_TRACK(state, index) {
     if (index < 0 || index >= state.queue.length) return;

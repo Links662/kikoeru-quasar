@@ -1,49 +1,26 @@
 <template>
   <q-layout view="hhh LpR fFf">
     <q-header elevated class="bg-black">
-      <q-toolbar>
-        <q-btn flat @click="drawer = !drawer" round dense icon="menu" />
-        <q-toolbar-title>仪表盘</q-toolbar-title>
-      </q-toolbar>
-    </q-header>
+      <q-toolbar class="row no-wrap items-center">
+        <q-toolbar-title shrink class="q-mr-md">仪表盘</q-toolbar-title>
 
-    <q-drawer
-      v-model="drawer"
-      show-if-above
-
-      :mini="miniState"
-      @mouseover="miniState = false"
-      @mouseout="miniState = true"
-      mini-to-overlay
-
-      :width="200"
-      :breakpoint="500"
-      bordered
-      content-class="bg-grey-3"
-    >
-      <div class="column justify-between fit">
-        <q-list padding class="col-auto">
-          <q-item 
-            clickable
-            v-ripple
-            exact
-            :to="link.path"
-            active-class="text-primary text-weight-bold"
+        <!-- 导航：原先左侧工具栏的内容全部移到这里 -->
+        <div class="col nav-scroll row no-wrap items-center">
+          <q-btn
             v-for="(link, index) in links"
             :key="index"
-            class="col text-subtitle1"
-          >
-            <q-item-section avatar>
-              <q-icon :name="link.icon" />
-            </q-item-section>
-
-            <q-item-section>
-              {{link.title}}
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </div>
-    </q-drawer>
+            flat
+            dense
+            class="nav-btn"
+            :icon="link.icon"
+            :label="showNavLabel ? link.title : undefined"
+            :to="link.path"
+            exact
+            active-class="nav-active"
+          />
+        </div>
+      </q-toolbar>
+    </q-header>
 
     <q-page-container>
       <router-view />
@@ -61,8 +38,6 @@ export default {
 
   data () {
     return {
-      drawer: false,
-      miniState: true,
       links: [
         {
           title: '音声库',
@@ -91,6 +66,13 @@ export default {
           path: '/'
         }
       ]
+    }
+  },
+
+  computed: {
+    // 顶部导航是否显示文字（窄屏只显示图标）
+    showNavLabel () {
+      return this.$q.screen.gt.sm
     }
   },
 
@@ -130,5 +112,23 @@ export default {
 <style lang="scss" scoped>
   a {
     text-decoration:none;
+  }
+
+  // 顶部导航：窄屏时横向滚动，不换行
+  .nav-scroll {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .nav-btn {
+    flex: 0 0 auto;
+    margin-right: 4px;
+    color: #fff;
   }
 </style>

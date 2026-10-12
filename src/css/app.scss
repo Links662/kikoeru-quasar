@@ -10,3 +10,13 @@
 a {
   text-decoration:none;
 }
+
+// 顶部导航按钮的选中态
+.q-btn.nav-active {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+// 移动端详情面板打开时，锁住背后页面的滚动
+body.work-panel-locked {
+  overflow: hidden;
+}
