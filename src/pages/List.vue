@@ -15,8 +15,17 @@
       </div>
       <div class="col-12">
         <div class="row justify-center q-gutter-sm">
-          <q-btn v-for="item in (keyword ? filteredItems : items)" :key="item.id" no-caps rounded color="primary"
-            :label="`${item.name} (${item.count})`" :to="`/works?${queryField}=${item.id}`" />
+          <template v-for="(item, index) in displayedItems">
+            <q-separator v-if="index > 0 && index === favouriteCount" :key="`sep-${item.id}`" vertical
+              class="q-mx-xs" />
+            <q-btn :key="item.id" no-caps rounded :color="item.favourite ? 'yellow' : 'primary'"
+              :text-color="item.favourite ? 'black' : 'white'" :to="`/works?${queryField}=${item.id}`"
+              :label="`${item.name} (${item.count})`">
+              <span class="favourite-divider" />
+              <q-icon :name="item.favourite ? 'star' : 'star_border'" size="18px" class="cursor-pointer"
+                @click.stop.prevent="toggleFavourite(item)" />
+            </q-btn>
+          </template>
         </div>
       </div>
     </div>
@@ -68,6 +77,16 @@ export default {
 
     filteredItems () {
       return this.items.filter(item => item.name.toLowerCase().indexOf(this.keyword.toLowerCase()) !== -1)
+    },
+
+    // 收藏项置顶，其余保持后端返回的顺序（按名称升序）
+    displayedItems () {
+      const list = this.keyword ? this.filteredItems : this.items
+      return list.slice().sort((a, b) => (b.favourite ? 1 : 0) - (a.favourite ? 1 : 0))
+    },
+
+    favouriteCount () {
+      return this.displayedItems.filter(item => item.favourite).length
     }
   },
 
@@ -94,6 +113,39 @@ export default {
           }
         })
     },
+
+    toggleFavourite (item) {
+      // 乐观更新：先改本地状态，请求失败时回滚
+      const previous = item.favourite ? 1 : 0
+      const favourite = previous ? 0 : 1
+      item.favourite = favourite
+
+      this.$axios.put(`/api/${this.restrict}/${item.id}/favourite`, { favourite: !!favourite })
+        .then(() => {
+          this.showSuccNotif(favourite ? `${item.name} 已收藏` : `${item.name} 已取消收藏`)
+        })
+        .catch((error) => {
+          item.favourite = previous
+          if (error.response) {
+            if (error.response.status !== 401) {
+              this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
+            }
+          } else {
+            this.showErrNotif(error.message || error)
+          }
+        })
+    },
   }
 }
 </script>
+
+<style scoped>
+/* 按钮内文字与星标之间的竖线 */
+.favourite-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 0 8px;
+  background: currentColor;
+  opacity: 0.4;
+}
+</style>
