@@ -178,6 +178,7 @@ import LyricsBar from 'components/LyricsBar'
 import SleepMode from 'components/SleepMode'
 import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
+import { audioEngine } from '../services/AudioEngine'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
 export default {
@@ -633,7 +634,14 @@ export default {
     },
 
     logout () {
+      // 认证边界：显式停播并清空播放器状态
+      // （播放引擎已经和路由解耦，不再有"离开布局顺带销毁播放器"这种副作用）
+      const engine = audioEngine()
+      if (engine) engine.stop()
+
       this.$q.localStorage.set('jwt-token', '')
+      // socket 连接也是带着 token 建立的，一并断开
+      if (this.$socket) this.$socket.close()
       this.$router.push('/login')
     },
 

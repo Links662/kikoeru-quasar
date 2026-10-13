@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import routes from './routes'
+import { audioEngine } from '../services/AudioEngine'
 
 Vue.use(VueRouter)
 
@@ -30,6 +31,20 @@ export default function ({ store } /* { store, ssrContext } */) {
     // quasar.conf.js -> build -> publicPath
     mode: process.env.VUE_ROUTER_MODE,
     base: process.env.VUE_ROUTER_BASE
+  })
+
+  /*
+   * 认证边界：进入登录页（主动登出、token 失效被踢出）时停播并清空播放器状态。
+   * 播放引擎与路由解耦后，"离开某个布局"不再顺带停掉播放，
+   * 所以这里显式声明"未认证 = 不播放"这条规则。
+   */
+  Router.beforeEach((to, from, next) => {
+    if (to.path === '/login') {
+      const engine = audioEngine()
+      if (engine) engine.stop()
+    }
+
+    next()
   })
 
   /*

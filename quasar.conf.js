@@ -9,7 +9,7 @@ module.exports = function (ctx) {
     boot: [
       'axios',
       'slider',
-      'plyr',
+      'player',
       'socket.io'
     ],
 

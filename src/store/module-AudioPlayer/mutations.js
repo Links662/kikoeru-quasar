@@ -54,6 +54,28 @@ const mutations = {
     }
   },
 
+  // 彻底复位（登出等认证边界使用）：停止播放并清空所有与"当前播放内容"相关的状态
+  RESET(state) {
+    state.playing = false;
+    state.elementPlaying = false;
+    state.currentTime = 0;
+    state.duration = 0;
+    state.queue = [];
+    state.queueIndex = 0;
+    state.currentLyric = "";
+    state.seekTime = -1;
+    state.sleepTime = null;
+    state.sleepMode = false;
+    state.currentPlayingFile = {
+      hash: null,
+      title: "",
+      album: "",
+      artist: "",
+      mediaStreamUrl: "",
+      mediaDownloadUrl: ""
+    };
+  },
+
   EMPTY_QUEUE(state) {
     state.playing = false;
     state.queue = [];

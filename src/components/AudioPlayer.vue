@@ -58,10 +58,23 @@
           </q-list>
         </div>
 
-        <!-- 进度条控件 -->
+        <!-- 进度条：数据来自 store，播放引擎已不依赖本组件存在 -->
         <div class="row items-center q-mx-sm q-my-sm">
           <div class="col-auto">{{ formatSeconds(currentTime) }}</div>
-          <AudioElement class="col" />
+          <q-slider
+            class="col q-mx-sm"
+            :value="seekValue"
+            :min="0"
+            :max="sliderMax"
+            :step="1"
+            :disable="!currentPlayingFile.hash"
+            :label-value="formatSeconds(seekValue)"
+            label
+            thumb-size="12px"
+            color="primary"
+            @input="onSeekInput"
+            @change="onSeekChange"
+          />
           <div class="col-auto">{{ formatSeconds(duration) }}</div>
         </div>
 
@@ -116,7 +129,6 @@
 
 <script>
 import draggable from 'vuedraggable'
-import AudioElement from 'components/AudioElement'
 import { mapState, mapGetters, mapMutations } from 'vuex'
 
 // 长按手势时长表：fire 到点触发动作，feedback 到点进入长按反馈（按钮图标变化），
@@ -131,14 +143,17 @@ export default {
   name: 'AudioPlayer',
 
   components: {
-    draggable,
-    AudioElement
+    draggable
   },
 
   data() {
     return {
       showCurrentPlayList: false,
       queueCopy: [],
+      // 进度条：拖动时只更新本地值，松手（change）才真正 seek
+      seekValue: 0,
+      seeking: false,
+      seekingTimer: null,
       pressHeld: false, // 正有一次按住（到松手为止，期间忽略其他按钮）
       pressKey: null, // 当前按住的按钮
       pressActive: false, // 已进入长按反馈，按钮图标据此变化
@@ -151,6 +166,7 @@ export default {
 
   beforeDestroy() {
     this.cancelPress()
+    clearTimeout(this.seekingTimer)
   },
 
   watch: {
@@ -162,9 +178,10 @@ export default {
       }
     },
 
-    duration(newVal) {
-      if (newVal > 0) {
-        this.setMediaSession()
+    // 播放进度 -> 进度条；正在拖动时不打断用户
+    currentTime(value) {
+      if (this.seeking === false) {
+        this.seekValue = Math.floor(value)
       }
     },
   },
@@ -175,6 +192,12 @@ export default {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const hash = this.currentPlayingFile.hash
       return hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : ""
+    },
+
+    // 进度条上限：duration 未就绪时给一个安全值，避免 q-slider 的 min 等于 max
+    sliderMax() {
+      const duration = this.duration
+      return Number.isFinite(duration) && duration > 0 ? Math.floor(duration) : 1
     },
 
     workDetailUrl() {
@@ -272,8 +295,6 @@ export default {
   methods: {
     ...mapMutations('AudioPlayer', {
       toggleHide: 'TOGGLE_HIDE',
-      play:'PLAY',
-      pause:'PAUSE',
       togglePlaying: 'TOGGLE_PLAYING',
       nextTrack: 'NEXT_TRACK',
       previousTrack: 'PREVIOUS_TRACK',
@@ -287,6 +308,28 @@ export default {
       setVolume: 'SET_VOLUME',
       setSeekTime: 'SET_SEEKTIME',
     }),
+
+    // 拖动中：只更新本地值，避免和 timeupdate 打架
+    onSeekInput(value) {
+      this.seeking = true
+      this.seekValue = value
+
+      // 兜底：手势被打断时收不到 change，3 秒后恢复跟随播放进度
+      clearTimeout(this.seekingTimer)
+      this.seekingTimer = setTimeout(() => {
+        this.seekingTimer = null
+        this.seeking = false
+      }, 3000)
+    },
+
+    // 松手（change）：把跳转意图交给播放引擎
+    onSeekChange(value) {
+      clearTimeout(this.seekingTimer)
+      this.seekingTimer = null
+      this.seeking = false
+      this.seekValue = value
+      this.setSeekTime(value)
+    },
 
     formatSeconds(seconds) {
       let h = Math.floor(seconds / 3600) < 10
@@ -459,51 +502,6 @@ export default {
       if (this.$q.screen.lt.sm) {
         this.toggleHide()
       }
-    },
-    setMediaSession() {
-      if (!('mediaSession' in navigator)) return
-
-      const file = this.currentPlayingFile
-      if (!file || !file.hash) return
-
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: file.title || '',
-        album: file.album || '',
-        artist: file.artist || '',
-        artwork: [
-          {
-            src: this.coverUrl,
-            sizes: '128x128',
-            type: 'image/jpeg'
-          }
-        ]
-      })
-
-      const ms = navigator.mediaSession
-
-      ms.setActionHandler('play', () => {
-        this.play()
-      })
-
-      ms.setActionHandler('pause', () => {
-        this.pause()
-      })
-
-      //播放列表语义（关键）
-      ms.setActionHandler('nexttrack', () => {
-        this.nextTrack()
-      })
-
-      ms.setActionHandler('previoustrack', () => {
-        this.previousTrack()
-      })
-      ms.setActionHandler('seekto', (details) => {
-        this.setSeekTime(details.seekTime)
-      })
-      //明确禁用播客行为
-      ms.setActionHandler('seekforward', null)
-      ms.setActionHandler('seekbackward', null)
-      ms.setActionHandler('stop', null)
     }
   }
 }

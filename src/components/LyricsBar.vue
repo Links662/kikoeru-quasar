@@ -18,7 +18,7 @@
 import { mapState } from 'vuex'
 
 const onCursorMove = (that) => (ev) => {
-  if (!that.beTouched) { return }
+  if (!that.beTouched || !that.draggable) { return }
 
   // ev.preventDefault()
   const touch = that.getTouch(ev)
@@ -48,6 +48,7 @@ export default {
   data () {
     return {
       beTouched: false,
+      onMove: null,
 
       // 鼠标按下时的位置
       startX: 0,
@@ -80,8 +81,16 @@ export default {
   },
 
   mounted() {
-    addEventListener('mousemove', onCursorMove(this), false)
-    addEventListener('touchmove', onCursorMove(this), false)
+    // 保留函数引用，组件销毁时才能摘掉监听，否则每次重新挂载都会泄漏一组全局监听
+    this.onMove = onCursorMove(this)
+    window.addEventListener('mousemove', this.onMove, false)
+    window.addEventListener('touchmove', this.onMove, false)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('mousemove', this.onMove, false)
+    window.removeEventListener('touchmove', this.onMove, false)
+    this.onMove = null
   }
 }
 </script>
