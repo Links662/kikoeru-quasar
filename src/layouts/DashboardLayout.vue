@@ -86,13 +86,12 @@ export default {
     },
     error(err) {
       // 只有认证相关错误才跳转登录
-      if (err.message && err.message.includes('administrator')) {
+      if (err && err.message && err.message.includes('administrator')) {
         this.$socket.close()
         this.$router.push('/login')
       } else {
-        // 其他错误只显示通知，尝试重连
+        // 其他错误只提示，重连交给内置的 reconnection 机制，避免两条重连路径互相叠加
         this.showWarnNotif('连接异常，正在重试...')
-        this.$socket.connect() // 重连
       }
     }
   },

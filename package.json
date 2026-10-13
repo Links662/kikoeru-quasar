@@ -29,7 +29,6 @@
     "axios": "^0.21.1",
     "lrc-file-parser": "^1.0.7",
     "quasar": "^1.15.12",
-    "vue-slider-component": "^3.2.11",
     "vue-socket.io": "^3.0.10",
     "vuedraggable": "^2.24.3"
   },

@@ -1,12 +1,20 @@
 <template>
   <div>
+    <q-banner v-if="polling" dense class="bg-warning text-black q-ma-sm">
+      <template v-slot:avatar>
+        <q-icon name="sync_problem" />
+      </template>
+      Socket 连接不可用，已切换为每 2 秒轮询获取进度（只读）。
+      扫描 / 终止操作需等待连接恢复。
+    </q-banner>
+
     <div class="row q-ma-sm">
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
           color="teal"
           label="扫描本地音声库"
-          :disable="state === 'running' || !(loggedIn || $socket.connected)"
+          :disable="state === 'running' || !socketConnected"
           @click="performScan()"
         />
       </div>
@@ -16,7 +24,7 @@
           class="col"
           color="primary"
           label="刷新音声库信息"
-          :disable="state === 'running' || !(loggedIn || $socket.connected)"
+          :disable="state === 'running' || !socketConnected"
           @click="performUpdate()"
         />
       </div>
@@ -26,7 +34,7 @@
           class="col"
           color="negative"
           label="终止扫描进程"
-          :disable="state !== 'running' || !(loggedIn || $socket.connected)"
+          :disable="state !== 'running' || !socketConnected"
           @click="killScanProceess()"
         />
       </div>
@@ -160,6 +168,9 @@
 <script>
 import NotifyMixin from '../../mixins/Notification.js'
 
+// socket 不可用时的轮询间隔
+const POLL_INTERVAL = 2000
+
 export default {
   name: 'Scanner',
 
@@ -169,7 +180,10 @@ export default {
     return {
       tab: 'tasks',
       state: null, // ['running', 'finished', 'error']
-      loggedIn: false,
+      socketConnected: false, // socket 是否可用（响应式，模板据此禁用按钮）
+      polling: false, // 是否正在用轮询兜底
+      pollTimer: null,
+      finishedMessage: null, // 扫描结束时服务端给出的总结
       tasks: [], // 正在处理中的并行任务
       failedTasks: [], // 处理失败的任务
       mainLogs: [],
@@ -200,36 +214,37 @@ export default {
 
     SCAN_FINISHED (payload) {
       this.state = 'finished'
-      this.allLogs.push({
-        level: 'info',
-        message: payload.message
-      })
+      this.finishedMessage = payload.message
       this.$socket.emit('COUNT_UPDATE')
     },
     SCAN_ERROR () {
       this.state = 'error'
     },
 
+    // 服务端每次（重）连成功都会推 success，把它当作「主通道可用」的信号
     success () {
-      this.loggedIn = true
+      this.handleSocketUp()
+    },
+    disconnect () {
+      this.handleSocketDown('Socket 连接已断开，已切换为轮询获取进度')
+    },
+    connect_error () {
+      this.handleSocketDown('连接 Socket 失败，已切换为轮询获取进度')
+    },
+    reconnect_failed () {
+      this.handleSocketDown('Socket 重连次数已用尽，已切换为轮询获取进度')
     }
   },
 
   methods: {
     performScan () {
-      this.tasks = []
-      this.failedTasks = []
-      this.mainLogs = []
-      this.results = []
+      this.resetScanState()
       this.state = 'running'
       this.$socket.emit('PERFORM_SCAN')
     },
 
     performUpdate () {
-      this.tasks = []
-      this.failedTasks = []
-      this.mainLogs = []
-      this.results = []
+      this.resetScanState()
       this.state = 'running'
       this.$socket.emit('PERFORM_UPDATE')
     },
@@ -237,6 +252,91 @@ export default {
     killScanProceess () {
       this.$socket.emit('KILL_SCAN_PROCESS')
     },
+
+    resetScanState () {
+      this.tasks = []
+      this.failedTasks = []
+      this.mainLogs = []
+      this.results = []
+      this.finishedMessage = null
+    },
+
+    // ---- 主通道（socket）状态 ----
+
+    handleSocketUp () {
+      const wasPolling = this.polling
+
+      const resume = () => {
+        this.socketConnected = true
+        this.stopPolling()
+        // 若此刻仍有扫描在跑，让服务端把实时状态重推一次，之后交回 socket
+        this.$socket.emit('ON_SCANNER_PAGE')
+      }
+
+      // 首次连接（没经历过断线）不用补数据，保持和原来一致的页面行为
+      if (!wasPolling) {
+        resume()
+        return
+      }
+
+      this.$axios.get('/api/scanner/state')
+        .then((response) => {
+          // 补上断线期间可能错过的最终状态（例如扫描在断线时已经结束）
+          this.applyScanState(response.data)
+        })
+        .catch(() => {})
+        .then(resume)
+    },
+
+    handleSocketDown (message) {
+      this.socketConnected = false
+      const alreadyPolling = this.polling
+      this.startPolling()
+      if (message && !alreadyPolling) {
+        this.showWarnNotif(message)
+      }
+    },
+
+    // ---- 兜底：轮询 /api/scanner/state ----
+
+    startPolling () {
+      if (this.pollTimer) return
+      this.polling = true
+      this.fetchScanState() // 立即拉一次，不用等第一个间隔
+      this.pollTimer = setInterval(this.fetchScanState, POLL_INTERVAL)
+    },
+
+    stopPolling () {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer)
+        this.pollTimer = null
+      }
+      this.polling = false
+    },
+
+    fetchScanState () {
+      this.$axios.get('/api/scanner/state')
+        .then((response) => {
+          this.applyScanState(response.data)
+        })
+        .catch((error) => {
+          // token 失效时停掉轮询，交由路由跳登录页
+          if (error.response && error.response.status === 401) {
+            this.stopPolling()
+          }
+        })
+    },
+
+    applyScanState (scanState) {
+      if (!scanState || !scanState.status) return
+
+      this.state = scanState.status
+      this.tasks = scanState.tasks || []
+      this.failedTasks = scanState.failedTasks || []
+      this.mainLogs = scanState.mainLogs || []
+      this.results = scanState.results || []
+      this.finishedMessage = scanState.status === 'finished' ? scanState.message : null
+    }
   },
 
   computed: {
@@ -250,15 +350,28 @@ export default {
           return { level: 'error', message: `[RJ${res.rjcode}] 处理失败! Failed: ${res.count}` }
         }
       })
-      return this.mainLogs.concat(resultLogs)
+
+      const logs = this.mainLogs.concat(resultLogs)
+
+      // 结束语由 SCAN_FINISHED 单独给出，不混进 mainLogs / results
+      if (this.finishedMessage) {
+        logs.push({ level: 'info', message: this.finishedMessage })
+      }
+
+      return logs
     }
   },
 
   mounted () {
+    this.socketConnected = this.$socket.connected
+    if (!this.socketConnected) {
+      this.startPolling()
+    }
     this.$socket.emit('ON_SCANNER_PAGE')
-    this.$socket.on('connect_error', () => {
-      this.showErrNotif('连接Socket失败')
-    });
   },
+
+  beforeDestroy () {
+    this.stopPolling()
+  }
 }
 </script>

@@ -114,12 +114,12 @@
             class="col-auto" />
         </div>
 
-        <!-- 音量控件 -->
+        <!-- 音量控件：与进度条统一使用 Quasar q-slider，样式/主题色一致 -->
         <!-- HTML5 volume in iOS is read-only -->
-        <div class="row items-center q-mx-lg" style="height: 50px" v-if="!$q.platform.is.ios">
+        <div class="row items-center justify-center q-mx-sm" style="height: 50px" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
-          <vue-slider v-model="volume" :min="0" :max="1" :interval="0.01" :dragOnClick="true" :contained="true"
-            tooltip="none" class="col" />
+          <q-slider v-model="volume" class="col q-mx-sm" style="max-width: 200px" :min="0" :max="1"
+            :step="0.01" thumb-size="12px" color="primary" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
       </q-card>
