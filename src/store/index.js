@@ -1,11 +1,8 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 
 import AudioPlayer from './module-AudioPlayer'
 import User from './module-User'
 import WorkPanel from './module-WorkPanel'
-
-Vue.use(Vuex)
 
 /*
  * If not building with SSR mode, you can
@@ -17,7 +14,7 @@ Vue.use(Vuex)
  */
 
 export default function (/* { ssrContext } */) {
-  const Store = new Vuex.Store({
+  const Store = createStore({
     modules: {
       AudioPlayer,
       User,
@@ -29,18 +26,20 @@ export default function (/* { ssrContext } */) {
     strict: process.env.DEV
   })
 
-  if (process.env.DEV && module.hot) {
-    module.hot.accept(['./module-AudioPlayer'], () => {
+  // webpack 5 no longer exposes `module.hot` inside ES modules; the
+  // replacement is the `import.meta.webpackHot` API.
+  if (process.env.DEV && import.meta.webpackHot) {
+    import.meta.webpackHot.accept('./module-AudioPlayer', () => {
       const newAudioPlayer = require('./module-AudioPlayer').default
       Store.hotUpdate({ modules: { AudioPlayer: newAudioPlayer } })
     })
 
-    module.hot.accept(['./module-User'], () => {
+    import.meta.webpackHot.accept('./module-User', () => {
       const newUser = require('./module-User').default
       Store.hotUpdate({ modules: { User: newUser } })
     })
 
-    module.hot.accept(['./module-WorkPanel'], () => {
+    import.meta.webpackHot.accept('./module-WorkPanel', () => {
       const newWorkPanel = require('./module-WorkPanel').default
       Store.hotUpdate({ modules: { WorkPanel: newWorkPanel } })
     })

@@ -7,22 +7,18 @@
 # Please refer to docs/nginx for examples
 
 # Build SPA and PWA
-FROM node:14 as build-stage
+FROM node:22 as build-stage
 WORKDIR /frontend
-# @quasar/app v1 requires node-ass, which takes 30 minutes to compile libsass in CI for arm64 and armv7
-# So I prebuilt the binaries for arm64 and armv7
-# @quasar/app v2 no longer uses this deprecated package, so this line will be removed in the future
-ENV SASS_BINARY_SITE="https://github.com/umonaca/node-sass/releases/download"
+# Quasar v2 builds on dart-sass, so the old node-sass binary workaround is gone.
 
 # npm 镜像源：默认走国内 npmmirror，需要用官方源时加 --build-arg NPM_REGISTRY=https://registry.npmjs.org
 ARG NPM_REGISTRY=https://registry.npmmirror.com
 RUN npm config set registry ${NPM_REGISTRY}
 
-RUN npm install -g @quasar/cli
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN quasar build && quasar build -m pwa
+RUN npx quasar build && npx quasar build -m pwa
 
 # We only need the build artifact
 FROM nginx:mainline-alpine

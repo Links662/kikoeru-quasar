@@ -3,59 +3,61 @@
     <!-- 播放器 -->
     <q-slide-transition>
       <q-card square v-show="currentPlayingFile.hash && !hide"
-        class="fixed-bottom-right bg-white text-black audio-player" @mousewheel.prevent @touchmove.prevent>
+        class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart">
-          <q-img contain transition="fade" :src="coverUrl" :ratio="4 / 3" />
+          <q-img fit="contain" :src="coverUrl" :ratio="4 / 3" />
           <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down" @click="toggleHide()"
             class="absolute-top-left q-ma-sm" />
           <q-btn dense round size="md" color="white" text-color="dark" icon="info_outline"
             class="absolute-top-right q-ma-sm" @click="openWorkDetail()" />
         </div>
 
-        <!-- 当前播放列表：内嵌在封面与播放控件之间，按可用高度微调（至少三行） -->
+        <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
         <div class="current-play-list bg-white" v-show="showCurrentPlayList">
-          <!-- 音频文件列表 -->
-          <q-list class="scroll fit" @mousewheel.stop @touchmove.stop>
-            <draggable handle=".handle" :disabled="useArrowReorder" v-model="queueCopy"
-              @change="val => onMoved(val.moved)">
-              <q-item clickable v-ripple v-for="(track, index) in queueCopy" :key="index" :active="queueIndex === index"
-                active-class="text-white bg-teal" class="non-selectable q-py-none q-px-sm"
-                @click="onClickTrack(index)">
-                <!-- 鼠标设备：拖拽手柄；触摸设备的排序入口是下面的箭头 -->
-                <q-item-section side class="handle" v-if="!useArrowReorder">
-                  <q-icon name="reorder" :color="queueIndex === index ? 'white' : 'dark'" />
-                </q-item-section>
+          <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
+          <q-list class="queue-list">
+            <q-item clickable v-ripple v-for="row in pageTracks" :key="row.index"
+              :active="queueIndex === row.index" active-class="text-white bg-teal"
+              class="queue-item non-selectable q-py-none q-px-sm"
+              @click="onClickTrack(row.index)">
+              <!-- 上/下箭头：点一下把这条曲目挪一位（拖动已取消，鼠标和触摸都走这里） -->
+              <q-item-section side class="queue-arrows">
+                <q-btn flat icon="arrow_upward" aria-label="上移"
+                  :color="queueIndex === row.index ? 'white' : 'dark'"
+                  :disable="row.index === 0" @click.stop="moveTrack(row.index, -1)" />
+                <q-btn flat icon="arrow_downward" aria-label="下移"
+                  :color="queueIndex === row.index ? 'white' : 'dark'"
+                  :disable="row.index === queue.length - 1" @click.stop="moveTrack(row.index, 1)" />
+              </q-item-section>
 
-                <!-- 触摸设备：上下箭头竖排（横排太占宽度），点一下把这条曲目挪一位 -->
-                <q-item-section side v-else class="queue-arrows">
-                  <q-btn dense flat size="sm" padding="2px 0" icon="arrow_upward"
-                    :color="queueIndex === index ? 'white' : 'dark'" :disable="index === 0"
-                    @click.stop="moveTrack(index, -1)" />
-                  <q-btn dense flat size="sm" padding="2px 0" icon="arrow_downward" class="q-mt-xs"
-                    :color="queueIndex === index ? 'white' : 'dark'" :disable="index === queueCopy.length - 1"
-                    @click.stop="moveTrack(index, 1)" />
-                </q-item-section>
+              <q-item-section avatar>
+                <!-- 列表项封面：Quasar 的尺寸档位 lg = 38px -->
+                <q-avatar size="lg" rounded class="col-auto">
+                  <q-img :src="samCoverUrl(row.track.hash)" class="fit" />
+                </q-avatar>
+              </q-item-section>
 
-                <q-item-section avatar>
-                  <!-- 列表项封面：Quasar 的尺寸档位 lg = 38px -->
-                  <q-avatar size="lg" rounded class="col-auto">
-                    <q-img transition="fade" :src="samCoverUrl(track.hash)" class="fit" />
-                  </q-avatar>
-                </q-item-section>
+              <q-item-section>
+                <q-item-label lines="1">{{ row.track.title }}</q-item-label>
+                <q-item-label caption lines="1">{{ row.track.album }}</q-item-label>
+              </q-item-section>
 
-                <q-item-section>
-                  <q-item-label lines="1">{{ track.title }}</q-item-label>
-                  <q-item-label caption lines="1">{{ track.album }}</q-item-label>
-                </q-item-section>
-
-                <q-item-section side>
-                  <q-btn dense flat size="sm" padding="2px 0" icon="clear"
-                    :color="queueIndex === index ? 'white' : 'red'" @click.stop="removeFromQueue(index)" />
-                </q-item-section>
-              </q-item>
-            </draggable>
+              <q-item-section side class="queue-remove">
+                <q-btn flat round icon="clear"
+                  :color="queueIndex === row.index ? 'white' : 'red'" @click.stop="removeFromQueue(row.index)" />
+              </q-item-section>
+            </q-item>
           </q-list>
+
+          <!-- 分页条：点箭头翻页 -->
+          <div class="queue-pager">
+            <q-btn flat round icon="chevron_left" aria-label="上一页"
+              :disable="page === 0" @click="goPage(page - 1)" />
+            <div class="queue-pager__info">{{ pageRangeText }}</div>
+            <q-btn flat round icon="chevron_right" aria-label="下一页"
+              :disable="page >= pageCount - 1" @click="goPage(page + 1)" />
+          </div>
         </div>
 
         <!-- 进度条：数据来自 store，播放引擎已不依赖本组件存在 -->
@@ -63,7 +65,7 @@
           <div class="col-auto">{{ formatSeconds(currentTime) }}</div>
           <q-slider
             class="col q-mx-sm"
-            :value="seekValue"
+            :model-value="seekValue"
             :min="0"
             :max="sliderMax"
             :step="1"
@@ -72,7 +74,7 @@
             label
             thumb-size="12px"
             color="primary"
-            @input="onSeekInput"
+            @update:model-value="onSeekInput"
             @change="onSeekChange"
           />
           <div class="col-auto">{{ formatSeconds(duration) }}</div>
@@ -92,33 +94,33 @@
         <div class="q-pt-sm" v-if="$q.platform.is.ios" />
 
         <!-- 播放按钮控件 -->
-        <div class="row justify-around" style="height: 65px">
+        <div class="row justify-around control-row">
           <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
           <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
             :color="isPressing('queue') ? 'negative' : (showCurrentPlayList ? 'primary' : undefined)"
             @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
             @mouseleave="cancelPress" @contextmenu.prevent
-            style="width: 55px" class="col-auto non-selectable" />
+            class="col-auto non-selectable control-btn" />
           <!-- 短按：上一首；长按：后退 -->
           <q-btn flat dense size="lg" :icon="isPressing('previous') ? rewindIcon : 'skip_previous'"
             @click="onPressClick('previous')" @mousedown="startPress('previous')"
             @touchstart="startPress('previous')" @mouseleave="cancelPress"
-            style="width: 55px" class="col-auto non-selectable" />
-          <q-btn flat dense size="28px" :icon="playingIcon" @click="togglePlaying()" style="width: 65px"
-            class="col-auto" />
+            class="col-auto non-selectable control-btn" />
+          <q-btn flat dense size="28px" :icon="playingIcon" @click="togglePlaying()"
+            class="col-auto control-btn control-btn--play" />
           <!-- 短按：下一首；长按：前进 -->
           <q-btn flat dense size="lg" :icon="isPressing('next') ? forwardIcon : 'skip_next'"
             @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
-            @mouseleave="cancelPress" style="width: 55px" class="col-auto non-selectable" />
-          <q-btn flat dense size="md" :icon="playModeIcon" @click="changePlayMode()" style="width: 55px"
-            class="col-auto" />
+            @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
+          <q-btn flat dense size="md" :icon="playModeIcon" @click="changePlayMode()"
+            class="col-auto control-btn" />
         </div>
 
         <!-- 音量控件：与进度条统一使用 Quasar q-slider，样式/主题色一致 -->
         <!-- HTML5 volume in iOS is read-only -->
-        <div class="row items-center justify-center q-mx-sm" style="height: 50px" v-if="!$q.platform.is.ios">
+        <div class="row items-center justify-center q-mx-sm volume-row" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
-          <q-slider v-model="volume" class="col q-mx-sm" style="max-width: 200px" :min="0" :max="1"
+          <q-slider v-model="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
             :step="0.01" thumb-size="12px" color="primary" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
@@ -128,8 +130,10 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable'
 import { mapState, mapGetters, mapMutations } from 'vuex'
+
+// 当前播放列表每页固定显示的行数
+const QUEUE_PAGE_SIZE = 4
 
 // 长按手势时长表：fire 到点触发动作，feedback 到点进入长按反馈（按钮图标变化），
 // repeat 表示继续按住时按该间隔反复触发
@@ -142,14 +146,10 @@ const LONG_PRESS = {
 export default {
   name: 'AudioPlayer',
 
-  components: {
-    draggable
-  },
-
   data() {
     return {
       showCurrentPlayList: false,
-      queueCopy: [],
+      page: 0, // 当前页（每页 QUEUE_PAGE_SIZE 行）
       // 进度条：拖动时只更新本地值，松手（change）才真正 seek
       seekValue: 0,
       seeking: false,
@@ -164,18 +164,43 @@ export default {
     }
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.cancelPress()
     clearTimeout(this.seekingTimer)
   },
 
   watch: {
-    queue(val) {
-      this.queueCopy = val.concat()
-      // 在删除最后一个 track 时关闭当前播放列表
-      if (this.queueCopy.length === 0) {
-        this.showCurrentPlayList = false
+    // 队列是原地增删的（ADD_TO_QUEUE 用 push、REMOVE_FROM_QUEUE 用 splice），
+    // 引用不变，所以只能靠 deep 感知
+    queue: {
+      deep: true,
+      handler (queue) {
+        // 删掉最后一条时收起列表
+        if (queue.length === 0) {
+          this.showCurrentPlayList = false
+          this.page = 0
+          return
+        }
+
+        // 队列变短后当前页可能越界
+        if (this.page > this.pageCount - 1) {
+          this.page = this.pageCount - 1
+        }
       }
+    },
+
+    // 正在播放的那条换了（点播 / 上下曲 / 自动切歌）→ 它不在当前页时翻过去
+    queueIndex (index) {
+      const start = this.page * QUEUE_PAGE_SIZE
+      if (index < start || index >= start + QUEUE_PAGE_SIZE) {
+        this.page = Math.floor(index / QUEUE_PAGE_SIZE)
+      }
+    },
+
+    // 展开列表时定位到正在播放的那一页
+    showCurrentPlayList (open) {
+      if (open !== true) return
+      this.page = this.queue.length === 0 ? 0 : Math.floor(this.queueIndex / QUEUE_PAGE_SIZE)
     },
 
     // 播放进度 -> 进度条；正在拖动时不打断用户
@@ -218,19 +243,27 @@ export default {
       return this.$store.state.AudioPlayer.queue
     },
 
-    // 触摸优先的设备（手机 / 平板）点不到拖拽手柄，改用上下箭头排序；
-    // 判断依据是「主指针」是不是粗指针，这样带触摸屏的笔记本仍然保留拖拽
-    useArrowReorder() {
-      if (typeof window.matchMedia === 'function') {
-        const coarse = window.matchMedia('(pointer: coarse)').matches
-        const fine = window.matchMedia('(pointer: fine)').matches
+    // 总页数（队列为空时也保证是 1，翻页按钮的边界就不用再判空）
+    pageCount() {
+      return Math.max(1, Math.ceil(this.queue.length / QUEUE_PAGE_SIZE))
+    },
 
-        // 浏览器认识 pointer 媒体特性时只会命中一个，不认识时两个都是 false
-        if (coarse !== fine) return coarse
-      }
+    // 当前页的行：带上它在整个队列里的下标，播放 / 删除 / 高亮都要用绝对下标
+    pageTracks() {
+      const start = this.page * QUEUE_PAGE_SIZE
+      return this.queue
+        .slice(start, start + QUEUE_PAGE_SIZE)
+        .map((track, offset) => ({ track, index: start + offset }))
+    },
 
-      // 退路：老浏览器（或 SSR）按 Quasar 的触摸探测决定
-      return this.$q.platform.has.touch
+    // 分页条中间的文字：当前看到的是队列里的哪几条
+    pageRangeText() {
+      const total = this.queue.length
+      if (total === 0) return '0 / 0'
+
+      const start = this.page * QUEUE_PAGE_SIZE + 1
+      const end = Math.min(start + QUEUE_PAGE_SIZE - 1, total)
+      return `${start}-${end} / ${total}`
     },
 
     playModeIcon() {
@@ -355,6 +388,7 @@ export default {
       return hash ? `/api/cover/${hash.split('/')[0]}?type=sam&token=${token}` : ""
     },
 
+    // 点整行 = 播放这一条
     onClickTrack(index) {
       this.setTrack(index)
     },
@@ -454,39 +488,36 @@ export default {
       return this.pressActive === true && this.pressKey === key
     },
 
-    onMoved(moved) {
-      let index = null
-      if (moved.oldIndex === this.queueIndex) {
-        index = moved.newIndex
-      } else if (moved.oldIndex < this.queueIndex && moved.newIndex >= this.queueIndex) {
-        index = this.queueIndex - 1
-      } else if (moved.oldIndex > this.queueIndex && moved.newIndex <= this.queueIndex) {
-        index = this.queueIndex + 1
-      } else {
-        index = this.queueIndex
-      }
-
-      this.setQueue({
-        queue: this.queueCopy.concat(),
-        index: index,
-        resetPlaying: false
-      })
-    },
-
     /**
-     * 触摸设备：点上/下箭头把某条曲目挪一位。
-     * 先就地换位，再复用 onMoved，让「正在播放的那条」的索引跟着一起挪。
+     * 点上/下箭头把某条曲目挪一位。拖动已取消，鼠标和触摸都走这里。
+     * 正在播放的那条跟着自己的曲目走（只换下标，不换曲目），所以播放不中断。
      */
     moveTrack(index, offset) {
       const newIndex = index + offset
+      if (newIndex < 0 || newIndex >= this.queue.length) return
 
-      if (newIndex < 0 || newIndex >= this.queueCopy.length) return
-
-      const queue = this.queueCopy.concat()
+      const queue = this.queue.concat()
       queue.splice(newIndex, 0, queue.splice(index, 1)[0])
-      this.queueCopy = queue
 
-      this.onMoved({ oldIndex: index, newIndex })
+      let playingIndex = this.queueIndex
+      if (index === playingIndex) {
+        playingIndex = newIndex
+      } else if (index < playingIndex && newIndex >= playingIndex) {
+        playingIndex -= 1
+      } else if (index > playingIndex && newIndex <= playingIndex) {
+        playingIndex += 1
+      }
+
+      this.setQueue({ queue, index: playingIndex, resetPlaying: false })
+
+      // 挪过页边界时跟着它走，否则这条会从当前页消失
+      const targetPage = Math.floor(newIndex / QUEUE_PAGE_SIZE)
+      if (targetPage !== this.page) this.page = targetPage
+    },
+
+    // 翻页：只改当前页，不动队列
+    goPage(target) {
+      this.page = Math.min(Math.max(target, 0), this.pageCount - 1)
     },
 
     openWorkDetail() {
@@ -546,25 +577,129 @@ export default {
   }
 }
 
-// 当前播放列表的行高：沿用 Quasar q-item 的 min-height，三行刚好放下三条曲目
-$queue-row: 48px;
+// 播放控件区：一排按钮（含播放键）与音量条的高度、宽度都固定，
+// 封面收缩让出空间时按钮不会跟着跳动
+$control-row-height: 65px;
+$control-btn-width: 55px;
+$play-btn-width: 65px;
+$volume-row-height: 50px;
+$volume-slider-width: 200px;
 
-// 内嵌在播放器里的当前播放列表：按可用高度微调，最少三行
+.control-row {
+  height: $control-row-height;
+}
+
+.control-btn {
+  width: $control-btn-width;
+
+  &--play {
+    width: $play-btn-width;
+  }
+}
+
+.volume-row {
+  height: $volume-row-height;
+}
+
+.volume-slider {
+  max-width: $volume-slider-width;
+}
+
+// 行高沿用 Quasar q-item 的 min-height；一页固定 4 行，另加一条分页条
+$queue-row: 48px;
+$queue-page-rows: 4;
+$queue-pager: 32px;
+$queue-body: $queue-row * $queue-page-rows;
+$queue-block: $queue-body + $queue-pager;
+
+// 内嵌在播放器里的当前播放列表：高度固定成「4 行 + 分页条」，永远不出滚动条
 .current-play-list {
   position: relative;
   z-index: 1;
-  flex: 1 1 auto;
-  min-height: 3 * $queue-row;
-  max-height: 45vh;
+  flex: 0 0 auto;
+  height: $queue-block;
   overflow: hidden;
 }
 
-// 视口太矮，连「封面 + 三行」都放不下时，列表改为盖在封面下沿
-@media (max-height: 470px) {
+// 列表本体：只放一页的行，固定高度，不滚动
+.queue-list {
+  height: $queue-body;
+  overflow: hidden;
+}
+
+// 行首箭头 / 行尾删除：尺寸全部自己定。
+// q-btn 的 size 是「放大」用的（内联 font-size，图标 = 1.715em × 字号），
+// 原来的 size="sm" 把图标撑到 41px、按钮 41×45，横竖都占地方。
+// 套在 .queue-item 里是为了盖过 Quasar 给 __section--side 的 16px 内边距。
+.queue-item {
+  // 固定行高，保证一页 4 行的高度是确定的（队列不足 4 条时下面留白）
+  height: $queue-row;
+
+  .queue-arrows,
+  .queue-remove {
+    .q-btn {
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      line-height: 1;
+    }
+  }
+
+  // 行首：两枚箭头竖着塞进 48px 的行高，与封面之间留 6px
+  .queue-arrows {
+    gap: 2px;
+    padding-right: 6px;
+
+    .q-btn {
+      width: 22px;
+      height: 22px;
+      font-size: 12px; // 图标 1.715em ≈ 20.6px
+    }
+  }
+
+  // 行尾：删除按钮与标题之间留 6px
+  .queue-remove {
+    padding-left: 6px;
+
+    .q-btn {
+      width: 24px;
+      height: 24px;
+      font-size: 13px; // 图标 1.715em ≈ 22.3px
+    }
+  }
+}
+
+// 分页条：点箭头翻页
+.queue-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: $queue-pager;
+  padding: 0 4px;
+  color: rgba(0, 0, 0, .6);
+
+  .q-btn {
+    min-width: 0;
+    min-height: 0;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    font-size: 13px; // 图标 1.715em ≈ 22.3px
+    line-height: 1;
+  }
+}
+
+.queue-pager__info {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1;
+}
+
+// 视口太矮，连「封面 + 4 行」都放不下时，列表改为盖在封面下沿
+@media (max-height: 560px) {
   .current-play-list {
-    flex: 0 0 auto;
-    height: 3 * $queue-row;
-    margin-top: -3 * $queue-row;
+    margin-top: -$queue-block;
   }
 }
 </style>

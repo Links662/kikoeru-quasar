@@ -1,12 +1,5 @@
 // app global css in SCSS form
 
-// a {
-//   &:link { text-decoration:none; } // 未访问链接
-//   &:visited { text-decoration:none; } // 已访问链接
-//   &:hover { text-decoration:underline; } // 鼠标移动到链接上
-//   &:active { text-decoration:underline; } // 鼠标点击时
-// }
-
 a {
   text-decoration:none;
 }
@@ -14,6 +7,36 @@ a {
 // 顶部导航按钮的选中态
 .q-btn.nav-active {
   background: rgba(255, 255, 255, 0.24);
+}
+
+// 顶部导航按钮：主界面与仪表盘两个布局共用（各自原来各写了一份）
+.nav-btn {
+  flex: 0 0 auto;
+  margin-right: 4px;
+  color: #fff;
+}
+
+// 方形图标按钮：与同排的 dense 选择框等高。Quasar 没有等价的尺寸类，
+// 所以三处（height / min-height / width）要一起改；工作区与收藏页共用
+.sort-btn {
+  height: 40px;
+  min-height: 40px;
+  width: 40px;
+
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  box-shadow: none;
+}
+
+// 评价分布明细里的条形图，作品卡片与详情面板共用
+.rating-bar {
+  height: 15px;
+  width: 100px;
+}
+
+// NSFW 封面的模糊层：通过 q-img 的 img-class 挂到内部的 <img> 上，
+// 那个元素由 Quasar 自己渲染，拿不到组件的 scoped 属性，只能放全局
+.blur-image {
+  filter: blur(10px);
 }
 
 // 移动端详情面板打开时，锁住背后页面的滚动

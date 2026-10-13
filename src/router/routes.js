@@ -82,7 +82,9 @@ const routes = [
 // Always leave this as last one
 if (process.env.MODE !== 'ssr') {
   routes.push({
-    path: '*',
+    // Vue Router 4 removed star/catch-all routes; use a param with a custom
+    // regexp instead. https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
+    path: '/:pathMatch(.*)*',
     component: () => import('pages/Error404.vue')
   })
 }

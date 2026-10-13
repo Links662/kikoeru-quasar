@@ -85,6 +85,16 @@ export default {
       }
     },
     error(err) {
+      this.handleSocketError(err)
+    },
+    // socket.io v3+ 里连接阶段的失败（包括服务端中间件拒绝认证）走 'connect_error'
+    connect_error(err) {
+      this.handleSocketError(err)
+    }
+  },
+
+  methods: {
+    handleSocketError(err) {
       // 只有认证相关错误才跳转登录
       if (err && err.message && err.message.includes('administrator')) {
         this.$socket.close()
@@ -109,10 +119,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  a {
-    text-decoration:none;
-  }
-
   // 顶部导航：窄屏时横向滚动，不换行
   .nav-scroll {
     min-width: 0;
@@ -123,11 +129,5 @@ export default {
     &::-webkit-scrollbar {
       display: none;
     }
-  }
-
-  .nav-btn {
-    flex: 0 0 auto;
-    margin-right: 4px;
-    color: #fff;
   }
 </style>

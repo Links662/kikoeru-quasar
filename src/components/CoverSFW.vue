@@ -3,20 +3,19 @@
     :src="coverUrl"
     :ratio="4/3"
     :img-class="imgClass"
-    style="max-width: 560px;"
-    transition="fade"
+    class="cover-sfw"
     @mouseover="toggleBlurFlag()"
     @mouseout="toggleBlurFlag()"
   >
     <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
-         只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px，保留行内写法更直观 -->
+         只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
     <div class="absolute-top-left transparent no-padding">
       <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
         {{`RJ${rjcode}`}}
       </q-chip>
     </div>
 
-    <div v-if="release" class="absolute-bottom-right" style="padding: 5px;">
+    <div v-if="release" class="absolute-bottom-right cover-meta">
       {{release}}
     </div>
   </q-img>
@@ -90,8 +89,15 @@ export default {
 }
 </script>
 
-<style lang="scss">
-  .blur-image {
-    filter: blur(10px);
-  }
+<style lang="scss" scoped>
+// 封面比正文宽时不要撑满整行
+.cover-sfw {
+  max-width: 560px;
+}
+
+// 右下角的发售日：盖过 Quasar 给 `.q-img__content > div` 的 16px 内边距，
+// 所以必须是 scoped（多一个属性选择器才比那条规则具体）
+.cover-meta {
+  padding: 5px;
+}
 </style>

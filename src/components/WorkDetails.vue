@@ -20,7 +20,7 @@
         <div class="row items-center q-gutter-xs">
           <!-- 评价 -->
           <div class="col-auto">
-            <q-rating v-model="rating" @input="setRating" name="rating" size="sm" :color="userMarked ? 'blue' : 'amber'"
+            <q-rating v-model="rating" @update:model-value="setRating" name="rating" size="sm" :color="userMarked ? 'blue' : 'amber'"
               icon="star_border" icon-selected="star" icon-half="star_half" />
 
             <!-- 评价分布明细 -->
@@ -31,7 +31,7 @@
 
                 <!-- 评价占比 -->
                 <q-linear-progress :value="rate.ratio / 100" color="amber" track-color="white"
-                  style="height: 15px; width: 100px" class="col-auto" />
+                  class="col-auto rating-bar" />
 
                 <div class="col q-mx-sm"> ({{ rate.count }}) </div>
               </div>

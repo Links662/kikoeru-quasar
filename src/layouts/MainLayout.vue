@@ -30,7 +30,7 @@
           <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
             icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 6]">
-              <q-list style="min-width: 150px">
+              <q-list class="nav-more-list">
                 <q-item
                   v-for="(item, index) in hiddenNavItems"
                   :key="'more' + index"
@@ -127,8 +127,8 @@
     <q-drawer
       v-if="!isMobilePanel"
       side="left"
-      :value="workId !== null"
-      @input="onPanelInput"
+      :model-value="workId !== null"
+      @update:model-value="onPanelInput"
       :width="panelWidth"
       bordered
       elevated
@@ -144,9 +144,11 @@
 
     <q-page-container>
       <!-- <q-page padding> -->
-        <keep-alive include="Works">
-          <router-view />
-        </keep-alive>
+        <router-view v-slot="{ Component }">
+          <keep-alive include="Works">
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
       <!-- </q-page> -->
         <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
           <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
@@ -318,7 +320,7 @@ export default {
     }
   },
 
-  beforeDestroy () {
+  beforeUnmount () {
     window.removeEventListener('resize', this.measureChrome);
     window.removeEventListener('keydown', this.handlePanelKeyEvent);
     this.chromeObserver && this.chromeObserver.disconnect();
@@ -554,7 +556,7 @@ export default {
             if (error.response.status === 401) {
               // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
-              const path = this.$router.currentRoute.path
+              const path = this.$route.path
               if (path !=='/login') {
                 this.$router.push('/login');
               }
@@ -578,7 +580,7 @@ export default {
             if (error.response.status === 401) {
               // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
-              const path = this.$router.currentRoute.path
+              const path = this.$route.path
               if (path !=='/login') {
                 this.$router.push('/login');
               }
@@ -653,7 +655,7 @@ export default {
 </script>
 
 
-<style lang="scss">
+<style lang="scss" scoped>
 // 顶部导航：固定一行，放不下的项由下拉菜单接管
   .nav-scroll {
     flex: 1 1 0%;
@@ -670,10 +672,9 @@ export default {
     pointer-events: none;
   }
 
-  .nav-btn {
-    flex: 0 0 auto;
-    margin-right: 4px;
-    color: #fff;
+// “更多”下拉菜单：保证窄屏下也有足够的点击宽度
+  .nav-more-list {
+    min-width: 150px;
   }
 
 // 搜索：收起时只占一个图标的宽度，展开后是输入框
@@ -725,7 +726,7 @@ export default {
     transition: transform 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
   }
 
-  .work-panel-slide-enter,
+  .work-panel-slide-enter-from,
   .work-panel-slide-leave-to {
     transform: translate3d(-100%, 0, 0);
   }

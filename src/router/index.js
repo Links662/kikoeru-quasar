@@ -1,10 +1,7 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 
 import routes from './routes'
 import { audioEngine } from '../services/AudioEngine'
-
-Vue.use(VueRouter)
 
 /*
  * If not building with SSR mode, you can
@@ -16,7 +13,7 @@ Vue.use(VueRouter)
  */
 
 export default function ({ store } /* { store, ssrContext } */) {
-  const Router = new VueRouter({
+  const Router = createRouter({
     scrollBehavior(to, from, savedPosition) {
       if (savedPosition) {
         return savedPosition
@@ -26,11 +23,12 @@ export default function ({ store } /* { store, ssrContext } */) {
     },
     routes,
 
-    // Leave these as they are and change in quasar.conf.js instead!
-    // quasar.conf.js -> build -> vueRouterMode
-    // quasar.conf.js -> build -> publicPath
-    mode: process.env.VUE_ROUTER_MODE,
-    base: process.env.VUE_ROUTER_BASE
+    // Leave these as they are and change in quasar.config.js instead!
+    // quasar.config.js -> build -> vueRouterMode
+    // quasar.config.js -> build -> publicPath
+    history: process.env.VUE_ROUTER_MODE === 'hash'
+      ? createWebHashHistory(process.env.VUE_ROUTER_BASE)
+      : createWebHistory(process.env.VUE_ROUTER_BASE)
   })
 
   /*

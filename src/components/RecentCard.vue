@@ -4,21 +4,20 @@
       :src="coverUrl"
       :ratio="4/3"
       :img-class="imgClass"
-      transition="fade"
       @mouseover="''"
       @mouseout="''"
       @click="onClickPlay()"
       class="square"
     >
       <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
-           只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px，保留行内写法更直观 -->
+           只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
       <div class="absolute-top-left transparent no-padding">
         <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
           {{`RJ${recentwork.work_id}`}}
         </q-chip>
       </div>
 
-      <div class="absolute-bottom-right" style="padding: 5px;">
+      <div class="absolute-bottom-right cover-meta">
         {{'上次播放到: ' + this.formatSeconds(recentwork.play_time)}}
       </div>
 
@@ -165,12 +164,18 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .square {
     transition: transform 100ms ease-out, border-radius 200ms ease-out;
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 10px;
     margin-right: 10px;
     box-shadow: 0 1px 5px rgba(128, 128, 128, 0.246), 0 2px 2px rgba(128, 128, 128, 0.102), 0 3px 1px -2px rgba(128, 128, 128, 0.116);
+  }
+
+  // 照片右下角的“上次播放到”：盖过 Quasar 给 `.q-img__content > div` 的 16px 内边距，
+  // 所以必须是 scoped（多一个属性选择器才比那条规则具体）
+  .cover-meta {
+    padding: 5px;
   }
 
   .underline-text{

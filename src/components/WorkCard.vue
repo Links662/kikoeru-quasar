@@ -45,8 +45,7 @@
                 :value="rate.ratio/100"
                 color="amber"
                 track-color="white"
-                style="height: 15px; width: 100px"
-                class="col-auto"
+                class="col-auto rating-bar"
               />
 
               <div class="col q-mx-sm">({{ rate.count }})</div>
@@ -80,7 +79,7 @@
       <div v-show="metadata.title">
         <span class="q-mx-sm text-weight-medium text-h6 text-red">{{ metadata.price }} 日元</span>
         <span>售出数: {{ metadata.dl_count }}</span>
-        <span v-if="!metadata.nsfw" class="q-mx-sm" style="background: #e6f7d6; color: #56842a">全年龄</span>
+        <span v-if="!metadata.nsfw" class="q-mx-sm all-ages-badge">全年龄</span>
       </div>
 
       <!-- 标签 -->
@@ -202,3 +201,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// “全年龄”标记：绿底绿字
+.all-ages-badge {
+  background: #e6f7d6;
+  color: #56842a;
+}
+</style>

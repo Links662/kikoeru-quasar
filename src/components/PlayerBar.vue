@@ -1,9 +1,9 @@
 <template>
-  <q-slide-transition class="bordered elevated">
+  <q-slide-transition>
     <div v-show="currentPlayingFile.hash && hide" class="row bg-white text-black">
       <q-item clickable v-ripple @click="toggleHide()" class="col non-selectable q-py-none q-px-xs">
         <q-item-section avatar>
-          <q-img transition="fade" :src="samCoverUrl" style="height: 50px; width: 50px" class="rounded-borders" />
+          <q-img :src="samCoverUrl" class="rounded-borders player-bar-cover" />
         </q-item-section>
         
         <q-item-section>
@@ -12,9 +12,9 @@
         </q-item-section>
       </q-item>
 
-      <q-btn flat size="lg" icon="skip_previous" @click="previousTrack()" style="height: 60px; width: 60px" class="col-auto gt-sm"/>
-      <q-btn flat size="lg" :icon="playingIcon" @click="togglePlaying()" style="height: 60px; width: 60px" class="col-auto" />
-      <q-btn flat size="lg" icon="skip_next" @click="nextTrack()" style="height: 60px; width: 60px" class="col-auto gt-sm"/>
+      <q-btn flat size="lg" icon="skip_previous" @click="previousTrack()" class="col-auto gt-sm player-bar-btn"/>
+      <q-btn flat size="lg" :icon="playingIcon" @click="togglePlaying()" class="col-auto player-bar-btn" />
+      <q-btn flat size="lg" icon="skip_next" @click="nextTrack()" class="col-auto gt-sm player-bar-btn"/>
     </div>
   </q-slide-transition>
 </template>
@@ -66,3 +66,19 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 收起态的迷你播放条：封面与三个按钮尺寸固定，保证整行高度一致
+$player-bar-cover: 50px;
+$player-bar-btn: 60px;
+
+.player-bar-cover {
+  height: $player-bar-cover;
+  width: $player-bar-cover;
+}
+
+.player-bar-btn {
+  height: $player-bar-btn;
+  width: $player-bar-btn;
+}
+</style>

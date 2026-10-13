@@ -87,7 +87,7 @@ export default {
     window.addEventListener('touchmove', this.onMove, false)
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('mousemove', this.onMove, false)
     window.removeEventListener('touchmove', this.onMove, false)
     this.onMove = null
@@ -96,9 +96,6 @@ export default {
 </script>
 
 <style lang="scss">
-  .moveable-line {
-    background-color: transparent !important;
-  }
   #lyricsBar {
     background-color: rgba($grey-4, $alpha: 0.6);
     min-width: 1vw;

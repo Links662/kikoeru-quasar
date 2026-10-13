@@ -3,7 +3,7 @@
     <p>
       <img
         src="~assets/sad.svg"
-        style="width:30vw;max-width:150px;"
+        class="error-logo"
       >
     </p>
     
@@ -12,7 +12,7 @@
     </p>
     <q-btn
       color="secondary"
-      style="width:200px;"
+      class="error-btn"
       to="/"
       label="Go back"
     />
@@ -24,3 +24,15 @@ export default {
   name: 'Error404'
 }
 </script>
+
+<style lang="scss" scoped>
+// 图标按视口宽度缩放，但不要超过 150px
+.error-logo {
+  width: 30vw;
+  max-width: 150px;
+}
+
+.error-btn {
+  width: 200px;
+}
+</style>

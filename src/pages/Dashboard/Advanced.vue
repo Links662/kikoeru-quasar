@@ -14,9 +14,10 @@
 
           <q-item-section avatar>
             <div class="q-gutter-sm">
-              <q-radio dense v-model="rewindSeekTime" val=5 label="5 秒" />
-              <q-radio dense v-model="rewindSeekTime" val=10 label="10 秒" />
-              <q-radio dense v-model="rewindSeekTime" val=30 label="30 秒" />
+              <!-- val 用字符串：本页 UI 状态（data 与 requestConfig）都是字符串，提交时才 parseInt -->
+              <q-radio dense v-model="rewindSeekTime" val="5" label="5 秒" />
+              <q-radio dense v-model="rewindSeekTime" val="10" label="10 秒" />
+              <q-radio dense v-model="rewindSeekTime" val="30" label="30 秒" />
             </div>
           </q-item-section>
         </q-item>

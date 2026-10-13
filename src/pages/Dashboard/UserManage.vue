@@ -65,12 +65,12 @@
     <q-card class="q-ma-md q-pa-sm">
       <q-table
         title="所有用户"
-        :data="users"
+        :rows="users"
         :columns="columns"
         row-key="name"
         :selected-rows-label="getSelectedString"
         selection="multiple"
-        :selected.sync="selected"
+        v-model:selected="selected"
       />
       <div class="row justify-end">
         <q-btn :loading="loadingDeleteUsers" :disable="selected.length === 0" @click="confirm = true" color="primary" label="删除" />

@@ -201,15 +201,3 @@ export default {
 }
 
 </script>
-<style>
-/* 方形图标按钮：与同排的 dense 选择框（40px）等高，Quasar 没有等价的尺寸类，
-   所以保留显式尺寸；改尺寸时三处（height / min-height / width）要一起改 */
-.sort-btn {
-  height: 40px;
-  min-height: 40px;
-  width: 40px;
-
-  border: 1px solid rgba(0, 0, 0, 0.23);
-  box-shadow: none;
-}
-</style>

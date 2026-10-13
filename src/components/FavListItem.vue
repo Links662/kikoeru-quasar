@@ -2,7 +2,7 @@
   <q-item clickable class="row bg-white">
       <q-item-section class="col-auto" top> 
         <router-link :to="`/work/${metadata.id}`">
-          <q-img transition="fade" :src="coverUrl" style="height: 120px; width: 160px;" />
+          <q-img :src="coverUrl" class="fav-cover" />
         </router-link>
       </q-item-section>
 
@@ -37,7 +37,7 @@
           <q-rating
             v-if="reviewData.rating"
             v-model="reviewData.rating"
-            @input="setRating"
+            @update:model-value="setRating"
             size="sm"
             color="blue"
             icon="star_border"
@@ -55,7 +55,7 @@
         <q-item-label class="q-mt-auto">
           <q-btn-toggle
             v-model="reviewData.progress"
-            @input="setProgress"
+            @update:model-value="setProgress"
             dense
             no-caps
             rounded
@@ -230,3 +230,11 @@ export default {
 
 }
 </script>
+
+<style lang="scss" scoped>
+// 收藏条目的封面缩略图尺寸固定，行高才不会随封面比例变化
+.fav-cover {
+  height: 120px;
+  width: 160px;
+}
+</style>

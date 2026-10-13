@@ -1,5 +1,5 @@
 <template>
-  <q-form @submit="onSubmit" style="width: 260px;" class="absolute-center	q-gutter-md">
+  <q-form @submit="onSubmit" class="absolute-center q-gutter-md login-form">
     <q-input filled v-model="name" label="用户名" class="fit"
       lazy-rules
       :rules="[ val => val.length >= 5 || '密码长度至少为 5' ]"
@@ -62,3 +62,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 登录表单宽度固定，输入框不会随内容伸缩
+.login-form {
+  width: 260px;
+}
+</style>

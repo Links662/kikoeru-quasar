@@ -22,7 +22,7 @@
         </q-card-section>
 
         <q-card-section class="q-pt-none">
-          <div style="min-width: 300px">
+          <div class="review-input">
             <q-input v-model="reviewText" filled type="textarea" />
           </div>
         </q-card-section>
@@ -41,7 +41,7 @@
     </q-dialog>
 
     <q-dialog v-model="deleteConfirm" persistent transition-show="scale" transition-hide="scale">
-      <q-card class="bg-teal text-white" style="width: 300px">
+      <q-card class="bg-teal text-white confirm-card">
         <q-card-section>
           <div class="text-h6">确定要删除标记吗</div>
         </q-card-section>
@@ -173,7 +173,18 @@ export default {
 }
 </script>
 
-<style lang="sass" scoped>
-.my-custom-toggle
-  border: 1px solid #027be3
+<style lang="scss" scoped>
+.my-custom-toggle {
+  border: 1px solid #027be3;
+}
+
+// 评论输入框：宽度下限，窗口很窄时对话框不会缩成一条
+.review-input {
+  min-width: 300px;
+}
+
+// 删除确认弹窗
+.confirm-card {
+  width: 300px;
+}
 </style>

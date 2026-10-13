@@ -21,34 +21,39 @@
   ],
   "scripts": {
     "test": "node_modules/.bin/eslint .",
-    "dev": "quasar dev"
+    "dev": "quasar dev",
+    "build": "quasar build && quasar build -m pwa"
   },
   "dependencies": {
-    "@quasar/cli": "^2.5.0",
-    "@quasar/extras": "^1.10.4",
-    "axios": "^0.21.1",
+    "@quasar/extras": "^1",
+    "axios": "^1.6.0",
     "lrc-file-parser": "^1.0.7",
-    "quasar": "^1.15.12",
-    "vue-socket.io": "^3.0.10",
-    "vuedraggable": "^2.24.3"
+    "quasar": "^2",
+    "socket.io-client": "^4.7.0",
+    "vue": "^3",
+    "vue-router": "^4",
+    "vuex": "^4"
   },
   "devDependencies": {
-    "@quasar/app": "^1.9.6",
-    "eslint": "^7.25.0",
-    "eslint-loader": "^4.0.2",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-vue": "^7.9.0"
+    "@quasar/app-webpack": "^3",
+    "@quasar/cli": "^2",
+    "autoprefixer": "^10",
+    "eslint": "^8",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-vue": "^9",
+    "eslint-webpack-plugin": "^4",
+    "workbox-webpack-plugin": "^7"
   },
   "engines": {
-    "node": ">= 10.18.1",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+    "node": ">= 22.0.0",
+    "npm": ">= 10.0.0"
   },
   "browserslist": [
-    "last 1 version, not dead, ie >= 11"
+    "defaults",
+    "not ie 11"
   ],
   "eslintIgnore": [
     "dist/*",
-    "src/router/index.js"
+    ".quasar/*"
   ]
 }

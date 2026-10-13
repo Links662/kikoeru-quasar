@@ -2,7 +2,7 @@
   <q-item clickable :to="`/work/${metadata.id}`" class="bg-white q-pa-xs">
     <q-item-section avatar class="q-pr-xs">
       <router-link :to="`/work/${metadata.id}`">
-        <q-img transition="fade" :src="samCoverUrl" style="height: 60px; width: 60px;" />
+        <q-img :src="samCoverUrl" class="list-cover" />
       </router-link>
     </q-item-section>
 
@@ -73,3 +73,11 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 列表条目的封面缩略图尺寸固定，行高才不会随封面比例变化
+.list-cover {
+  height: 60px;
+  width: 60px;
+}
+</style>

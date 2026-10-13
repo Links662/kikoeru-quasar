@@ -55,7 +55,7 @@
           </q-item-section>
         </template>
         
-        <q-scroll-area style="height: 256px;" class="bg-dark text-white q-pa-md">
+        <q-scroll-area class="log-scroll bg-dark text-white q-pa-md">
           <div v-for="(log, index) in allLogs" :key="index" >
             <span :class="log.level === 'error' ? 'text-red' : ''">➜ {{log.message}}</span>
           </div>
@@ -89,7 +89,7 @@
         <q-tab-panel name="tasks" class="q-pa-none">
           <q-virtual-scroll
             separator
-            style="max-height: 313px;"
+            class="task-list"
             :items="tasks"
             :virtual-scroll-item-size="52"
           >
@@ -121,7 +121,7 @@
         <q-tab-panel name="failedTasks" class="q-pa-none">
           <q-virtual-scroll
             separator
-            style="max-height: 313px;"
+            class="task-list"
             :items="failedTasks"
             :virtual-scroll-item-size="52"
           >
@@ -370,8 +370,19 @@ export default {
     this.$socket.emit('ON_SCANNER_PAGE')
   },
 
-  beforeDestroy () {
+  beforeUnmount () {
     this.stopPolling()
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// 扫描日志与任务列表的视口高度：两边都一样，切 tab 时不会来回跳
+.log-scroll {
+  height: 256px;
+}
+
+.task-list {
+  max-height: 313px;
+}
+</style>

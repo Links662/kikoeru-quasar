@@ -1,11 +1,11 @@
 <template>
-  <q-page class="q-px-md q-pt-md q-pb-md list-page">
+  <q-page class="q-px-md q-pt-md q-pb-md">
     <div class="text-h5 text-weight-regular q-mb-sm">
       All {{ restrict }}
     </div>
 
-    <q-table class="list-table" :data="filteredItems" :columns="columns" row-key="id" flat bordered wrap-cells
-      :loading="loading" :pagination.sync="pagination" :rows-per-page-options="[25, 50, 100, 0]"
+    <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered wrap-cells
+      :loading="loading" v-model:pagination="pagination" :rows-per-page-options="[25, 50, 100, 0]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
       @row-click="openWorks">
       <!-- 搜索、计数、分页都放在表格顶部，避免和右下角的“回到顶部”按钮重叠 -->
@@ -24,7 +24,7 @@
           <q-space />
           <div class="col-auto">
             <q-select dense borderless options-dense emit-value map-options
-              :options="rowsPerPageOptions" v-model="pagination.rowsPerPage" @input="pagination.page = 1" />
+              :options="rowsPerPageOptions" v-model="pagination.rowsPerPage" @update:model-value="pagination.page = 1" />
           </div>
         </div>
       </template>
@@ -59,7 +59,7 @@
 
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link class="text-primary" :to="worksLink(props.row)" :title="props.row.name" @click.native.stop>
+          <router-link class="text-primary" :to="worksLink(props.row)" :title="props.row.name" @click.stop>
             {{ props.row.name }}
           </router-link>
         </q-td>
@@ -70,7 +70,7 @@
         <q-td :props="props">
           <div class="rj-chips">
             <router-link v-for="id in props.row.recentWorks" :key="id" class="rj-chip" :to="`/work/${id}`"
-              :title="`打开 RJ${rjCode(id)}`" @click.native.stop>
+              :title="`打开 RJ${rjCode(id)}`" @click.stop>
               RJ{{ rjCode(id) }}
             </router-link>
           </div>
@@ -132,7 +132,7 @@ export default {
     window.addEventListener('keydown', this.handlePageKeyEvent)
   },
 
-  beforeDestroy () {
+  beforeUnmount () {
     window.removeEventListener('keydown', this.handlePageKeyEvent)
   },
 
@@ -276,29 +276,29 @@ export default {
 <style lang="scss" scoped>
 
 /* Quasar 表格默认 th 12px / td 13px、行高 48px，这里整体放大并压低行高 */
-.list-table ::v-deep .q-table {
+.list-table :deep(.q-table) {
   table-layout: fixed;
 }
 
 /* 窄屏上让列宽跟着内容走，否则"作品数"列会被压成一条缝 */
 @media (max-width: $breakpoint-xs-max) {
-  .list-table ::v-deep .q-table {
+  .list-table :deep(.q-table) {
     table-layout: auto;
   }
 }
 
-.list-table ::v-deep .q-table thead th {
+.list-table :deep(.q-table thead th) {
   font-size: 14px;
   font-weight: 600;
   color: #424242;
 }
 
-.list-table ::v-deep .q-table tbody td {
+.list-table :deep(.q-table tbody td) {
   font-size: 15px;
   height: 40px;
 }
 
-.list-table ::v-deep .q-table__top {
+.list-table :deep(.q-table__top) {
   padding: 6px 16px;
   border-bottom: 1px solid rgba(0, 0, 0, .12);
 }
