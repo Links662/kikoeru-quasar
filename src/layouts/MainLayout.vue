@@ -316,7 +316,7 @@ export default {
     }),
 
     ...mapGetters('AudioPlayer', [
-      'currentPlayingFile'
+      'hasTrack'
     ]),
 
     // 顶部导航是否显示文字（窄屏只显示图标）
@@ -381,7 +381,7 @@ export default {
 
     // 播放器卡片是否正在展开显示
     playerExpanded () {
-      return this.playerHide === false && Boolean(this.currentPlayingFile.hash)
+      return this.playerHide === false && this.hasTrack
     },
 
     // 移动端详情面板是浮层，打开时要盖住内容并且不让背后页面滚动

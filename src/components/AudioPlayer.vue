@@ -2,11 +2,11 @@
   <div>
     <!-- 播放器 -->
     <q-slide-transition>
-      <q-card square v-show="currentPlayingFile.hash && !hide"
+      <q-card square v-show="hasTrack && !hide"
         class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart">
-          <q-img fit="contain" :src="coverUrl" :img-class="currentPlayingFile.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
+          <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
 
           <!-- 歌词：只有当前这一句，压在封面下沿，从下往上弹出来。
                播放列表展开时它就在列表上方，两块可以同时开着 -->
@@ -43,7 +43,7 @@
               </q-item-section>
 
               <q-item-section avatar>
-                <q-img :src="samCoverUrl(row.track.hash)" :img-class="row.track.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
+                <q-img :src="samCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
               </q-item-section>
 
               <q-item-section>
@@ -76,7 +76,7 @@
             :min="0"
             :max="sliderMax"
             :step="1"
-            :disable="!currentPlayingFile.hash"
+            :disable="!hasTrack"
             :label-value="formatSeconds(seekValue)"
             label
             thumb-size="12px"
@@ -92,8 +92,8 @@
 
         <q-item class="text-center non-selectable q-py-sm q-px-md">
           <q-item-section>
-            <q-item-label lines="2" class="text-bold">{{ currentPlayingFile.title }}</q-item-label>
-            <q-item-label caption lines="1">{{ currentPlayingFile.album }}</q-item-label>
+            <q-item-label lines="2" class="text-bold">{{ currentTrack.title }}</q-item-label>
+            <q-item-label caption lines="1">{{ currentWork.album }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -178,8 +178,7 @@ export default {
   },
 
   watch: {
-    // 队列是原地增删的（ADD_TO_QUEUE 用 push、REMOVE_FROM_QUEUE 用 splice），
-    // 引用不变，所以只能靠 deep 感知
+    // 删除用 splice，队列引用不变，所以只能靠 deep 感知
     queue: {
       deep: true,
       handler (queue) {
@@ -199,6 +198,12 @@ export default {
 
     // 正在播放的那条换了（点播 / 上下曲 / 自动切歌）→ 它不在当前页时翻过去
     queueIndex (index) {
+      // -1 = 没有选中曲目（队列空或当前这首被移除），分页跟着回到第一页
+      if (index < 0) {
+        this.page = 0
+        return
+      }
+
       const start = this.page * QUEUE_PAGE_SIZE
       if (index < start || index >= start + QUEUE_PAGE_SIZE) {
         this.page = Math.floor(index / QUEUE_PAGE_SIZE)
@@ -208,7 +213,7 @@ export default {
     // 展开列表时定位到正在播放的那一页
     queueOpen (open) {
       if (open !== true) return
-      this.page = this.queue.length === 0 ? 0 : Math.floor(this.queueIndex / QUEUE_PAGE_SIZE)
+      this.page = this.queueIndex < 0 ? 0 : Math.floor(this.queueIndex / QUEUE_PAGE_SIZE)
     },
 
     // 新曲目确实没有歌词时（不是"还在查"）把歌词收起来，按钮同时变灰。
@@ -238,8 +243,8 @@ export default {
     coverUrl() {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      const hash = this.currentPlayingFile.hash
-      return hash ? `/api/cover/${hash.split('/')[0]}?token=${token}` : ""
+      const id = this.currentWork.id
+      return id ? `/api/cover/${id}?token=${token}` : ""
     },
 
     // 进度条上限：duration 未就绪时给一个安全值，避免 q-slider 的 min 等于 max
@@ -249,8 +254,16 @@ export default {
     },
 
     workDetailUrl() {
-      const hash = this.currentPlayingFile.hash
-      return hash ? `/work/${hash.split('/')[0]}` : ""
+      const id = this.currentWork.id
+      return id ? `/work/${id}` : ""
+    },
+
+    // 队列里每一行的封面：整个队列是同一个作品，所以直接用队列封面的小图
+    samCoverUrl() {
+      // 从 LocalStorage 中读取 token
+      const token = this.$q.localStorage.getItem('jwt-token') || ''
+      const id = this.currentWork.id
+      return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
     },
 
     volume: {
@@ -330,7 +343,9 @@ export default {
     ]),
 
     ...mapGetters('AudioPlayer', [
-      'currentPlayingFile',
+      'currentTrack',
+      'currentWork',
+      'hasTrack',
       'hasLyric'
     ]),
   },
@@ -344,7 +359,7 @@ export default {
       rewind: 'SET_REWIND',
       forward: 'SET_FORWARD',
       setTrack: 'SET_TRACK',
-      setQueue: 'SET_QUEUE',
+      setQueueTracks: 'SET_QUEUE_TRACKS',
       removeFromQueue: 'REMOVE_FROM_QUEUE',
       emptyQueue: 'EMPTY_QUEUE',
       setVolume: 'SET_VOLUME',
@@ -393,12 +408,6 @@ export default {
       return h === "00"
         ? m + ":" + s
         : h + ":" + m + ":" + s
-    },
-
-    samCoverUrl(hash) {
-      // 从 LocalStorage 中读取 token
-      const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return hash ? `/api/cover/${hash.split('/')[0]}?type=sam&token=${token}` : ""
     },
 
     // 点整行 = 播放这一条
@@ -521,7 +530,7 @@ export default {
         playingIndex += 1
       }
 
-      this.setQueue({ queue, index: playingIndex, resetPlaying: false })
+      this.setQueueTracks({ tracks: queue, index: playingIndex })
 
       // 挪过页边界时跟着它走，否则这条会从当前页消失
       const targetPage = Math.floor(newIndex / QUEUE_PAGE_SIZE)

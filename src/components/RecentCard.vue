@@ -87,12 +87,7 @@ export default {
         const pushAudio = (tree) => {
           for (let i = 0; i < tree.length; i += 1) {
             if (tree[i].type === 'audio') {
-              queue.push({
-                ...tree[i],
-                artist: metadata.circle.name || '',
-                album: metadata.title || '',
-                nsfw: metadata.nsfw === true,
-              })
+              queue.push({ ...tree[i] })
             }
           }
         }
@@ -113,7 +108,8 @@ export default {
         makeQueue(this.tree)
 
         this.$store.commit('AudioPlayer/SET_QUEUE', {
-          queue: queue.concat(),
+          work: metadata,
+          tracks: queue.concat(),
           index: queue.findIndex(file => file.hash === hash),
         })
 

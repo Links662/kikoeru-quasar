@@ -1,6 +1,6 @@
 <template>
   <q-slide-transition>
-    <div v-show="currentPlayingFile.hash && hide" class="bg-white text-black player-bar">
+    <div v-show="hasTrack && hide" class="bg-white text-black player-bar">
       <div v-show="showLyricStrip" class="player-bar-lyric">
         <span v-if="currentLyric" class="player-bar-lyric__text text-purple text-bold ellipsis">
           {{ currentLyric }}
@@ -10,12 +10,12 @@
       <div class="row">
         <q-item clickable v-ripple @click="toggleHide()" class="col non-selectable q-py-none q-px-xs">
           <q-item-section avatar>
-            <q-img :src="samCoverUrl" :img-class="currentPlayingFile.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
+            <q-img :src="samCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
           </q-item-section>
 
           <q-item-section>
-            <q-item-label lines="2">{{ currentPlayingFile.title }}</q-item-label>
-            <q-item-label caption lines="1">{{currentPlayingFile.artist + ' - ' + currentPlayingFile.album }}</q-item-label>
+            <q-item-label lines="2">{{ currentTrack.title }}</q-item-label>
+            <q-item-label caption lines="1">{{currentWork.artist + ' - ' + currentWork.album }}</q-item-label>
           </q-item-section>
         </q-item>
 
@@ -37,8 +37,8 @@ export default {
     samCoverUrl () {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      const hash = this.currentPlayingFile.hash
-      return hash ? `/api/cover/${hash.split('/')[0]}?type=sam&token=${token}` : ""
+      const id = this.currentWork.id
+      return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
     },
 
     playingIcon () {
@@ -57,7 +57,9 @@ export default {
     ]),
 
     ...mapGetters('AudioPlayer', [
-      'currentPlayingFile',
+      'currentTrack',
+      'currentWork',
+      'hasTrack',
       'hasLyric'
     ])
   },

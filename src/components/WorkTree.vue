@@ -18,7 +18,7 @@
           v-ripple
           v-for="(item, index) in fatherFolder"
           :key="index"
-          :active="item.type === 'audio' && currentPlayingFile.hash === item.hash"
+          :active="item.type === 'audio' && currentTrack.hash === item.hash"
           active-class="text-white bg-teal"
           @click="onClickItem(item)"
           class="non-selectable"
@@ -35,30 +35,6 @@
             <q-item-label lines="2">{{ item.title }}</q-item-label>
             <q-item-label v-if="item.children" caption lines="1">{{ `${item.children.length} 项目` }}</q-item-label>
           </q-item-section>
-
-          <!-- 上下文菜单 -->
-          <q-menu
-            v-if="item.type === 'audio' || item.type === 'text' || item.type === 'image' || item.type === 'other'"
-            touch-position
-            context-menu
-            auto-close
-            transition-show="jump-down"
-            transition-hide="jump-up"
-          >
-            <q-list separator>
-              <q-item clickable @click="addToQueue(item)" v-if="item.type === 'audio'">
-                <q-item-section>添加到播放列表</q-item-section>
-              </q-item>
-
-              <q-item clickable @click="playNext(item)" v-if="item.type === 'audio'">
-                <q-item-section>下一曲播放</q-item-section>
-              </q-item>
-
-              <!-- <q-item clickable @click="download(item)">
-                <q-item-section>下载文件</q-item-section>
-              </q-item> -->
-            </q-list>
-          </q-menu>
         </q-item>
       </q-list>
     </q-card>
@@ -105,20 +81,10 @@ export default {
       return fatherFolder
     },
 
-    queue () {
-      const queue = []
-      this.fatherFolder.forEach(item => {
-        if (item.type === 'audio') {
-          queue.push({
-            ...item,
-            artist: this.metadata.circle.name || '',
-            album: this.metadata.title || '',
-            nsfw: this.metadata.nsfw === true,
-          })
-        }
-      })
-
-      return queue
+    // 当前文件夹里的音轨：点其中一条就是"播放这一章"，队列里只放曲目自己的字段，
+    // 作品级信息（作品名、社团、R18）由 store 从 metadata 里记一份
+    tracks () {
+      return this.fatherFolder.filter(item => item.type === 'audio')
     },
 
     ...mapState('AudioPlayer', [
@@ -126,7 +92,7 @@ export default {
     ]),
 
     ...mapGetters('AudioPlayer', [
-      'currentPlayingFile'
+      'currentTrack'
     ])
   },
 
@@ -137,7 +103,7 @@ export default {
     },
 
     playIcon (hash) {
-      return this.playing && this.currentPlayingFile.hash === hash ? "pause" : "play_arrow"
+      return this.playing && this.currentTrack.hash === hash ? "pause" : "play_arrow"
     },
 
     initPath () {
@@ -164,37 +130,27 @@ export default {
         this.openFile(item);
       } else if (item.type === 'other') {
         this.download(item);
-      } else if (this.currentPlayingFile.hash !== item.hash) {
-        this.$store.commit('AudioPlayer/SET_QUEUE', {
-          queue: this.queue.concat(),
-          index: this.queue.findIndex(file => file.hash === item.hash),
-        })
-        this.$store.commit('AudioPlayer/PLAY')
+      } else if (this.currentTrack.hash !== item.hash) {
+        this.playTracks(item.hash)
       }
     },
 
     onClickPlayButton (hash) {
-      if (this.currentPlayingFile.hash === hash) {
+      if (this.currentTrack.hash === hash) {
         this.$store.commit('AudioPlayer/TOGGLE_PLAYING')
       } else {
-        this.$store.commit('AudioPlayer/SET_QUEUE', {
-          queue: this.queue.concat(),
-          index: this.queue.findIndex(file => file.hash === hash),
-        })
-        this.$store.commit('AudioPlayer/PLAY')
+        this.playTracks(hash)
       }
     },
 
-    addToQueue (file) {
-      // 队列项要带上 nsfw：播放条和播放器里的封面靠它决定糊不糊
-      this.$store.commit('AudioPlayer/ADD_TO_QUEUE', {
-        ...file,
-        nsfw: this.metadata.nsfw === true
+    // 用当前文件夹的音轨换掉整个队列，从 hash 这一条开始播
+    playTracks (hash) {
+      this.$store.commit('AudioPlayer/SET_QUEUE', {
+        work: this.metadata,
+        tracks: this.tracks.concat(),
+        index: this.tracks.findIndex(file => file.hash === hash),
       })
-    },
-
-    playNext (file) {
-      this.$store.commit('AudioPlayer/PLAY_NEXT', file)
+      this.$store.commit('AudioPlayer/PLAY')
     },
 
     download (file) {

@@ -7,15 +7,6 @@ const HISTORY_UPDATE_INTERVAL = 30
 // 外部暂停的确认延迟（毫秒）
 const PAUSE_INTENT_DELAY = 250
 
-const EMPTY_FILE = {
-  hash: null,
-  title: '',
-  album: '',
-  artist: '',
-  mediaStreamUrl: '',
-  mediaDownloadUrl: ''
-}
-
 function formatSeconds (seconds) {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds / 60) % 60)
@@ -82,8 +73,12 @@ export default class AudioEngine {
     return this.store.state.AudioPlayer
   }
 
-  get currentFile () {
-    return this.store.getters['AudioPlayer/currentPlayingFile'] || EMPTY_FILE
+  get currentTrack () {
+    return this.store.getters['AudioPlayer/currentTrack']
+  }
+
+  get currentWork () {
+    return this.store.getters['AudioPlayer/currentWork']
   }
 
   get token () {
@@ -91,8 +86,8 @@ export default class AudioEngine {
   }
 
   get coverUrl () {
-    const hash = this.currentFile.hash
-    return hash ? `/api/cover/${hash.split('/')[0]}?token=${this.token}` : ''
+    const id = this.currentWork.id
+    return id ? `/api/cover/${id}?token=${this.token}` : ''
   }
 
   // NSFW 模式（MainLayout 里切换、CSS 里生效的同一个本地偏好）
@@ -172,7 +167,7 @@ export default class AudioEngine {
 
     this.watchers = [
       watch(state => state.AudioPlayer.playing, flag => this.onPlayingIntent(flag)),
-      watch(state => state.AudioPlayer.currentPlayingFile.mediaStreamUrl, () => this.onSourceChanged()),
+      watch((state, getters) => getters['AudioPlayer/currentTrack'].mediaStreamUrl, () => this.onSourceChanged()),
       watch(state => state.AudioPlayer.muted, flag => { this.media.muted = Boolean(flag) }),
       watch(state => state.AudioPlayer.volume, value => this.applyVolume(value)),
       watch(state => state.AudioPlayer.seekTime, time => this.onSeekRequest(time)),
@@ -226,9 +221,11 @@ export default class AudioEngine {
   onSourceChanged () {
     const url = this.resolveSource()
 
-    // 换源前先把上一首的进度落库（此时 currentTime 仍属于上一首）
+    // 换源前先把上一首的进度落库（此时 currentTime 仍属于上一首）。
+    // 快照只记曲目自己的字段：写历史时 work_id 仍从 hash 里取，
+    // 因为此刻 store 里可能已经换成了新队列（新作品）
     this.flushPreviousHistory()
-    this.lastHistoryFile = { ...this.currentFile }
+    this.lastHistoryFile = { hash: this.currentTrack.hash, title: this.currentTrack.title }
 
     this.desiredSource = url
     // 新源就绪前不允许自动播放
@@ -258,7 +255,7 @@ export default class AudioEngine {
   }
 
   resolveSource () {
-    const url = this.currentFile.mediaStreamUrl
+    const url = this.currentTrack.mediaStreamUrl
     if (!url) return ''
 
     const withToken = `${url}?token=${this.token}`
@@ -568,7 +565,7 @@ export default class AudioEngine {
   }
 
   loadLrcFile () {
-    const hash = this.currentFile.hash
+    const hash = this.currentTrack.hash
     if (!hash) return
 
     // 新曲目有没有歌词还没定：先把上一首的歌词清掉，别让旧歌词挂在界面上。
@@ -637,7 +634,9 @@ export default class AudioEngine {
     this.updatePlayHistory(this.media.currentTime, this.media.duration, previous)
   }
 
-  updatePlayHistory (currentTime = 0, totalTime = 0, file = this.currentFile) {
+  // file 是曲目（或切歌时留下的快照）：work_id / file_index 从 hash 里取，
+  // 因为 hash 是曲目自带的身份，不依赖 store 里当前是哪个队列
+  updatePlayHistory (currentTime = 0, totalTime = 0, file = this.currentTrack) {
     if (!file || !file.hash) return
 
     const fileName = file.title
@@ -662,7 +661,7 @@ export default class AudioEngine {
       return
     }
 
-    const hash = this.currentFile.hash
+    const hash = this.currentTrack.hash
     if (!hash) return
 
     const workID = hash.split('/')[0]
@@ -679,7 +678,7 @@ export default class AudioEngine {
       .then((response) => {
         if (!response.data) return
         // 请求期间可能已经切歌，避免把上一首的进度写到别的曲目上
-        if (this.currentFile.hash !== hash) return
+        if (this.currentTrack.hash !== hash) return
 
         const continueTime = Number(response.data.play_time)
         const totalTime = Number(response.data.total_time)
@@ -707,15 +706,16 @@ export default class AudioEngine {
   setMediaSession () {
     if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return
 
-    const file = this.currentFile
-    if (!file || !file.hash) return
+    const track = this.currentTrack
+    const work = this.currentWork
+    if (!track.hash) return
 
     navigator.mediaSession.metadata = new MediaMetadata({
-      title: file.title || '',
-      album: file.album || '',
-      artist: file.artist || '',
+      title: track.title || '',
+      album: work.album || '',
+      artist: work.artist || '',
       // 锁屏 / 通知栏的封面不吃 CSS，只能整个不给
-      artwork: this.nsfwMode && file.nsfw === true
+      artwork: this.nsfwMode && work.nsfw === true
         ? []
         : [
           {

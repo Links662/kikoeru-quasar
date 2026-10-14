@@ -1,3 +1,21 @@
+// 曲目自己的字段（和后端 /api/tracks 返回的 audio 节点一致）。
+// 队列里所有曲目都属于同一个作品，作品级的字段（作品名、社团、R18）只在
+// queueWork 上存一份，不往每个 track 上抄。
+export const EMPTY_TRACK = {
+  hash: null,
+  title: "",
+  mediaStreamUrl: "",
+  mediaDownloadUrl: ""
+}
+
+// 队列所属作品：album 是作品名，artist 是社团名（沿用播放器里的叫法）
+export const EMPTY_WORK = {
+  id: null,
+  album: "",
+  artist: "",
+  nsfw: false
+}
+
 export default {
   hide: false,
   // playing: 用户意图 —— “应该播放吗”。只有用户操作（播放按钮、曲目、线控/锁屏确认过的控制）
@@ -8,8 +26,9 @@ export default {
   elementPlaying: false,
   currentTime: 0,
   duration: 0,
-  queue: [], // 每个 track 含 metadata + source
-  queueIndex: 0,
+  queue: [], // [{ hash, title, mediaStreamUrl, mediaDownloadUrl }]
+  queueIndex: -1, // -1 = 没有选中曲目（队列为空，或当前这首被移除）
+  queueWork: null, // 队列所属作品，整个队列共用一份，见 EMPTY_WORK
   muted: false,
   volume: 0,
   // 播放器展开时能弹出来的两块内容：当前播放列表，和封面下沿的歌词。
@@ -29,13 +48,5 @@ export default {
   sleepMode: false,
   rewindSeekTime: 5,
   forwardSeekTime: 30,
-  seekTime: -1,
-  currentPlayingFile: { // 只存 metadata，source 预加载但不自动播放
-    hash: null,
-    title: "",
-    album: "",
-    artist: "",
-    mediaStreamUrl: "",
-    mediaDownloadUrl: ""
-  }
+  seekTime: -1
 }

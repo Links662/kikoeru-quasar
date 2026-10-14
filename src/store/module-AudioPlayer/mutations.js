@@ -24,34 +24,43 @@ const mutations = {
 
     state.queueIndex = index;
     state.playing = true;
-
-    // 同步 metadata 到 currentPlayingFile
-    state.currentPlayingFile = { ...state.queue[index] };
   },
 
   NEXT_TRACK(state) {
+    // 没有选中曲目时不动（队列空 / 当前这首被移除过）
+    if (state.queueIndex < 0) return;
+
     if (state.queueIndex < state.queue.length - 1) {
       state.queueIndex += 1;
       state.playing = true;
-      state.currentPlayingFile = { ...state.queue[state.queueIndex] };
     }
   },
 
   PREVIOUS_TRACK(state) {
+    if (state.queueIndex < 0) return;
+
     if (state.queueIndex > 0) {
       state.queueIndex -= 1;
       state.playing = true;
-      state.currentPlayingFile = { ...state.queue[state.queueIndex] };
     }
   },
 
-  SET_QUEUE(state, payload) {
-    state.queue = payload.queue;
-    state.queueIndex = payload.index;
+  // 换整个队列：队列里所有曲目都属于 work，作品级字段只记这一份
+  SET_QUEUE(state, { work, tracks, index }) {
+    state.queueWork = {
+      id: work.id,
+      album: work.title || '',
+      artist: work.circle && work.circle.name ? work.circle.name : '',
+      nsfw: work.nsfw === true
+    };
+    state.queue = tracks;
+    state.queueIndex = index;
+  },
 
-    if (payload.queue[payload.index]) {
-      state.currentPlayingFile = { ...payload.queue[payload.index] };
-    }
+  // 只动队列内容（重排、挪动当前曲目的位置），作品不变
+  SET_QUEUE_TRACKS(state, { tracks, index }) {
+    state.queue = tracks;
+    state.queueIndex = index;
   },
 
   // 彻底复位（登出等认证边界使用）：停止播放并清空所有与"当前播放内容"相关的状态
@@ -61,7 +70,8 @@ const mutations = {
     state.currentTime = 0;
     state.duration = 0;
     state.queue = [];
-    state.queueIndex = 0;
+    state.queueIndex = -1;
+    state.queueWork = null;
     state.queueOpen = false;
     state.lyricsOpen = false;
     state.currentLyric = "";
@@ -71,48 +81,22 @@ const mutations = {
     state.seekTime = -1;
     state.sleepTime = null;
     state.sleepMode = false;
-    state.currentPlayingFile = {
-      hash: null,
-      title: "",
-      album: "",
-      artist: "",
-      mediaStreamUrl: "",
-      mediaDownloadUrl: ""
-    };
   },
 
   EMPTY_QUEUE(state) {
     state.playing = false;
     state.queue = [];
-    state.queueIndex = 0;
-    state.currentPlayingFile = {
-      hash: null,
-      title: "",
-      album: "",
-      artist: "",
-      mediaStreamUrl: "",
-      mediaDownloadUrl: ""
-    };
-  },
-
-  ADD_TO_QUEUE(state, file) {
-    state.queue.push(file);
+    state.queueIndex = -1;
+    state.queueWork = null;
   },
 
   REMOVE_FROM_QUEUE(state, index) {
     state.queue.splice(index, 1);
 
     if (index === state.queueIndex) {
+      // 移除的正是当前这首：不再选中任何曲目（队列剩下的还留着）
       state.playing = false;
-      state.queueIndex = 0;
-      state.currentPlayingFile = {
-        hash: null,
-        title: "",
-        album: "",
-        artist: "",
-        mediaStreamUrl: "",
-        mediaDownloadUrl: ""
-      };
+      state.queueIndex = -1;
     } else if (index < state.queueIndex) {
       state.queueIndex -= 1;
     }
@@ -124,11 +108,6 @@ const mutations = {
 
   SET_CURRENT_TIME(state, second) {
     state.currentTime = second
-  },
-
-  // 添加文件到当前 track 后面播放
-  PLAY_NEXT(state, file) {
-    state.queue.splice(state.queueIndex + 1, 0, file);
   },
 
   TOGGLE_MUTED(state) {
