@@ -29,6 +29,16 @@
         />
       </div>
 
+      <div class="col-xs-6 col-sm-4 row q-pa-sm">
+        <q-btn
+          class="col"
+          color="brown"
+          label="修复封面"
+          :disable="state === 'running' || !socketConnected"
+          @click="repairCovers()"
+        />
+      </div>
+
       <div class="col-xs-12 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
@@ -249,6 +259,13 @@ export default {
       this.$socket.emit('PERFORM_UPDATE')
     },
 
+    // 只维护封面：补缺失、重新生成过期缩略图、把本地生成的降级图换成 DLsite 原图
+    repairCovers () {
+      this.resetScanState()
+      this.state = 'running'
+      this.$socket.emit('PERFORM_COVER_REPAIR')
+    },
+
     killScanProceess () {
       this.$socket.emit('KILL_SCAN_PROCESS')
     },
@@ -346,6 +363,8 @@ export default {
           return { level: 'info', message: `[RJ${res.rjcode}] 添加成功! Added: ${res.count}` }
         } else if (res.result === 'repaired') {
           return { level: 'info', message: `[RJ${res.rjcode}] 封面修复成功! Repaired: ${res.count}` }
+        } else if (res.result === 'upgraded') {
+          return { level: 'info', message: `[RJ${res.rjcode}] 封面升级成功! Upgraded: ${res.count}` }
         } else if (res.result === 'updated') {
           return { level: 'info', message: `[RJ${res.rjcode}] 更新成功! Updated: ${res.count}` }
         } else {

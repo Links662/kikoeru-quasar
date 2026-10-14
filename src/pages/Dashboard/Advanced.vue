@@ -204,6 +204,46 @@
             <q-toggle v-model="config.skipCleanup" dense />
           </q-item-section>
         </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>封面升级间隔（天）</q-item-label>
+            <q-item-label caption>
+              本地由大图生成的缩略图，隔多少天尝试换成 DLsite 原图；0 表示每次扫描都试。默认 7
+            </q-item-label>
+          </q-item-section>
+
+          <q-item-section avatar>
+            <q-input
+              v-model.number="config.coverUpgradeIntervalDays"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>参与升级的缩略图</q-item-label>
+            <q-item-label caption>
+              sam 是原图的等比缩略图（本地生成会丢掉原图上下部分，降级最明显）；
+              240x240 与 DLsite 的差异只是多一次压缩
+            </q-item-label>
+          </q-item-section>
+
+          <q-item-section avatar>
+            <q-select
+              v-model="config.coverUpgradeTypes"
+              :options="coverUpgradeOptions"
+              multiple
+              use-chips
+              dense
+              options-dense
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-card>
 
@@ -359,6 +399,8 @@ export default {
     return {
       config: {},
       loading: false,
+      // 封面升级只针对这两张缩略图（main 是原图，没有升级一说）
+      coverUpgradeOptions: ['sam', '240x240'],
       rewindSeekTime: '5',
       forwardSeekTime: '30'
     }
