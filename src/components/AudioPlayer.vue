@@ -42,7 +42,7 @@
               </q-item-section>
 
               <q-item-section avatar>
-                <q-img :src="samCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
+                <q-img fit="contain" :src="thumbCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
               </q-item-section>
 
               <q-item-section>
@@ -195,13 +195,16 @@ export default {
       }
     },
 
-    // 正在播放的那条换了（点播 / 上下曲 / 自动切歌）→ 它不在当前页时翻过去
-    queueIndex (index) {
-      // -1 = 没有选中曲目（队列空或当前这首被移除），分页跟着回到第一页
-      if (index < 0) {
-        this.page = 0
-        return
-      }
+    // 正在播放的那一首换了（点播 / 上下曲 / 自动切歌）→ 它不在当前页时翻过去。
+    //
+    // 这里看的是"换没换歌"（currentTrack 的引用变没变），而不是下标 queueIndex：
+    // 删掉前面的一条也会让正在播放的那首整个往前挪一位，但播放的还是同一首，
+    // 这时翻页只会把用户从他正在操作的那一页弹走。
+    currentTrack () {
+      const index = this.queueIndex
+      // 没有选中曲目（队列空 / 正在播放的这首刚被删掉）：留在当前页。
+      // 队列变短导致页码越界由上面的 queue 监听兜底，不用在这里回到第一页
+      if (index < 0) return
 
       const start = this.page * QUEUE_PAGE_SIZE
       if (index < start || index >= start + QUEUE_PAGE_SIZE) {
@@ -256,8 +259,9 @@ export default {
       return id ? `/work/${id}` : ""
     },
 
-    // 队列里每一行的封面：整个队列是同一个作品，所以直接用队列封面的小图
-    samCoverUrl() {
+    // 队列里每一行的封面：整个队列是同一个作品，所以直接用队列封面的小图。
+    // 用 sam（原图的等比缩略图），配合 contain 等比完整显示
+    thumbCoverUrl() {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
       return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
@@ -694,7 +698,8 @@ $queue-block: $queue-body + $queue-pager;
   // 固定行高，保证一页 4 行的高度是确定的（队列不足 4 条时下面留白）
   height: $queue-row;
 
-  // 封面：正方形 + rounded-borders，和收起态播放条一致（原来是 38px 圆角头像）
+  // 封面：正方形 + rounded-borders，和收起态播放条一致（原来是 38px 圆角头像）。
+  // sam 保留原图比例：正方形封面正好铺满，其它比例用 contain 上下留白
   .queue-item__cover {
     width: $queue-cover;
     height: $queue-cover;

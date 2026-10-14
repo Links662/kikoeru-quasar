@@ -2,7 +2,7 @@
   <q-item clickable :to="`/work/${metadata.id}`" class="bg-white q-pa-xs">
     <q-item-section avatar class="q-pr-xs">
       <router-link :to="`/work/${metadata.id}`">
-        <q-img :src="samCoverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="list-cover" />
+        <q-img fit="contain" :src="coverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="list-cover" />
       </router-link>
     </q-item-section>
 
@@ -65,7 +65,9 @@ export default {
   },
 
   computed: {
-    samCoverUrl () {
+    // 列表小图用 sam：它是原图的等比缩略图（保留原图比例），
+    // 配合上面的 contain，正方形封面正好铺满、其它比例上下留白，不会裁掉两侧
+    coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       return this.metadata.id ? `/api/cover/${this.metadata.id}?type=sam&token=${token}` : ""
     },
@@ -74,7 +76,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 列表条目的封面缩略图尺寸固定，行高才不会随封面比例变化
+// 列表条目的封面缩略图尺寸固定，行高才不会随封面比例变化。
+// sam 保留原图比例：正方形封面正好铺满，其它比例用 contain 上下留白
+// （默认的 cover 会裁掉左右两侧）
 .list-cover {
   height: 60px;
   width: 60px;

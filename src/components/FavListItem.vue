@@ -2,7 +2,7 @@
   <q-item clickable class="row bg-white">
       <q-item-section class="col-auto" top> 
         <router-link :to="`/work/${metadata.id}`">
-          <q-img :src="coverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="fav-cover" />
+          <q-img fit="contain" :src="coverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="fav-cover" />
         </router-link>
       </q-item-section>
 
@@ -231,7 +231,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 收藏条目的封面缩略图尺寸固定，行高才不会随封面比例变化
+// 收藏条目的封面缩略图尺寸固定，行高才不会随封面比例变化。
+// 这里 160x120 与 4:3 缩略图比例一致，本来就不会裁；
+// 用 contain 是为了和其他几处保持一致，也防止以后换成别的比例的封面
 .fav-cover {
   height: 120px;
   width: 160px;

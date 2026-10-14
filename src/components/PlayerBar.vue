@@ -10,7 +10,7 @@
       <div class="row">
         <q-item clickable v-ripple @click="toggleHide()" class="col non-selectable q-py-none q-px-xs">
           <q-item-section avatar>
-            <q-img :src="samCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
+            <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
           </q-item-section>
 
           <q-item-section>
@@ -34,7 +34,8 @@ export default {
   name: 'PlayerBar',
 
   computed: {
-    samCoverUrl () {
+    // 播放条小图用 sam：原图的等比缩略图，配合 contain 等比完整显示
+    coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
       return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
@@ -94,6 +95,7 @@ $player-bar-btn: 60px;
   border-top: 1px solid $separator-color;
 }
 
+// sam 保留原图比例：正方形封面正好铺满，其它比例用 contain 上下留白
 .player-bar-cover {
   height: $player-bar-cover;
   width: $player-bar-cover;

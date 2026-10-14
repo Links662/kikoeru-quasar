@@ -344,6 +344,8 @@ export default {
       const resultLogs = this.results.map(res => {
         if (res.result === 'added') {
           return { level: 'info', message: `[RJ${res.rjcode}] 添加成功! Added: ${res.count}` }
+        } else if (res.result === 'repaired') {
+          return { level: 'info', message: `[RJ${res.rjcode}] 封面修复成功! Repaired: ${res.count}` }
         } else if (res.result === 'updated') {
           return { level: 'info', message: `[RJ${res.rjcode}] 更新成功! Updated: ${res.count}` }
         } else {
