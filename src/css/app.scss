@@ -12,7 +12,7 @@ a {
 // 顶部导航按钮：主界面与仪表盘两个布局共用（各自原来各写了一份）
 .nav-btn {
   flex: 0 0 auto;
-  margin-right: 4px;
+  margin-right: 3px;
   color: #fff;
 }
 
@@ -33,13 +33,23 @@ a {
   width: 100px;
 }
 
-// NSFW 封面的模糊层：通过 q-img 的 img-class 挂到内部的 <img> 上，
-// 那个元素由 Quasar 自己渲染，拿不到组件的 scoped 属性，只能放全局
-.blur-image {
-  filter: blur(10px);
+// NSFW 模式：body 上挂 .nsfw-mode 时，R18 作品的封面打码（全年龄的封面照旧）。
+// 谁该糊由组件算：只有 nsfw 的作品才在 q-img 上带 .cover-mask
+//（最近播放那排是例外，一律带这个类，见 RecentCard.vue）。
+// 那个 <img> 由 Quasar 自己渲染，拿不到组件的 scoped 属性，所以规则只能放全局；
+// 封面里的叠层（RJ 号、发售日）是兄弟节点，不会跟着糊。
+body.nsfw-mode .cover-mask {
+  filter: blur(16px);
 }
 
 // 移动端详情面板打开时，锁住背后页面的滚动
 body.work-panel-locked {
   overflow: hidden;
+}
+
+// 手机上「在列表顶部下拉展开搜索框」用的是下拉手势，
+// 先关掉浏览器自带的下拉刷新，否则 Chrome Android 会在顶部把手势抢走
+html,
+body {
+  overscroll-behavior-y: contain;
 }

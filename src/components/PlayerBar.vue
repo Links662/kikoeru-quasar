@@ -10,7 +10,7 @@
       <div class="row">
         <q-item clickable v-ripple @click="toggleHide()" class="col non-selectable q-py-none q-px-xs">
           <q-item-section avatar>
-            <q-img :src="samCoverUrl" class="rounded-borders player-bar-cover" />
+            <q-img :src="samCoverUrl" :img-class="currentPlayingFile.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
           </q-item-section>
 
           <q-item-section>

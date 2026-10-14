@@ -1,9 +1,10 @@
 <template>
   <div>
+    <!-- 最近播放这排是例外：开了 NSFW 模式就一律糊，不按 R18 判断 -->
     <q-img
       :src="coverUrl"
       :ratio="4/3"
-      :img-class="imgClass"
+      img-class="cover-mask"
       @mouseover="''"
       @mouseout="''"
       @click="onClickPlay()"
@@ -59,21 +60,6 @@ export default {
   },
 
   computed: {
-      imgClass () {
-      if (this.$q.platform.is.mobile) {
-        // 在移动设备上图片直接显示
-        return ""
-      } else {
-        if (!this.nsfw) {
-          // 在PC上SFW的图片直接显示
-          return ""
-        } else {
-          // 在PC上NSFW的图片鼠标悬停显示
-          return this.blurFlag ? "blur-image" : ""
-        }
-      }
-    },
-
     coverUrl () {
       // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
@@ -105,6 +91,7 @@ export default {
                 ...tree[i],
                 artist: metadata.circle.name || '',
                 album: metadata.title || '',
+                nsfw: metadata.nsfw === true,
               })
             }
           }

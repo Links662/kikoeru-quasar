@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh Lpr lFf" class="bg-grey-3">
+  <q-layout view="hHh Lpr lFf" class="bg-grey-3" :style="layoutStyle">
     <q-header ref="header" class="shadow-4">
       <q-toolbar>
         <!-- 屏幕变窄时收掉 Kikoeru 标签，给导航和搜索让位 -->
@@ -11,13 +11,14 @@
 
         <!-- 导航：原先左侧工具栏的内容全部移到这里。
              固定一行，一行放不下的项收进末尾的下拉菜单 -->
-        <div ref="navRow" class="nav-scroll row no-wrap items-center" v-show="!searchTakesOver">
+        <div ref="navRow" class="nav-scroll row no-wrap items-center">
           <q-btn
             v-for="(item, index) in shownNavItems"
             :key="'nav' + index"
             flat
             dense
             class="nav-btn"
+            :class="{ 'nav-active': item.active === true }"
             :icon="item.icon"
             :label="showNavLabel ? item.title : undefined"
             :aria-label="showNavLabel ? undefined : item.title"
@@ -68,40 +69,7 @@
           />
         </div>
 
-        <!-- 搜索：平时收成一个图标，点击才展开输入框 -->
-        <div class="header-search" :class="{ 'header-search--wide': searchTakesOver }">
-          <q-btn
-            v-if="!searchOpen"
-            flat
-            dense
-            round
-            icon="search"
-            class="nav-btn"
-            aria-label="搜索"
-            :class="{ 'nav-active': keyword !== '' }"
-            @click="openSearch"
-          />
-
-          <q-input
-            v-else
-            ref="searchInput"
-            dark
-            dense
-            rounded
-            standout
-            v-model="keyword"
-            debounce="500"
-            input-class="text-right"
-            class="search-field"
-            @blur="closeSearch"
-            @keydown.esc="closeSearch"
-          >
-            <template v-slot:append>
-              <q-icon v-if="keyword === ''" name="search" />
-              <q-icon v-else name="clear" class="cursor-pointer" @mousedown.prevent="keyword = ''" />
-            </template>
-          </q-input>
-        </div>
+        <!-- 搜索不放在顶栏：媒体库页面内有搜索框，其他页面用 / 或 Ctrl+K 跳过去 -->
       </q-toolbar>
 
       <AudioPlayer />
@@ -195,8 +163,6 @@ export default {
 
   data () {
     return {
-      keyword: '',
-      searchOpen: false,
       confirm: false,
       showTimer: false,
       headerHeight: 0,
@@ -205,6 +171,7 @@ export default {
       navRowObserver: null,
       navMeasureTimer: null,
       navVisibleCount: null, // null 表示所有导航项都放得下
+      nsfwMode: false, // 封面打码模式，存 localStorage（每台设备各自记）
       links: [
         {
           title: '媒体库',
@@ -242,10 +209,6 @@ export default {
   },
 
   watch: {
-    keyword () {
-      this.$router.push(this.keyword ? `/works?keyword=${this.keyword}` : `/works`)
-    },
-
     // 导航项或按钮文字显隐变化后重新量一次
     navItems () {
       this.scheduleMeasureNav()
@@ -296,8 +259,13 @@ export default {
     this.readSharedConfig();
     this.measureChrome();
 
+    // 放在 mounted 里也能用：封面在本布局的 router-view 里渲染，
+    // 这里挂类不晚于首屏封面出现
+    this.readNsfwMode();
+
     window.addEventListener('resize', this.measureChrome);
     window.addEventListener('keydown', this.handlePanelKeyEvent);
+    window.addEventListener('keydown', this.handleSearchShortcut);
 
     if (typeof ResizeObserver !== 'undefined') {
       this.chromeObserver = new ResizeObserver(this.measureChrome);
@@ -320,6 +288,7 @@ export default {
   beforeUnmount () {
     window.removeEventListener('resize', this.measureChrome);
     window.removeEventListener('keydown', this.handlePanelKeyEvent);
+    window.removeEventListener('keydown', this.handleSearchShortcut);
     this.chromeObserver && this.chromeObserver.disconnect();
     this.navRowObserver && this.navRowObserver.disconnect();
     clearTimeout(this.navMeasureTimer);
@@ -364,6 +333,15 @@ export default {
       }))
 
       items.push({
+        title: '健全模式',
+        // 图标本身表示状态：blur_on = 已开启
+        icon: this.nsfwMode ? 'blur_on' : 'blur_off',
+        // 开着的时候按钮高亮
+        active: this.nsfwMode,
+        action: this.toggleNsfwMode
+      })
+
+      items.push({
         title: '随心听',
         icon: 'shuffle',
         // 面板打开时不收起，直接在当前详情里换成随机到的作品
@@ -371,11 +349,12 @@ export default {
         action: this.randomPlay
       })
 
-      items.push({
-        title: '睡眠模式',
-        icon: 'bedtime',
-        action: () => { this.showTimer = true }
-      })
+      // items.push({
+      //   title: '睡眠模式',
+      //   icon: 'bedtime',
+      //   action: () => { this.showTimer = true }
+      // })
+
 
       if (this.authEnabled === true) {
         items.push({
@@ -400,11 +379,6 @@ export default {
         : this.navItems.slice(this.navVisibleCount)
     },
 
-    // 手机上展开搜索时让输入框独占这一行
-    searchTakesOver () {
-      return this.searchOpen === true && this.$q.screen.lt.sm
-    },
-
     // 播放器卡片是否正在展开显示
     playerExpanded () {
       return this.playerHide === false && Boolean(this.currentPlayingFile.hash)
@@ -417,6 +391,14 @@ export default {
 
     isMobilePanel () {
       return this.$q.screen.lt.md
+    },
+
+    // 把 header 实际高度通过 CSS 变量暴露给页面，
+    // 页面里的吸顶搜索条要刚好贴在 header 下面（播放器展开时 header 会变高）
+    layoutStyle () {
+      return {
+        '--app-header-height': `${this.headerHeight}px`
+      }
     },
 
     // 移动端面板只覆盖内容区，所以要用 header / footer 的实际高度定位
@@ -504,17 +486,6 @@ export default {
       }
     },
 
-    openSearch () {
-      this.searchOpen = true
-      this.$nextTick(() => {
-        this.$refs.searchInput && this.$refs.searchInput.focus()
-      })
-    },
-
-    closeSearch () {
-      this.searchOpen = false
-    },
-
     // 面板打开期间锁住页面滚动，避免滚动"漏"到底下看不到的列表上
     toggleBodyScrollLock (locked) {
       if (locked === true) {
@@ -539,6 +510,21 @@ export default {
       if (document.querySelector('.q-dialog') !== null) return;
 
       this.closePanel();
+    },
+
+    // 顶栏不再放搜索按钮：用 / 或 Ctrl/Cmd+K 跳到媒体库并聚焦页面里的搜索框
+    handleSearchShortcut (event) {
+      const isSlash = event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey
+      const isCmdK = (event.ctrlKey || event.metaKey) && (event.key === 'k' || event.key === 'K')
+      if (isSlash !== true && isCmdK !== true) return
+
+      // 正在输入框里打字、或弹层打开时不要抢键
+      const el = document.activeElement
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable === true)) return
+      if (document.querySelector('.q-dialog') !== null) return
+
+      event.preventDefault()
+      this.$router.push({ path: '/works', query: { focusSearch: '1' } }).catch(() => {})
     },
 
     initUser () {
@@ -601,6 +587,27 @@ export default {
 
     randomPlay() {
       this.requestRandomWork();
+    },
+
+    // NSFW 模式：本地偏好，逻辑全在 CSS（body.nsfw-mode .cover-mask），
+    // 所以这里只负责读写 localStorage 和挂类
+    readNsfwMode () {
+      this.nsfwMode = localStorage.getItem('nsfwMode') === 'true'
+      this.applyNsfwMode()
+    },
+
+    applyNsfwMode () {
+      document.body.classList.toggle('nsfw-mode', this.nsfwMode === true)
+    },
+
+    toggleNsfwMode () {
+      this.nsfwMode = this.nsfwMode !== true
+      this.applyNsfwMode()
+      localStorage.setItem('nsfwMode', String(this.nsfwMode))
+
+      // 锁屏 / 通知栏的封面不在 CSS 管辖范围，要重新推一次媒体信息
+      const engine = audioEngine()
+      if (engine) engine.setMediaSession()
     },
 
     requestRandomWork () {
@@ -684,41 +691,6 @@ export default {
 
     :deep(.q-item__section--main) {
       white-space: nowrap;
-    }
-  }
-
-// 搜索：收起时只占一个图标的宽度，展开后是输入框
-  .header-search {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    margin-left: 12px;
-  }
-
-  .search-field {
-    width: 200px;
-    animation: search-open 0.15s ease;
-  }
-
-// 小屏展开搜索：导航先收起，输入框从右侧图标位置往左展开，不占满整行
-  .header-search--wide {
-    flex: 1 1 auto;
-    justify-content: flex-end;
-
-    .search-field {
-      flex: 0 1 200px;
-      min-width: 120px;
-    }
-  }
-
-  @keyframes search-open {
-    from {
-      opacity: 0;
-      transform: translateX(8px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
     }
   }
 

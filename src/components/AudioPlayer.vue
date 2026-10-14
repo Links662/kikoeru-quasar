@@ -6,7 +6,7 @@
         class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart">
-          <q-img fit="contain" :src="coverUrl" :ratio="4 / 3" />
+          <q-img fit="contain" :src="coverUrl" :img-class="currentPlayingFile.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
 
           <!-- 歌词：只有当前这一句，压在封面下沿，从下往上弹出来。
                播放列表展开时它就在列表上方，两块可以同时开着 -->
@@ -43,15 +43,13 @@
               </q-item-section>
 
               <q-item-section avatar>
-                <!-- 列表项封面：Quasar 的尺寸档位 lg = 38px -->
-                <q-avatar size="lg" rounded class="col-auto">
-                  <q-img :src="samCoverUrl(row.track.hash)" class="fit" />
-                </q-avatar>
+                <q-img :src="samCoverUrl(row.track.hash)" :img-class="row.track.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
               </q-item-section>
 
               <q-item-section>
-                <q-item-label lines="1">{{ row.track.title }}</q-item-label>
-                <q-item-label caption lines="1">{{ row.track.album }}</q-item-label>
+                <q-item-label lines="2" :title="row.track.title" class="queue-item__title">
+                  {{ shortTitle(row.track.title) }}
+                </q-item-label>
               </q-item-section>
 
               <q-item-section side class="queue-remove">
@@ -61,13 +59,11 @@
             </q-item>
           </q-list>
 
-          <!-- 分页条：点箭头翻页 -->
           <div class="queue-pager">
-            <q-btn flat round icon="chevron_left" aria-label="上一页"
-              :disable="page === 0" @click="goPage(page - 1)" />
-            <div class="queue-pager__info">{{ pageRangeText }}</div>
-            <q-btn flat round icon="chevron_right" aria-label="下一页"
-              :disable="page >= pageCount - 1" @click="goPage(page + 1)" />
+            <q-pagination :model-value="page + 1" :max="pageCount"
+              :max-pages="5" :boundary-numbers="false" direction-links ellipses padding="0"
+              color="grey-8" active-color="teal" active-text-color="white" active-design="unelevated"
+              @update:model-value="goPage($event - 1)" />
           </div>
         </div>
 
@@ -281,16 +277,6 @@ export default {
       return this.queue
         .slice(start, start + QUEUE_PAGE_SIZE)
         .map((track, offset) => ({ track, index: start + offset }))
-    },
-
-    // 分页条中间的文字：当前看到的是队列里的哪几条
-    pageRangeText() {
-      const total = this.queue.length
-      if (total === 0) return '0 / 0'
-
-      const start = this.page * QUEUE_PAGE_SIZE + 1
-      const end = Math.min(start + QUEUE_PAGE_SIZE - 1, total)
-      return `${start}-${end} / ${total}`
     },
 
     // 歌词查完了、而这首确实没有：用来把面板收起来
@@ -547,6 +533,12 @@ export default {
       this.page = Math.min(Math.max(target, 0), this.pageCount - 1)
     },
 
+    // 列表里显示的标题：去掉音频扩展名。它是文件管理信息，占着宽度，
+    // 还容易把断行点挤到很难看的位置；完整文件名留在 title 属性里
+    shortTitle(title) {
+      return String(title || '').replace(/\.(mp3|wav|flac|m4a|aac|ogg|opus|wma)$/i, '')
+    },
+
     openWorkDetail() {
       // /work/:id 会被路由守卫改成打开详情面板，所以这里比较的是面板当前打开的作品
       const workid = this.workDetailUrl
@@ -659,10 +651,13 @@ $volume-slider-width: 200px;
   max-width: $volume-slider-width;
 }
 
-// 行高沿用 Quasar q-item 的 min-height；一页固定 4 行，另加一条分页条
+// 行高沿用 Quasar q-item 的 min-height；一页固定 4 行，另加一条分页条。
+// 分页条高度按 QPagination 里按钮的 min-height（2.572em × 14px ≈ 36px）给，
+// 否则原生控件会被裁掉
 $queue-row: 48px;
+$queue-cover: 40px; // 行内封面：和收起态播放条同款，卡在 48px 行高里
 $queue-page-rows: 4;
-$queue-pager: 32px;
+$queue-pager: 36px;
 $queue-body: $queue-row * $queue-page-rows;
 $queue-block: $queue-body + $queue-pager;
 
@@ -681,6 +676,8 @@ $queue-block: $queue-body + $queue-pager;
 .queue-list {
   height: $queue-body;
   overflow: hidden;
+  // 和下面的分页条之间也隔一条
+  border-bottom: 1px solid $separator-color;
 }
 
 // 行首箭头 / 行尾删除：尺寸全部自己定。
@@ -690,6 +687,19 @@ $queue-block: $queue-body + $queue-pager;
 .queue-item {
   // 固定行高，保证一页 4 行的高度是确定的（队列不足 4 条时下面留白）
   height: $queue-row;
+
+  // 封面：正方形 + rounded-borders，和收起态播放条一致（原来是 38px 圆角头像）
+  .queue-item__cover {
+    width: $queue-cover;
+    height: $queue-cover;
+  }
+
+  // 两行标题：字号压到 13px、行高 1.35，两行 ≈ 35px。
+  // 默认的 14px/1.5 两行几乎顶满 48px 行高，看着挤
+  .queue-item__title {
+    font-size: 13px;
+    line-height: 1.35;
+  }
 
   .queue-arrows,
   .queue-remove {
@@ -725,31 +735,13 @@ $queue-block: $queue-body + $queue-pager;
   }
 }
 
-// 分页条：点箭头翻页
+// 分页条：只有原生分页控件，居中一行。
+// 注意不要在这里给 .q-btn 定死宽高，QPagination 的按钮是 2.572em 高的
 .queue-pager {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   height: $queue-pager;
-  padding: 0 4px;
-  color: rgba(0, 0, 0, .6);
-
-  .q-btn {
-    min-width: 0;
-    min-height: 0;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    font-size: 13px; // 图标 1.715em ≈ 22.3px
-    line-height: 1;
-  }
-}
-
-.queue-pager__info {
-  flex: 1 1 auto;
-  text-align: center;
-  font-size: 12px;
-  line-height: 1;
 }
 
 // 视口太矮，连「封面 + 4 行」都放不下时，列表改为盖在封面下沿

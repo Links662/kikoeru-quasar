@@ -2,7 +2,7 @@
   <q-item clickable :to="`/work/${metadata.id}`" class="bg-white q-pa-xs">
     <q-item-section avatar class="q-pr-xs">
       <router-link :to="`/work/${metadata.id}`">
-        <q-img :src="samCoverUrl" class="list-cover" />
+        <q-img :src="samCoverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="list-cover" />
       </router-link>
     </q-item-section>
 

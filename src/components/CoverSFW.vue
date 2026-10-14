@@ -2,10 +2,8 @@
   <q-img
     :src="coverUrl"
     :ratio="4/3"
-    :img-class="imgClass"
+    :img-class="nsfw ? 'cover-mask' : ''"
     class="cover-sfw"
-    @mouseover="toggleBlurFlag()"
-    @mouseout="toggleBlurFlag()"
   >
     <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
          只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
@@ -30,21 +28,15 @@ export default {
       type: Number,
       required: true
     },
-    
+
     nsfw: {
       type: Boolean,
-      default: true
+      default: false
     },
 
     release: {
       type: String,
       default: ''
-    }
-  },
-
-  data () {
-    return {
-      blurFlag: true,
     }
   },
 
@@ -63,27 +55,6 @@ export default {
         return (`000000${this.workid}`).slice(-6)
       }
       //return (`000000${this.workid}`).slice(-6)
-    },
-
-    imgClass () {
-      if (this.$q.platform.is.mobile) {
-        // 在移动设备上图片直接显示
-        return ""
-      } else {
-        if (!this.nsfw) {
-          // 在PC上SFW的图片直接显示
-          return ""
-        } else {
-          // 在PC上NSFW的图片鼠标悬停显示
-          return this.blurFlag ? "blur-image" : ""
-        }
-      }
-    }
-  },
-
-  methods: {
-    toggleBlurFlag () {
-      this.blurFlag = !this.blurFlag
     }
   }
 }

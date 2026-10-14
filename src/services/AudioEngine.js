@@ -95,6 +95,11 @@ export default class AudioEngine {
     return hash ? `/api/cover/${hash.split('/')[0]}?token=${this.token}` : ''
   }
 
+  // NSFW 模式（MainLayout 里切换、CSS 里生效的同一个本地偏好）
+  get nsfwMode () {
+    return LocalStorage.getItem('nsfwMode') === 'true'
+  }
+
   commit (type, payload) {
     this.store.commit(`AudioPlayer/${type}`, payload)
   }
@@ -709,13 +714,16 @@ export default class AudioEngine {
       title: file.title || '',
       album: file.album || '',
       artist: file.artist || '',
-      artwork: [
-        {
-          src: this.coverUrl,
-          sizes: '128x128',
-          type: 'image/jpeg'
-        }
-      ]
+      // 锁屏 / 通知栏的封面不吃 CSS，只能整个不给
+      artwork: this.nsfwMode && file.nsfw === true
+        ? []
+        : [
+          {
+            src: this.coverUrl,
+            sizes: '128x128',
+            type: 'image/jpeg'
+          }
+        ]
     })
 
     const mediaSession = navigator.mediaSession

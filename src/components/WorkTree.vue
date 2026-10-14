@@ -113,6 +113,7 @@ export default {
             ...item,
             artist: this.metadata.circle.name || '',
             album: this.metadata.title || '',
+            nsfw: this.metadata.nsfw === true,
           })
         }
       })
@@ -185,7 +186,11 @@ export default {
     },
 
     addToQueue (file) {
-      this.$store.commit('AudioPlayer/ADD_TO_QUEUE', file)
+      // 队列项要带上 nsfw：播放条和播放器里的封面靠它决定糊不糊
+      this.$store.commit('AudioPlayer/ADD_TO_QUEUE', {
+        ...file,
+        nsfw: this.metadata.nsfw === true
+      })
     },
 
     playNext (file) {
