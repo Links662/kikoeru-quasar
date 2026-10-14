@@ -269,7 +269,6 @@ export default {
       } else {
         result = '/api/works'
       }
-      // console.log(`url recomputed ${result}`)
       return result
     },
     direction () {
@@ -477,7 +476,6 @@ export default {
       };
       return this.$axios.get(this.url, { params })
         .then((response) => {
-          // console.log("API 响应数据:", response.data); // 确保数据正确
           const works = response.data.works;
           this.works = works; // 直接覆盖，不再追加
           this.pagination.totalCount = response.data.pagination.totalCount;
@@ -490,7 +488,6 @@ export default {
         });
     },
 
-    // **分页变化**
     handlePageChange(page) {
       console.log("当前页码:", page); // 确保页码有更新
       this.pagination.currentPage = page || 1;

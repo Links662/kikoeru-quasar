@@ -143,7 +143,6 @@ export default {
       }
     },
 
-    // 用当前文件夹的音轨换掉整个队列，从 hash 这一条开始播
     playTracks (hash) {
       this.$store.commit('AudioPlayer/SET_QUEUE', {
         work: this.metadata,

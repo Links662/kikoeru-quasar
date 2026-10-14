@@ -61,7 +61,6 @@ export default {
 
   computed: {
     coverUrl () {
-      // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       return this.recentwork.work_id ? `/api/cover/${this.recentwork.work_id}?token=${token}` : ""
     },

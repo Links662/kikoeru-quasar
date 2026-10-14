@@ -98,12 +98,10 @@ export default {
       const workid = this.workid
 
       try {
-        // 第一个请求：获取 metadata
         const metadataResponse = await this.$axios.get(`/api/work/${workid}`)
         if (workid !== this.workid) return // 期间已经切到别的作品，丢弃这次结果
         this.metadata = metadataResponse.data
 
-        // 第二个请求：获取 tracks（在第一个请求成功后执行）
         const tracksResponse = await this.$axios.get(`/api/tracks/${workid}`)
         if (workid !== this.workid) return
         this.tree = tracksResponse.data

@@ -203,7 +203,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// “全年龄”标记：绿底绿字
 .all-ages-badge {
   background: #e6f7d6;
   color: #56842a;

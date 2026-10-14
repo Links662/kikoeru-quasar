@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- 播放器 -->
     <q-slide-transition>
       <q-card square v-show="hasTrack && !hide"
         class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
@@ -241,7 +240,6 @@ export default {
 
   computed: {
     coverUrl() {
-      // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
       return id ? `/api/cover/${id}?token=${token}` : ""
@@ -260,7 +258,6 @@ export default {
 
     // 队列里每一行的封面：整个队列是同一个作品，所以直接用队列封面的小图
     samCoverUrl() {
-      // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
       return id ? `/api/cover/${id}?type=sam&token=${token}` : ""

@@ -35,7 +35,6 @@ export default {
 
   computed: {
     samCoverUrl () {
-      // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
       return id ? `/api/cover/${id}?type=sam&token=${token}` : ""

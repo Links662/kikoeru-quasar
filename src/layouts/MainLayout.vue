@@ -9,8 +9,7 @@
           </router-link>
         </q-toolbar-title>
 
-        <!-- 导航：原先左侧工具栏的内容全部移到这里。
-             固定一行，一行放不下的项收进末尾的下拉菜单 -->
+        <!-- 导航：固定一行，一行放不下的项收进末尾的下拉菜单 -->
         <div ref="navRow" class="nav-scroll row no-wrap items-center">
           <q-btn
             v-for="(item, index) in shownNavItems"
@@ -111,27 +110,25 @@
     </q-drawer>
 
     <q-page-container>
-      <!-- <q-page padding> -->
-        <router-view v-slot="{ Component }">
-          <keep-alive include="Works">
-            <component :is="Component" />
-          </keep-alive>
-        </router-view>
-      <!-- </q-page> -->
-        <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
-          <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
-        </q-page-scroller>
+      <router-view v-slot="{ Component }">
+        <keep-alive include="Works">
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
+      <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+        <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
+      </q-page-scroller>
 
-        <!-- 作品详情面板（移动端）：只覆盖内容区，header/footer 保持可见可操作 -->
-        <transition name="work-panel-slide">
-          <div
-            v-if="isMobilePanel && workId !== null"
-            class="work-panel-mobile bg-white"
-            :style="mobilePanelStyle"
-          >
-            <WorkPanel :key="workId" :workid="workId" @close="closePanel" />
-          </div>
-        </transition>
+      <!-- 作品详情面板（移动端）：只覆盖内容区，header/footer 保持可见可操作 -->
+      <transition name="work-panel-slide">
+        <div
+          v-if="isMobilePanel && workId !== null"
+          class="work-panel-mobile bg-white"
+          :style="mobilePanelStyle"
+        >
+          <WorkPanel :key="workId" :workid="workId" @close="closePanel" />
+        </div>
+      </transition>
     </q-page-container>
 
     <q-footer ref="footer" class="q-pa-none">
@@ -255,7 +252,6 @@ export default {
 
   mounted () {
     this.initUser();
-    // this.checkUpdate();
     this.readSharedConfig();
     this.measureChrome();
 
@@ -296,11 +292,6 @@ export default {
   },
 
   computed: {
-    // isNotAtHomePage () {
-    //   const path = this.$route.path
-    //   return path && path !=='/' && path !=='/works' && path !== '/favourites';
-    // },
-
     ...mapState('User', {
       userName: 'name',
       authEnabled: 'auth'
@@ -334,10 +325,9 @@ export default {
 
       items.push({
         title: '健全模式',
-        // 图标本身表示状态：blur_on = 已开启
         icon: this.nsfwMode ? 'blur_on' : 'blur_off',
-        // 开着的时候按钮高亮
         active: this.nsfwMode,
+        keepPanel: true,
         action: this.toggleNsfwMode
       })
 
@@ -348,13 +338,6 @@ export default {
         keepPanel: true,
         action: this.randomPlay
       })
-
-      // items.push({
-      //   title: '睡眠模式',
-      //   icon: 'bedtime',
-      //   action: () => { this.showTimer = true }
-      // })
-
 
       if (this.authEnabled === true) {
         items.push({
@@ -537,7 +520,6 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
               const path = this.$route.path
               if (path !=='/login') {
@@ -561,7 +543,6 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              // this.showWarnNotif(error.response.data.error)
               // 验证失败，跳转到登录页面
               const path = this.$route.path
               if (path !=='/login') {

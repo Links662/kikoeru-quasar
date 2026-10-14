@@ -4,7 +4,6 @@
       <q-toolbar class="row no-wrap items-center">
         <q-toolbar-title shrink class="q-mr-md">仪表盘</q-toolbar-title>
 
-        <!-- 导航：原先左侧工具栏的内容全部移到这里 -->
         <div class="col nav-scroll row no-wrap items-center">
           <q-btn
             v-for="(link, index) in links"
@@ -107,7 +106,6 @@ export default {
   },
 
   created () {
-    // 从 LocalStorage 中读取 token
     const token = this.$q.localStorage.getItem('jwt-token') || ''
     this.$socket.io.opts.query.auth_token = token
     

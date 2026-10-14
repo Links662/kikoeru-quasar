@@ -42,7 +42,6 @@ export default {
 
   computed: {
     coverUrl () {
-      // 从 LocalStorage 中读取 token
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       return this.workid ? `/api/cover/${this.workid}?token=${token}` : ""
     },
@@ -54,7 +53,6 @@ export default {
       } else {
         return (`000000${this.workid}`).slice(-6)
       }
-      //return (`000000${this.workid}`).slice(-6)
     }
   }
 }

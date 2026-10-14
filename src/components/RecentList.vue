@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- 标题 -->
     <div class="text-h5 text-weight-regular">
       {{ pageTitle }}
     </div>
@@ -21,7 +20,6 @@
 
 <script>
 import RecentCard from 'components/RecentCard'
-// import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'RecentList',

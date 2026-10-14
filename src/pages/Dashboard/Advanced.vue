@@ -369,7 +369,6 @@ export default {
       this.$axios.get('/api/config/admin')
         .then((response) => {
           this.config = response.data.config;
-          // Integer => String
           this.rewindSeekTime = this.config.rewindSeekTime.toString()
           this.forwardSeekTime = this.config.forwardSeekTime.toString()
         })
@@ -386,7 +385,6 @@ export default {
     },
 
     onSubmit () {
-      // String => Integer
       this.config.rewindSeekTime = parseInt(this.rewindSeekTime)
       this.config.forwardSeekTime = parseInt(this.forwardSeekTime)
 

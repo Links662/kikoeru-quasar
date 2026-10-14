@@ -58,7 +58,6 @@ export default {
   },
 
   watch: {
-    // v-model: showTimer from MainLayout
     modelValue(visible) {
       if (visible) {
         if (!this.sleepMode) {
@@ -79,7 +78,6 @@ export default {
 
     setSleepTimer() {
       this.SET_SLEEP_TIMER(this.time);
-      // Persist sleep timer
       try {
         this.$q.sessionStorage.set('sleepTime', this.time);
         this.$q.sessionStorage.set('sleepMode', true);

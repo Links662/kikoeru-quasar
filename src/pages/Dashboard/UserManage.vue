@@ -194,14 +194,12 @@ export default {
         .then((response) => {
           this.loadingUpdateAdminPassword = false
           try {
-            // 删除旧 token
             this.$q.localStorage.set('jwt-token', '')
           } catch (err) {
             this.showErrNotif(err.message)
           }
           this.showSuccNotif(response.data.message)
 
-          // 仅当启用鉴权时跳转到登录页面
           if (this.$store.state.User.auth) {
             console.log('Got here')
             this.$router.push('/login')
