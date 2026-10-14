@@ -59,7 +59,6 @@ export default class AudioEngine {
 
     this.media = null
     this.lrc = null
-    this.lrcAvailable = false
 
     this.watchers = []
     this.mediaHandlers = []
@@ -154,6 +153,7 @@ export default class AudioEngine {
       ['ended', () => this.onEnded()],
       ['playing', () => this.onPlaying()],
       ['waiting', () => this.onWaiting()],
+      ['seeked', () => this.onSeeked()],
       ['pause', () => this.onPause()]
     ]
 
@@ -236,6 +236,13 @@ export default class AudioEngine {
       this.media.removeAttribute('src')
       this.media.load()
       this.refreshElementPlaying()
+
+      // 没有曲目了，歌词也一起清掉（歌词按钮会跟着变灰、面板会收起）
+      this.commit('SET_LYRIC_AVAILABLE', false)
+      this.commit('SET_LYRIC_LOADING', false)
+      this.commit('SET_CURRENT_LYRIC', '')
+      if (this.lrc) this.lrc.setLyric('')
+
       return
     }
 
@@ -271,6 +278,10 @@ export default class AudioEngine {
     // 事实：元素确实停了（只记录事实，不碰意图）
     this.commit('SET_ELEMENT_PLAYING', false)
 
+    // 歌词挂在库自己的定时器上，元素停了它也会继续往前走，
+    // 所以这里必须显式停一下，否则暂停后歌词还在自己滚
+    this.playLrc(false)
+
     // 程序性停止（登出）导致的暂停，不作为用户意图处理
     if (this.stopping === true) return
     // 换源过程中的暂停（新源还没就绪）不是用户意图，忽略
@@ -304,6 +315,17 @@ export default class AudioEngine {
     this.playLrc(false)
   }
 
+  /**
+   * 跳转完成后，歌词的计时基准还停在跳转前的位置（库内部按自己的时钟往前走），
+   * 不重新 play() 一次的话，显示的会一直是被跳过的那一句。
+   */
+  onSeeked () {
+    if (this.state.lyricAvailable !== true) return
+    if (this.state.playing !== true) return
+
+    this.lrc.play(this.media.currentTime * 1000)
+  }
+
   onCanplay () {
     // 缓冲至可播放状态时触发，此时才能拿到媒体文件的播放时长
     this.commit('SET_DURATION', this.media.duration)
@@ -332,41 +354,14 @@ export default class AudioEngine {
 
   onEnded () {
     this.dontResume = true
-    // 元素已经播完，重新采样事实（意图由下面的播放模式决定）
+    // 元素已经播完，重新采样事实（意图由下面的判断决定）
     this.refreshElementPlaying()
 
-    switch (this.state.playMode.name) {
-      case 'all repeat':
-        // 循环播放
-        if (this.state.queueIndex === this.state.queue.length - 1) {
-          this.commit('SET_TRACK', 0)
-        } else {
-          this.commit('NEXT_TRACK')
-        }
-        break
-      case 'repeat once':
-        // 单曲循环
-        this.media.currentTime = 0
-        this.playSafely()
-        this.commit('PLAY')
-        break
-      case 'shuffle': {
-        // 随机播放
-        const index = Math.floor(Math.random() * this.state.queue.length)
-        const previousIndex = this.state.queueIndex
-        this.commit('SET_TRACK', index)
-        if (index === previousIndex) {
-          this.media.currentTime = 0
-        }
-        break
-      }
-      default:
-        // 顺序播放
-        if (this.state.queueIndex === this.state.queue.length - 1) {
-          this.commit('PAUSE')
-        } else {
-          this.commit('NEXT_TRACK')
-        }
+    // 只有顺序播放：队列里还有下一首就续上，最后一首播完就停在原地
+    if (this.state.queueIndex === this.state.queue.length - 1) {
+      this.commit('PAUSE')
+    } else {
+      this.commit('NEXT_TRACK')
     }
   }
 
@@ -439,7 +434,6 @@ export default class AudioEngine {
 
       // 用户意图是播放但元素确实停了 -> 外部暂停（线控/锁屏/软件切换）
       this.commit('PAUSE')
-      this.playLrc(false)
       this.savePlayHistory()
     }, PAUSE_INTENT_DELAY)
   }
@@ -465,7 +459,8 @@ export default class AudioEngine {
     this.lastHistoryFile = null
     this.lastHistoryUpdateTime = 0
     this.dontResume = false
-    this.lrcAvailable = false
+    this.commit('SET_LYRIC_AVAILABLE', false)
+    this.commit('SET_LYRIC_LOADING', false)
     if (this.lrc) {
       this.lrc.setLyric('')
     }
@@ -557,7 +552,8 @@ export default class AudioEngine {
   }
 
   playLrc (playStatus) {
-    if (this.lrcAvailable !== true) return
+    // 有没有歌词文件统一以 store 为准（歌词按钮也读同一个字段）
+    if (this.state.lyricAvailable !== true) return
 
     if (playStatus === true) {
       this.lrc.play(this.media.currentTime * 1000)
@@ -570,25 +566,32 @@ export default class AudioEngine {
     const hash = this.currentFile.hash
     if (!hash) return
 
+    // 新曲目有没有歌词还没定：先把上一首的歌词清掉，别让旧歌词挂在界面上。
+    // 这里故意不动 lyricAvailable —— 它在结果回来之前保持上一首的值，
+    // 于是歌词按钮不会在每次切歌时闪一下灰（loading 才是"还在查"的标记）
+    this.commit('SET_LYRIC_LOADING', true)
+    this.commit('SET_CURRENT_LYRIC', '')
+    this.lrc.setLyric('')
+
     const url = `/api/media/check-lrc/${hash}?token=${this.token}`
 
     axios.get(url)
       .then((response) => {
         if (response.data.result) {
           // 有 lrc 歌词文件
-          this.lrcAvailable = true
+          this.commit('SET_LYRIC_AVAILABLE', true)
           const lrcUrl = `/api/media/stream/${response.data.hash}?token=${this.token}`
           axios.get(lrcUrl)
             .then(res => {
               this.lrc.setLyric(res.data)
-              this.lrc.play(this.media.currentTime * 1000)
+              // 歌词文件回来时音频可能已经暂停了，这时只装歌词、别把歌词时钟也跑起来
+              this.playLrc(this.state.elementPlaying === true)
             })
             .catch(() => {})
         } else {
           // 无歌词文件
-          this.lrcAvailable = false
+          this.commit('SET_LYRIC_AVAILABLE', false)
           this.lrc.setLyric('')
-          this.commit('SET_CURRENT_LYRIC', '')
         }
       })
       .catch((error) => {
@@ -599,6 +602,9 @@ export default class AudioEngine {
         } else {
           this.showError(error.message || error)
         }
+      })
+      .finally(() => {
+        this.commit('SET_LYRIC_LOADING', false)
       })
   }
 

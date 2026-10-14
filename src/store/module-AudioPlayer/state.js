@@ -10,10 +10,21 @@ export default {
   duration: 0,
   queue: [], // 每个 track 含 metadata + source
   queueIndex: 0,
-  playMode: { id: 0, name: "order" },
   muted: false,
   volume: 0,
+  // 播放器展开时能弹出来的两块内容：当前播放列表，和封面下沿的歌词。
+  // 两块各管各的，可以同时开着（歌词压在封面下沿，正好在列表上方）
+  queueOpen: false,
+  lyricsOpen: false,
   currentLyric: '',
+  // 当前曲目有没有歌词文件 / 引擎是不是还在查。
+  // 查的过程中没有歌词文件这件事"还没定"，UI 要靠 lyricLoading 区分，
+  // 否则每次切歌按钮都会先闪一下灰
+  lyricAvailable: false,
+  lyricLoading: false,
+  // 用户想不想要歌词（点过歌词按钮）。中间夹一首没有歌词的曲目时歌词会收起，
+  // 但"想要"留着，下一首有歌词就自动展开
+  lyricsWanted: false,
   sleepTime: null,
   sleepMode: false,
   rewindSeekTime: 5,

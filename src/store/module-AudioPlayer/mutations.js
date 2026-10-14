@@ -62,7 +62,12 @@ const mutations = {
     state.duration = 0;
     state.queue = [];
     state.queueIndex = 0;
+    state.queueOpen = false;
+    state.lyricsOpen = false;
     state.currentLyric = "";
+    state.lyricAvailable = false;
+    state.lyricLoading = false;
+    state.lyricsWanted = false;
     state.seekTime = -1;
     state.sleepTime = null;
     state.sleepMode = false;
@@ -126,18 +131,6 @@ const mutations = {
     state.queue.splice(state.queueIndex + 1, 0, file);
   },
 
-  CHANGE_PLAY_MODE(state) {
-    const playModes = [
-      { id: 0, name: "order" },
-      { id: 1, name: "all repeat" },
-      { id: 2, name: "repeat once" },
-      { id: 3, name: "shuffle" }
-    ];
-
-    const index = (state.playMode.id >= playModes.length - 1) ? 0 : (state.playMode.id + 1);
-    state.playMode = playModes[index];
-  },
-
   TOGGLE_MUTED(state) {
     state.muted = !state.muted;
   },
@@ -169,6 +162,36 @@ const mutations = {
 
   SET_CURRENT_LYRIC(state, line) {
     state.currentLyric = line;
+  },
+
+  SET_QUEUE_OPEN(state, value) {
+    state.queueOpen = Boolean(value);
+  },
+
+  SET_LYRICS_OPEN(state, value) {
+    state.lyricsOpen = Boolean(value);
+  },
+
+  SET_LYRIC_AVAILABLE(state, value) {
+    state.lyricAvailable = Boolean(value);
+  },
+
+  SET_LYRIC_LOADING(state, value) {
+    state.lyricLoading = Boolean(value);
+  },
+
+  // 播放列表：点一次展开、再点一次收起。和歌词互不影响，两者可以同时开着
+  TOGGLE_QUEUE(state) {
+    state.queueOpen = !state.queueOpen;
+  },
+
+  // 歌词开关：打开时同时记住"想要歌词"（换到没有歌词的曲目只是暂时收起，
+  // 下一首有歌词会自动展开），关掉时就是真的关掉
+  TOGGLE_LYRICS(state) {
+    const wanted = state.lyricsOpen !== true;
+
+    state.lyricsWanted = wanted;
+    state.lyricsOpen = wanted;
   },
 
   SET_SLEEP_TIMER(state, time) {

@@ -9,7 +9,10 @@ const getters = {
       mediaStreamUrl: "",
       mediaDownloadUrl: ""
     }
-  }
+  },
+
+  // 当前曲目有可用的歌词文件（引擎异步查出来的结果）
+  hasLyric: (state) => state.lyricAvailable === true
 }
 
 export default getters

@@ -7,6 +7,17 @@
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart">
           <q-img fit="contain" :src="coverUrl" :ratio="4 / 3" />
+
+          <!-- 歌词：只有当前这一句，压在封面下沿，从下往上弹出来。
+               播放列表展开时它就在列表上方，两块可以同时开着 -->
+          <transition name="lyrics-pop">
+            <div v-if="lyricsOpen" class="lyrics-view absolute-bottom row items-center justify-center">
+              <div class="lyrics-view__line text-center text-h6 text-bold text-purple ellipsis-2-lines">
+                {{ currentLyric }}
+              </div>
+            </div>
+          </transition>
+
           <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down" @click="toggleHide()"
             class="absolute-top-left q-ma-sm" />
           <q-btn dense round size="md" color="white" text-color="dark" icon="info_outline"
@@ -14,7 +25,7 @@
         </div>
 
         <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
-        <div class="current-play-list bg-white" v-show="showCurrentPlayList">
+        <div class="current-play-list bg-white" v-show="queueOpen">
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
           <q-list class="queue-list">
             <q-item clickable v-ripple v-for="row in pageTracks" :key="row.index"
@@ -97,7 +108,7 @@
         <div class="row justify-around control-row">
           <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
           <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
-            :color="isPressing('queue') ? 'negative' : (showCurrentPlayList ? 'primary' : undefined)"
+            :color="isPressing('queue') ? 'negative' : (queueOpen ? 'primary' : undefined)"
             @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
             @mouseleave="cancelPress" @contextmenu.prevent
             class="col-auto non-selectable control-btn" />
@@ -112,8 +123,10 @@
           <q-btn flat dense size="lg" :icon="isPressing('next') ? forwardIcon : 'skip_next'"
             @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
             @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
-          <q-btn flat dense size="md" :icon="playModeIcon" @click="changePlayMode()"
-            class="col-auto control-btn" />
+          <!-- 歌词开关：没有歌词文件时置灰不可点。和播放列表互不影响，两者可同时开着 -->
+          <q-btn flat dense size="md" icon="lyrics" :disable="!hasLyric"
+            :color="lyricsOpen ? 'primary' : undefined" @click="toggleLyrics()"
+            class="col-auto non-selectable control-btn" aria-label="歌词" />
         </div>
 
         <!-- 音量控件：与进度条统一使用 Quasar q-slider，样式/主题色一致 -->
@@ -148,7 +161,6 @@ export default {
 
   data() {
     return {
-      showCurrentPlayList: false,
       page: 0, // 当前页（每页 QUEUE_PAGE_SIZE 行）
       // 进度条：拖动时只更新本地值，松手（change）才真正 seek
       seekValue: 0,
@@ -177,7 +189,7 @@ export default {
       handler (queue) {
         // 删掉最后一条时收起列表
         if (queue.length === 0) {
-          this.showCurrentPlayList = false
+          if (this.queueOpen === true) this.setQueueOpen(false)
           this.page = 0
           return
         }
@@ -198,9 +210,24 @@ export default {
     },
 
     // 展开列表时定位到正在播放的那一页
-    showCurrentPlayList (open) {
+    queueOpen (open) {
       if (open !== true) return
       this.page = this.queue.length === 0 ? 0 : Math.floor(this.queueIndex / QUEUE_PAGE_SIZE)
+    },
+
+    // 新曲目确实没有歌词时（不是"还在查"）把歌词收起来，按钮同时变灰。
+    // "想要歌词"这个意愿不动，所以下一首有歌词时会自己弹回来
+    lyricUnavailable (missing) {
+      if (missing === true && this.lyricsOpen === true) {
+        this.setLyricsOpen(false)
+      }
+    },
+
+    // 又换到有歌词的曲目：如果用户还开着歌词，就自动展开
+    hasLyric (hasLyric) {
+      if (hasLyric === true && this.lyricsWanted === true && this.lyricsOpen !== true) {
+        this.setLyricsOpen(true)
+      }
     },
 
     // 播放进度 -> 进度条；正在拖动时不打断用户
@@ -266,17 +293,9 @@ export default {
       return `${start}-${end} / ${total}`
     },
 
-    playModeIcon() {
-      switch (this.playMode.name) {
-        case "all repeat":
-          return "repeat"
-        case "repeat once":
-          return "repeat_one"
-        case "shuffle":
-          return "shuffle"
-        default:
-          return "playlist_play"
-      }
+    // 歌词查完了、而这首确实没有：用来把面板收起来
+    lyricUnavailable() {
+      return this.hasLyric !== true && this.lyricLoading !== true
     },
 
     playingIcon() {
@@ -315,13 +334,18 @@ export default {
       'currentTime',
       'duration',
       'queueIndex',
-      'playMode',
+      'queueOpen',
+      'lyricsOpen',
+      'currentLyric',
+      'lyricLoading',
+      'lyricsWanted',
       'rewindSeekTime',
       'forwardSeekTime'
     ]),
 
     ...mapGetters('AudioPlayer', [
-      'currentPlayingFile'
+      'currentPlayingFile',
+      'hasLyric'
     ]),
   },
 
@@ -331,7 +355,6 @@ export default {
       togglePlaying: 'TOGGLE_PLAYING',
       nextTrack: 'NEXT_TRACK',
       previousTrack: 'PREVIOUS_TRACK',
-      changePlayMode: 'CHANGE_PLAY_MODE',
       rewind: 'SET_REWIND',
       forward: 'SET_FORWARD',
       setTrack: 'SET_TRACK',
@@ -340,6 +363,10 @@ export default {
       emptyQueue: 'EMPTY_QUEUE',
       setVolume: 'SET_VOLUME',
       setSeekTime: 'SET_SEEKTIME',
+      setQueueOpen: 'SET_QUEUE_OPEN',
+      setLyricsOpen: 'SET_LYRICS_OPEN',
+      toggleQueue: 'TOGGLE_QUEUE',
+      toggleLyrics: 'TOGGLE_LYRICS',
     }),
 
     // 拖动中：只更新本地值，避免和 timeupdate 打架
@@ -475,7 +502,7 @@ export default {
       }
 
       if (key === 'queue') {
-        this.showCurrentPlayList = !this.showCurrentPlayList
+        this.toggleQueue()
       } else if (key === 'previous') {
         this.previousTrack()
       } else if (key === 'next') {
@@ -566,6 +593,7 @@ export default {
 
 // 封面：空间不足时收缩；移动端吃掉剩余高度
 .audio-player > .albumart {
+  position: relative; // 歌词面板按封面区定位（absolute-full）
   flex: 0 1 auto;
   min-height: 80px;
   overflow: hidden;
@@ -575,6 +603,32 @@ export default {
     width: 100%;
     flex: 1 1 auto;
   }
+}
+
+// 歌词：压在封面下沿的一条，高度跟着内容走。
+// 底色比收起态那条实一点：它压在各种封面上，要保证紫字看得清
+.lyrics-view {
+  padding: 3px 12px;
+  background-color: rgba($grey-4, $alpha: 0.7);
+  overflow: hidden;
+}
+
+.lyrics-view__line {
+  width: 100%;
+  // text-h6 自带 2rem（32px）行高，单行歌词上下会显得很空，这里收紧到 1.3
+  line-height: 1.3;
+}
+
+// 从封面下沿往上弹
+.lyrics-pop-enter-active,
+.lyrics-pop-leave-active {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.lyrics-pop-enter-from,
+.lyrics-pop-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
 }
 
 // 播放控件区：一排按钮（含播放键）与音量条的高度、宽度都固定，
@@ -619,6 +673,8 @@ $queue-block: $queue-body + $queue-pager;
   flex: 0 0 auto;
   height: $queue-block;
   overflow: hidden;
+  // 和下面的播放控件（进度条起）用一条淡分割线隔开
+  border-bottom: 1px solid $separator-color;
 }
 
 // 列表本体：只放一页的行，固定高度，不滚动

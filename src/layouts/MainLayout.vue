@@ -29,8 +29,8 @@
 
           <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
             icon="keyboard_arrow_down" aria-label="更多">
-            <q-menu anchor="bottom right" self="top right" :offset="[0, 6]">
-              <q-list class="nav-more-list">
+            <q-menu anchor="bottom right" self="top right" :offset="[0, 4]">
+              <q-list dense class="nav-more-list">
                 <q-item
                   v-for="(item, index) in hiddenNavItems"
                   :key="'more' + index"
@@ -167,7 +167,6 @@
     </q-page-container>
 
     <q-footer ref="footer" class="q-pa-none">
-      <LyricsBar />
       <PlayerBar />
     </q-footer>
   </q-layout>
@@ -176,7 +175,6 @@
 <script>
 import PlayerBar from 'components/PlayerBar'
 import AudioPlayer from 'components/AudioPlayer'
-import LyricsBar from 'components/LyricsBar'
 import SleepMode from 'components/SleepMode'
 import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
@@ -191,7 +189,6 @@ export default {
   components: {
     PlayerBar,
     AudioPlayer,
-    LyricsBar,
     SleepMode,
     WorkPanel
   },
@@ -672,9 +669,22 @@ export default {
     pointer-events: none;
   }
 
-// “更多”下拉菜单：保证窄屏下也有足够的点击宽度
+// “更多”下拉菜单：紧凑排布，去掉图标与文字之间的多余留白
   .nav-more-list {
-    min-width: 150px;
+    min-width: 0;
+
+    :deep(.q-item) {
+      padding: 2px 12px;
+    }
+
+    :deep(.q-item__section--avatar) {
+      min-width: 32px;
+      padding-right: 8px;
+    }
+
+    :deep(.q-item__section--main) {
+      white-space: nowrap;
+    }
   }
 
 // 搜索：收起时只占一个图标的宽度，展开后是输入框
