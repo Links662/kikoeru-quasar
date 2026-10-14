@@ -2,8 +2,9 @@
   <q-layout view="hHh Lpr lFf" class="bg-grey-3" :style="layoutStyle">
     <q-header ref="header" class="shadow-4">
       <q-toolbar>
-        <!-- 屏幕变窄时收掉 Kikoeru 标签，给导航和搜索让位 -->
-        <q-toolbar-title shrink class="gt-xs q-mr-md">
+        <!-- 屏幕变窄时先收掉 Kikoeru 标志（只在宽屏显示），
+             再窄到手机尺寸才让导航缩成纯图标 -->
+        <q-toolbar-title shrink class="gt-sm q-mr-md">
           <router-link :to="'/'" class="text-white text-weight-bold">
             Kikoeru
           </router-link>
@@ -169,38 +170,6 @@ export default {
       navMeasureTimer: null,
       navVisibleCount: null, // null 表示所有导航项都放得下
       nsfwMode: false, // 封面打码模式，存 localStorage（每台设备各自记）
-      links: [
-        {
-          title: '媒体库',
-          icon: 'widgets',
-          path: '/works'
-        },
-        {
-          title: '我的进度',
-          icon: 'list',
-          path: '/progress'
-        },
-        {
-          title: '社团',
-          icon: 'group',
-          path: '/circles'
-        },
-        {
-          title: '标签',
-          icon: 'label',
-          path: '/tags'
-        },
-        {
-          title: '声优',
-          icon: 'mic',
-          path: '/vas'
-        },
-        {
-          title: '设定',
-          icon: 'settings',
-          path: '/admin'
-        },
-      ],
       sharedConfig: {}
     }
   },
@@ -233,6 +202,10 @@ export default {
       immediate: true,
       handler (open) {
         this.toggleBodyScrollLock(open)
+
+        // 浮层面板占满整个内容区，展开的播放器卡片固定在右下角，两块叠在同
+        // 一块屏幕上会互相遮挡，这里让面板留下、把播放器收回播放条
+        if (open === true) this.collapsePlayer()
       }
     },
 
@@ -310,44 +283,71 @@ export default {
       'hasTrack'
     ]),
 
-    // 顶部导航是否显示文字（窄屏只显示图标）
+    // 顶部导航是否显示文字：等 Kikoeru 标志先收掉之后，
+    // 再窄（低于 sm，手机尺寸）才把导航缩成纯图标
     showNavLabel () {
-      return this.$q.screen.gt.sm
+      return this.$q.screen.gt.xs
     },
 
-    // 顶部导航的全部条目（路由 + 动作），顺序就是显示顺序
+    // 顶部导航的全部条目，写在一处，顺序就是显示顺序：
+    // 业务功能（找作品、听作品）在前，技术入口（控制台、登出）在后。
+    // 带 path 的走路由，选中态交给 vue-router；带 action 的是动作项。
     navItems () {
-      const items = this.links.map(link => ({
-        title: link.title,
-        icon: link.icon,
-        path: link.path
-      }))
+      return [
+        {
+          title: '媒体库',
+          icon: 'widgets',
+          path: '/works'
+        },
+        {
+          title: '我的进度',
+          icon: 'bookmarks',
+          path: '/progress'
+        },
+        {
+          title: '社团',
+          icon: 'group',
+          path: '/circles'
+        },
+        {
+          title: '标签',
+          icon: 'label',
+          path: '/tags'
+        },
+        {
+          title: '声优',
+          icon: 'mic',
+          path: '/vas'
+        },
+        {
+          title: '健全模式',
+          icon: this.nsfwMode ? 'blur_on' : 'blur_off',
+          active: this.nsfwMode,
+          keepPanel: true,
+          action: this.toggleNsfwMode
+        },
+        {
+          title: '随心听',
+          icon: 'shuffle',
+          // 面板打开时不收起，直接在当前详情里换成随机到的作品
+          keepPanel: true,
+          action: this.randomPlay
+        },
+        {
+          title: '控制台',
+          icon: 'tune',
+          path: '/admin'
+        },
 
-      items.push({
-        title: '健全模式',
-        icon: this.nsfwMode ? 'blur_on' : 'blur_off',
-        active: this.nsfwMode,
-        keepPanel: true,
-        action: this.toggleNsfwMode
-      })
-
-      items.push({
-        title: '随心听',
-        icon: 'shuffle',
-        // 面板打开时不收起，直接在当前详情里换成随机到的作品
-        keepPanel: true,
-        action: this.randomPlay
-      })
-
-      if (this.authEnabled === true) {
-        items.push({
-          title: '登出',
-          icon: 'exit_to_app',
-          action: () => { this.confirm = true }
-        })
-      }
-
-      return items
+        // 登出只在开启用户验证时才有，固定排最后
+        ...(this.authEnabled === true
+          ? [{
+              title: '登出',
+              icon: 'logout',
+              action: () => { this.confirm = true }
+            }]
+          : [])
+      ]
     },
 
     shownNavItems () {
@@ -396,7 +396,8 @@ export default {
   methods: {
     ...mapMutations('AudioPlayer', [
       'SET_REWIND_SEEK_TIME',
-      'SET_FORWARD_SEEK_TIME'
+      'SET_FORWARD_SEEK_TIME',
+      'SET_HIDE'
     ]),
     ...mapMutations('WorkPanel', {
       closeWorkPanel: 'CLOSE'
@@ -475,6 +476,19 @@ export default {
         document.body.classList.add('work-panel-locked')
       } else {
         document.body.classList.remove('work-panel-locked')
+      }
+    },
+
+    // 浮层（中/小屏）详情面板和展开的播放器卡片抢的是同一块屏幕，只能留一个：
+    // 面板打开时把播放器收回底部播放条。反方向见 playerExpanded——展开播放器
+    // 就收起面板；两边都是"后动手的那个留下"，不会出现两个都开着、互相遮挡
+    // 而且播放条还跟着消失（连播放控制都够不到）的状态。
+    //
+    // 只在播放器真的展开时收：hide 的初值就是 false（还没播过也算"展开"），
+    // 这时去写它会让之后第一次播放直接以收起态出现
+    collapsePlayer () {
+      if (this.playerExpanded === true) {
+        this.SET_HIDE(true)
       }
     },
 

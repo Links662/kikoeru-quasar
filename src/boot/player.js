@@ -13,7 +13,7 @@ export default ({ store }) => {
         Notify.create({ message, color: 'warning', icon: 'warning' })
       },
       error (message) {
-        Notify.create({ message, color: 'negative', icon: 'bug_report' })
+        Notify.create({ message, color: 'negative', icon: 'error' })
       }
     }
   })

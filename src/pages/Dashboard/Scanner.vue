@@ -56,7 +56,7 @@
           <q-item-section avatar>
             <q-spinner-gears v-if="state === 'running'" color="primary" size="2em" />
             <q-icon v-else-if="state === 'finished'" name="done" color="positive" size="2em" />
-            <q-icon v-else-if="state === 'error'" name="bug_report" color="red" size="2em" />
+            <q-icon v-else-if="state === 'error'" name="error" color="red" size="2em" />
           </q-item-section>
 
           <q-item-section>
@@ -144,7 +144,7 @@
               >
                 <template v-slot:header>
                   <q-item-section avatar>
-                    <q-icon name="bug_report" color="white" size="2em" />
+                    <q-icon name="error" color="white" size="2em" />
                   </q-item-section>
 
                   <q-item-section>

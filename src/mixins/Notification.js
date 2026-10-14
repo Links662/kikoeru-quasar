@@ -21,7 +21,7 @@ export default {
       this.$q.notify({
         message,
         color: 'negative',
-        icon: 'bug_report'
+        icon: 'error'
       })
     }
   }

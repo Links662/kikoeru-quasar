@@ -3,6 +3,12 @@ const mutations = {
     state.hide = !state.hide;
   },
 
+  // 直接设定收起/展开。收起和展开不是对称动作：详情面板这类"由别处决定"的场景
+  // 必须写成确定值，用 toggle 会因为时序（同一帧里还有别的写入）反着来
+  SET_HIDE(state, value) {
+    state.hide = Boolean(value);
+  },
+
   PLAY(state) {
     state.playing = true;
   },

@@ -457,7 +457,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 仪表盘里成组的短输入框：Quasar 没有宽度工具类，宽度统一收在这里（6.25rem = 100px）
+// 控制台里成组的短输入框：Quasar 没有宽度工具类，宽度统一收在这里（6.25rem = 100px）
 .admin-field {
   max-width: 6.25rem;
 }

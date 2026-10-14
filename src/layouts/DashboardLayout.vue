@@ -2,7 +2,8 @@
   <q-layout view="hhh LpR fFf">
     <q-header elevated class="bg-black">
       <q-toolbar class="row no-wrap items-center">
-        <q-toolbar-title shrink class="q-mr-md">仪表盘</q-toolbar-title>
+        <!-- 屏幕变窄时先收掉「控制台」标志，再窄到手机尺寸才让导航缩成纯图标 -->
+        <q-toolbar-title shrink class="gt-sm q-mr-md">控制台</q-toolbar-title>
 
         <div class="col nav-scroll row no-wrap items-center">
           <q-btn
@@ -69,9 +70,10 @@ export default {
   },
 
   computed: {
-    // 顶部导航是否显示文字（窄屏只显示图标）
+    // 顶部导航是否显示文字：等「控制台」标志先收掉之后，
+    // 再窄（低于 sm，手机尺寸）才把导航缩成纯图标
     showNavLabel () {
-      return this.$q.screen.gt.sm
+      return this.$q.screen.gt.xs
     }
   },
 
