@@ -196,8 +196,8 @@
         </q-item>
         <q-item>
           <q-item-section>
-            <q-item-label>扫描时跳过清理音声库</q-item-label>
-            <q-item-label caption>是否跳过清理不存在的音声（不推荐，默认不跳过）</q-item-label>
+            <q-item-label>扫描时跳过清理失效作品</q-item-label>
+            <q-item-label caption>是否跳过清理已不存在的作品（不推荐，默认不跳过）</q-item-label>
           </q-item-section>
 
           <q-item-section side>

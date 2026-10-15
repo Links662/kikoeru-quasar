@@ -40,12 +40,12 @@ export default {
     return {
       links: [
         {
-          title: '音声库',
+          title: '存储位置',
           icon: 'folder',
           path: '/admin'
         },
         {
-          title: '扫描',
+          title: '作品扫描',
           icon: 'youtube_searched_for',
           path: '/admin/scanner'
         },

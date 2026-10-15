@@ -40,6 +40,7 @@ a {
 // 封面里的叠层（RJ 号、发售日）是兄弟节点，不会跟着糊。
 body.nsfw-mode .cover-mask {
   filter: blur(16px);
+  will-change: filter;
 }
 
 // 移动端详情面板打开时，锁住背后页面的滚动

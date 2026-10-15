@@ -31,7 +31,7 @@
     <RecentList />
 
     <div class="works-header-row q-my-sm">
-      <div class="text-h5 text-weight-regular">
+      <div class="works-title text-h5 text-weight-regular">
         {{ pageTitle }}
         <span v-show="pagination.totalCount">
           ({{ pagination.totalCount }})
@@ -588,18 +588,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-// 页面头部：标题与搜索框同一行；窄屏时搜索框换行并铺满整行
 .works-header-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  row-gap: 8px;
 }
 
-// 宽屏的搜索框外层（与标题同行，宽度固定）
+// 标题：允许被压窄（auto 的最小宽度会把搜索框顶下去）；真遇到断不开的长词，
+// 宁可词内断行，也别让整行往右溢出
+.works-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .works-search-wrap {
-  width: 320px;
+  flex: 0 1 auto;
+  width: 260px;
+  min-width: 180px;
+  margin-left: 12px;
 }
 
 // 窄屏的搜索条：天然位置就在导航栏下沿，收起时向上缩到蓝色导航栏背后、

@@ -295,12 +295,12 @@ export default {
     navItems () {
       return [
         {
-          title: '媒体库',
+          title: '音声',
           icon: 'widgets',
           path: '/works'
         },
         {
-          title: '我的进度',
+          title: '进度',
           icon: 'bookmarks',
           path: '/progress'
         },
@@ -320,16 +320,15 @@ export default {
           path: '/vas'
         },
         {
-          title: '健全模式',
+          title: '隐私模式',
           icon: this.nsfwMode ? 'blur_on' : 'blur_off',
           active: this.nsfwMode,
           keepPanel: true,
           action: this.toggleNsfwMode
         },
         {
-          title: '随心听',
+          title: '随机',
           icon: 'shuffle',
-          // 面板打开时不收起，直接在当前详情里换成随机到的作品
           keepPanel: true,
           action: this.randomPlay
         },

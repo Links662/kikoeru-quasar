@@ -13,7 +13,7 @@
         <q-btn
           class="col"
           color="teal"
-          label="扫描本地音声库"
+          label="扫描本地存储位置"
           :disable="state === 'running' || !socketConnected"
           @click="performScan()"
         />
@@ -23,7 +23,7 @@
         <q-btn
           class="col"
           color="primary"
-          label="刷新音声库信息"
+          label="刷新作品信息"
           :disable="state === 'running' || !socketConnected"
           @click="performUpdate()"
         />
