@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" class="work-cover" />
+    <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" class="work-cover" copyable />
 
     <div class="q-pa-sm">
       <div class="q-px-sm q-py-none">
