@@ -1,6 +1,6 @@
 <template>
   <div>
-    <q-slide-transition>
+    <transition name="player-slide">
       <q-card square v-show="hasTrack && !hide"
         class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
@@ -133,7 +133,7 @@
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
       </q-card>
-    </q-slide-transition>
+    </transition>
   </div>
 </template>
 
@@ -605,6 +605,17 @@ export default {
     width: 100%;
     flex: 1 1 auto;
   }
+}
+
+.player-slide-enter-active,
+.player-slide-leave-active {
+  transition: transform 300ms cubic-bezier(.25, .8, .50, 1);
+}
+
+// 卡片是 fixed 且贴底（桌面端还带 10px 下边距），整块往下挪自身高度就完全移出视口
+.player-slide-enter-from,
+.player-slide-leave-to {
+  transform: translateY(100%);
 }
 
 // 歌词：压在封面下沿的一条，高度跟着内容走。
