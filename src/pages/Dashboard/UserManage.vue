@@ -75,10 +75,10 @@
         <template v-slot:body-cell-status="props">
           <q-td :props="props">
             <q-toggle
-              :model-value="isDisabled(props.row)"
+              :model-value="isEnabled(props.row)"
               :disable="loadingStatusUser === props.row.name"
-              color="negative"
-              @update:model-value="value => setUserDisabled(props.row, value)"
+              color="positive"
+              @update:model-value="value => setUserStatus(props.row, value)"
             />
             <span
               class="text-caption q-ml-xs"
@@ -89,8 +89,9 @@
       </q-table>
 
       <div class="text-caption text-grey-7 q-mt-sm">
-        内置的 admin 账号不允许删除，要让它下线只能在这里禁用。
+        这里的开关代表账号状态：开着表示账号正常可用，关掉即禁用。
         禁用后该账号立刻无法登录（已登录的会话也会失效），评语 / 收藏 / 历史记录仍然保留。
+        内置的 admin 账号不允许删除，要让它下线就关掉它的开关。
         为避免管理后台没人能进，至少要留一个已启用的管理员账号。
       </div>
 
@@ -127,7 +128,7 @@ export default {
       columns: [
         { name: 'desc', required: true, label: '用户名', align: 'left', field: 'name', sortable: true },
         { name: 'calories', required: true, label: '用户组', align: 'center', field: 'group', sortable: true },
-        { name: 'status', required: true, label: '状态', align: 'center', field: 'disabled', sortable: true },
+        { name: 'status', required: true, label: '账户状态', align: 'center', field: 'disabled', sortable: true },
       ],
       users: [],
       loadingDeleteUsers: false,
@@ -157,6 +158,11 @@ export default {
     // 服务端返回的是 SQLite 的 0 / 1，这里做一次归一化，避免字符串 '0' 被判成真
     isDisabled (user) {
       return Number(user.disabled) === 1
+    },
+
+    // 开关表达的是「账户状态」：开 = 账号可用，关 = 已禁用，所以这里取反
+    isEnabled (user) {
+      return !this.isDisabled(user)
     },
 
     addNewUser () {
@@ -192,7 +198,7 @@ export default {
       const skipped = this.selected.length - deletable.length
 
       if (skipped > 0) {
-        this.showWarnNotif('内置的 admin 账号不能删除，已跳过；要让它下线请用状态开关禁用。')
+        this.showWarnNotif('内置的 admin 账号不能删除，已跳过；要让它下线请关掉它的状态开关。')
       }
       if (deletable.length === 0) return
 
@@ -273,11 +279,11 @@ export default {
         })
     },
 
-    setUserDisabled (user, disabled) {
+    setUserStatus (user, enabled) {
       this.loadingStatusUser = user.name
       this.$axios.put('/api/credentials/user/status', {
         name: user.name,
-        disabled
+        disabled: !enabled
       })
         .then((response) => {
           this.loadingStatusUser = ''
