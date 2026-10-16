@@ -145,6 +145,7 @@ import SleepMode from 'components/SleepMode'
 import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
 import { audioEngine } from '../services/AudioEngine'
+import { endSession } from '../services/session'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
 export default {
@@ -533,10 +534,10 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              // 验证失败，跳转到登录页面
-              const path = this.$route.path
-              if (path !=='/login') {
-                this.$router.push('/login');
+              // token 失效 / 账号被禁用或被删除：清干净本地会话再回登录页
+              // （两个请求同时 401 时只有先到的那个提示）
+              if (endSession(this)) {
+                this.showWarnNotif(error.response.data.error || '登录状态已失效，请重新登录')
               }
             } else {
               this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
@@ -556,10 +557,10 @@ export default {
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status === 401) {
-              // 验证失败，跳转到登录页面
-              const path = this.$route.path
-              if (path !=='/login') {
-                this.$router.push('/login');
+              // token 失效 / 账号被禁用或被删除：清干净本地会话再回登录页
+              // （两个请求同时 401 时只有先到的那个提示）
+              if (endSession(this)) {
+                this.showWarnNotif(error.response.data.error || '登录状态已失效，请重新登录')
               }
             } else {
               this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
@@ -634,15 +635,8 @@ export default {
     },
 
     logout () {
-      // 认证边界：显式停播并清空播放器状态
-      // （播放引擎已经和路由解耦，不再有"离开布局顺带销毁播放器"这种副作用）
-      const engine = audioEngine()
-      if (engine) engine.stop()
-
-      this.$q.localStorage.set('jwt-token', '')
-      // socket 连接也是带着 token 建立的，一并断开
-      if (this.$socket) this.$socket.close()
-      this.$router.push('/login')
+      // 主动登出：停播 + 清本地会话 + 断开 socket + 回登录页，细节见 services/session.js
+      endSession(this)
     },
 
     back () {

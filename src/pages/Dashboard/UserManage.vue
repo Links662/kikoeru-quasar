@@ -77,12 +77,11 @@
             <q-toggle
               :model-value="isEnabled(props.row)"
               :disable="loadingStatusUser === props.row.name"
-              color="positive"
+              color="primary"
               @update:model-value="value => setUserStatus(props.row, value)"
             />
             <span
               class="text-caption q-ml-xs"
-              :class="isDisabled(props.row) ? 'text-negative' : 'text-grey-7'"
             >{{ isDisabled(props.row) ? '已禁用' : '已启用' }}</span>
           </q-td>
         </template>
@@ -118,6 +117,7 @@
 
 <script>
 import NotifyMixin from '../../mixins/Notification.js'
+import { endSession } from '../../services/session'
 
 export default {
   mixins: [NotifyMixin],
@@ -239,16 +239,12 @@ export default {
       })
         .then((response) => {
           this.loadingUpdateAdminPassword = false
-          try {
-            this.$q.localStorage.set('jwt-token', '')
-          } catch (err) {
-            this.showErrNotif(err.message)
-          }
           this.showSuccNotif(response.data.message)
 
-          if (this.$store.state.User.auth) {
-            console.log('Got here')
-            this.$router.push('/login')
+          // 只有改自己的密码才需要重新登录；
+          // 管理员改别人的密码不该把自己踢下线（self 由服务端判定）
+          if (response.data.self) {
+            endSession(this)
           }
         })
         .catch((error) => {
@@ -288,7 +284,16 @@ export default {
         .then((response) => {
           this.loadingStatusUser = ''
           this.showSuccNotif(response.data.message)
-          this.requestUsers()
+
+          // 刚把自己禁用了：服务端已经不再接受这个会话，当场退登
+          // （这时也不能再拉用户列表，那个请求必然 401）
+          if (response.data.self && this.isDisabled(response.data.user)) {
+            if (endSession(this)) {
+              this.showWarnNotif('当前账号已被禁用，已退出登录')
+            }
+          } else {
+            this.requestUsers()
+          }
         })
         .catch((error) => {
           this.loadingStatusUser = ''

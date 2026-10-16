@@ -30,6 +30,7 @@
 
 <script>
 import NotifyMixin from '../mixins/Notification.js'
+import { endSession } from '../services/session'
 
 export default {
   name: 'DashboardLayout',
@@ -91,6 +92,16 @@ export default {
     // socket.io v3+ 里连接阶段的失败（包括服务端中间件拒绝认证）走 'connect_error'
     connect_error(err) {
       this.handleSocketError(err)
+    },
+    // 服务端主动断开 = 这个账号在服务端已经不可用（被禁用 / 被删除时会走
+    // state/userSockets.js 的 closeUserSockets）。socket.io 对 'io server disconnect'
+    // 不会自动重连，页面却还停在「已登录」的样子，所以这里当场退登。
+    disconnect(reason) {
+      if (reason !== 'io server disconnect') return
+
+      if (endSession(this)) {
+        this.showWarnNotif('当前账号已被禁用或删除，已退出登录')
+      }
     }
   },
 
