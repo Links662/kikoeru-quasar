@@ -97,7 +97,9 @@ export default {
   methods: {
     handleSocketError(err) {
       // 只有认证相关错误才跳转登录
-      if (err && err.message && err.message.includes('administrator')) {
+      // （服务端的认证失败信息统一带「认证失败」前缀：token 无效、账号被禁用 / 删除、用户组不够）
+      const message = err && typeof err.message === 'string' ? err.message : ''
+      if (message.includes('认证失败') || message.includes('administrator')) {
         this.$socket.close()
         this.$router.push('/login')
       } else {

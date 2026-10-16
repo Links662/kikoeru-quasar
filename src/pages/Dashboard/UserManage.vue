@@ -71,7 +71,29 @@
         :selected-rows-label="getSelectedString"
         selection="multiple"
         v-model:selected="selected"
-      />
+      >
+        <template v-slot:body-cell-status="props">
+          <q-td :props="props">
+            <q-toggle
+              :model-value="isDisabled(props.row)"
+              :disable="loadingStatusUser === props.row.name"
+              color="negative"
+              @update:model-value="value => setUserDisabled(props.row, value)"
+            />
+            <span
+              class="text-caption q-ml-xs"
+              :class="isDisabled(props.row) ? 'text-negative' : 'text-grey-7'"
+            >{{ isDisabled(props.row) ? '已禁用' : '已启用' }}</span>
+          </q-td>
+        </template>
+      </q-table>
+
+      <div class="text-caption text-grey-7 q-mt-sm">
+        内置的 admin 账号不允许删除，要让它下线只能在这里禁用。
+        禁用后该账号立刻无法登录（已登录的会话也会失效），评语 / 收藏 / 历史记录仍然保留。
+        为避免管理后台没人能进，至少要留一个已启用的管理员账号。
+      </div>
+
       <div class="row justify-end">
         <q-btn :loading="loadingDeleteUsers" :disable="selected.length === 0" @click="confirm = true" color="primary" label="删除" />
       </div>
@@ -79,8 +101,9 @@
 
     <q-dialog v-model="confirm" persistent>
       <q-card>
-        <q-card-section class="row items-center">
-          <span class="q-ma-sm text-h6">确认删除选中用户？</span>
+        <q-card-section>
+          <div class="text-h6">确认删除选中用户？</div>
+          <div class="text-caption text-grey-7">该账号的评语、收藏与历史记录会一并删除，不能恢复。</div>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -104,16 +127,18 @@ export default {
       columns: [
         { name: 'desc', required: true, label: '用户名', align: 'left', field: 'name', sortable: true },
         { name: 'calories', required: true, label: '用户组', align: 'center', field: 'group', sortable: true },
+        { name: 'status', required: true, label: '状态', align: 'center', field: 'disabled', sortable: true },
       ],
       users: [],
       loadingDeleteUsers: false,
+      loadingStatusUser: '',
 
       newuser: {
         name: '',
         password: '',
         group: 'user'
       },
-      groups: ['user', 'guest', 'administrator'],
+      groups: ['user', 'administrator'],
       loadingAddNewUser: false,
 
       userName: '',
@@ -127,6 +152,11 @@ export default {
   methods: {
     getSelectedString () {
       return this.selected.length === 0 ? '' : `${this.selected.length} record${this.selected.length > 1 ? 's' : ''} selected of ${this.users.length}`
+    },
+
+    // 服务端返回的是 SQLite 的 0 / 1，这里做一次归一化，避免字符串 '0' 被判成真
+    isDisabled (user) {
+      return Number(user.disabled) === 1
     },
 
     addNewUser () {
@@ -157,15 +187,25 @@ export default {
     },
 
     deleteUsers () {
+      // 内置 admin 由服务端拒绝删除，这里先挑出来，免得同批次的其它账号一起被拒
+      const deletable = this.selected.filter(selectedUser => selectedUser.name !== 'admin')
+      const skipped = this.selected.length - deletable.length
+
+      if (skipped > 0) {
+        this.showWarnNotif('内置的 admin 账号不能删除，已跳过；要让它下线请用状态开关禁用。')
+      }
+      if (deletable.length === 0) return
+
       this.loadingDeleteUsers = true
       this.$axios.delete('/api/credentials/user', {
-        data: { users: this.selected },
+        data: { users: deletable },
       })
         .then((response) => {
-          this.selected.forEach(selectedUser => {
+          deletable.forEach(selectedUser => {
             const index = this.users.findIndex(user => user.name === selectedUser.name)
             this.users.splice(index, 1)
           })
+          this.selected = []
           this.loadingDeleteUsers = false
           this.showSuccNotif(response.data.message)
           this.requestUsers()
@@ -226,6 +266,34 @@ export default {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
             if (error.response.status !== 401) {
               this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
+            }
+          } else {
+            this.showErrNotif(error.message || error)
+          }
+        })
+    },
+
+    setUserDisabled (user, disabled) {
+      this.loadingStatusUser = user.name
+      this.$axios.put('/api/credentials/user/status', {
+        name: user.name,
+        disabled
+      })
+        .then((response) => {
+          this.loadingStatusUser = ''
+          this.showSuccNotif(response.data.message)
+          this.requestUsers()
+        })
+        .catch((error) => {
+          this.loadingStatusUser = ''
+          if (error.response) {
+            const data = error.response.data || {}
+            if (data.errors && data.errors.length > 0) {
+              this.showErrNotif(data.errors[0].msg)
+            } else if (error.response.status === 403) {
+              this.showWarnNotif(data.error || '没有权限')
+            } else {
+              this.showErrNotif(data.error || `${error.response.status} ${error.response.statusText}`)
             }
           } else {
             this.showErrNotif(error.message || error)
