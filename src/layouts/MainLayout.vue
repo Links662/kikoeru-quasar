@@ -1,9 +1,12 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="bg-grey-3" :style="layoutStyle">
     <q-header ref="header" class="shadow-4">
-      <q-toolbar>
+      <q-toolbar
+        :class="{ 'nav-icons': !showNavLabel }"
+        :style="navIconStyle"
+      >
         <!-- 屏幕变窄时先收掉 Kikoeru 标志（只在宽屏显示），
-             再窄到手机尺寸才让导航缩成纯图标 -->
+             再窄到 5 个文字项放不下时才让导航缩成纯图标 -->
         <q-toolbar-title shrink class="gt-sm q-mr-md">
           <router-link :to="'/'" class="text-white text-weight-bold">
             Kikoeru
@@ -28,7 +31,7 @@
             @click="onNavClick(item)"
           />
 
-          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn"
+          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn nav-more"
             icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 4]">
               <q-list dense class="nav-more-list">
@@ -148,6 +151,18 @@ import { audioEngine } from '../services/AudioEngine'
 import { endSession } from '../services/session'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
+// 5 个 14px 两字标签 + 更多约 382px，加工具栏内边距并预留“更多”的
+// 测量余量后取 420px。它只决定文字/纯图标的最小边界，具体显示几项
+// 仍交给 measureNav 按实际宽度计算。
+const NAV_LABELS_MIN_VIEWPORT_WIDTH = 420
+
+// 纯图标模式的按钮触控区；CSS 通过 --nav-icon-size 使用同一个值。
+const NAV_ICON_BUTTON_SIZE = 40
+
+// 文字模式下“更多”按钮的保守占位宽度。实际 dense round 按钮约 34px，
+// 加 3px 右边距约 37px，这里多留一点余量，避免主行被塞满。
+const NAV_LABEL_MORE_RESERVE = 46
+
 export default {
   name: 'MainLayout',
 
@@ -182,7 +197,9 @@ export default {
     },
 
     showNavLabel () {
-      this.scheduleMeasureNav()
+      // 跨越文字/图标边界后，等这一次 DOM 更新完成就重新量，
+      // 避免先按旧数量渲染出一瞬间溢出的按钮
+      this.$nextTick(this.measureNav)
     },
 
     sharedConfig (config) {
@@ -284,10 +301,17 @@ export default {
       'hasTrack'
     ]),
 
-    // 顶部导航是否显示文字：等 Kikoeru 标志先收掉之后，
-    // 再窄（低于 sm，手机尺寸）才把导航缩成纯图标
+    // 顶部导航是否显示文字：只要还能放下 5 个文字项就保留文字，
+    // 再窄才整体转为纯图标；更宽时由 measureNav 逐步放出更多项。
     showNavLabel () {
-      return this.$q.screen.gt.xs
+      return this.$q.screen.width >= NAV_LABELS_MIN_VIEWPORT_WIDTH
+    },
+
+    // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
+    navIconStyle () {
+      return {
+        '--nav-icon-size': `${NAV_ICON_BUTTON_SIZE}px`
+      }
     },
 
     // 顶部导航的全部条目，写在一处，顺序就是显示顺序：
@@ -453,7 +477,7 @@ export default {
 
       if (overflowed === true) {
         // 末尾还要放一个下拉按钮，按剩下给它的宽度再算一次
-        const moreWidth = 46
+        const moreWidth = this.showNavLabel ? NAV_LABEL_MORE_RESERVE : NAV_ICON_BUTTON_SIZE
         used = 0
         for (let i = 0; i < buttons.length; i++) {
           used += widths[i]
@@ -653,6 +677,21 @@ export default {
     flex: 1 1 0%;
     min-width: 0;
     overflow: hidden;
+  }
+
+// 纯图标模式：40px 触控区，按钮之间不再额外留 margin。
+// 图标仍为 24px，因此图标边缘间距约 16px。
+  .nav-icons .nav-btn {
+    flex: 0 0 auto;
+    width: var(--nav-icon-size, 40px);
+    height: var(--nav-icon-size, 40px);
+    margin-right: 0;
+  }
+
+// “更多”始终贴住导航行右端，剩余空间留在它与最后一个可见项之间
+  .nav-more {
+    margin-left: auto;
+    margin-right: 0;
   }
 
 // 只用于量宽度，不参与布局
