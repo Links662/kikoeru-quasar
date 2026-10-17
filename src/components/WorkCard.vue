@@ -66,12 +66,7 @@
 
         <!-- DLsite链接 -->
         <div class="col-auto">
-          <div v-if="metadata.id >= 1000000">
-              <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(8,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
-            </div>
-            <div v-else>
-              <q-icon name="launch" size="xs" /><a class="text-blue" :href="`https://www.dlsite.com/home/work/=/product_id/RJ${String(metadata.id).padStart(6,'0')}.html`" rel="noreferrer noopener" target="_blank">DLsite</a>
-            </div>
+          <q-icon name="launch" size="xs" /><a class="text-blue" :href="dlsiteUrl" rel="noreferrer noopener" target="_blank">DLsite</a>
         </div>
       </div>
 
@@ -114,6 +109,7 @@
 <script>
 import CoverSFW from 'components/CoverSFW'
 import NotifyMixin from '../mixins/Notification.js'
+import { formatDlsiteUrl } from '../utils/rjCode'
 
 export default {
   name: 'WorkCard',
@@ -144,6 +140,12 @@ export default {
   },
 
   computed: {
+    dlsiteUrl () {
+      if (!this.metadata || !this.metadata.id) return ''
+
+      return formatDlsiteUrl(this.metadata.id)
+    },
+
     sortedRatings: function() {
       function compare(a, b) {
         return (a.review_point > b.review_point) ? -1 : 1;

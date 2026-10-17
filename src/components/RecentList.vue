@@ -9,7 +9,7 @@
       <div class="recent-scroll q-pa-md overflow-auto overflow-hidden-y" @wheel.prevent="onHorizontalWheel">
         <div class="row q-col-gutter-x-md no-wrap">
           <div class="col-xl-2 col-lg-2 col-md-3 col-xs-6 col-sm-4" v-for="recentwork in recentworks"
-            :key="recentwork.id">
+            :key="recentwork.work_id">
             <RecentCard :recentwork="recentwork" />
           </div>
         </div>

@@ -35,6 +35,7 @@
 <script>
 import { copyToClipboard } from 'quasar'
 import NotifyMixin from '../mixins/Notification.js'
+import { formatRJLabel } from '../utils/rjCode'
 
 export default {
   name: 'CoverSFW',
@@ -70,18 +71,9 @@ export default {
       return this.workid ? `/api/cover/${this.workid}?token=${token}` : ""
     },
 
-    rjcode () {
-      if (this.workid >= 1000000)
-      {
-        return (`00000000${this.workid}`).slice(-8)
-      } else {
-        return (`000000${this.workid}`).slice(-6)
-      }
-    },
-
     // 角标上显示的和复制出去的是同一份文本，别在两处各拼一次
     rjText () {
-      return `RJ${this.rjcode}`
+      return this.workid ? formatRJLabel(this.workid) : ''
     },
 
     hasTouch () {

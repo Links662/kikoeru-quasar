@@ -70,8 +70,8 @@
         <q-td :props="props">
           <div class="rj-chips">
             <router-link v-for="id in props.row.recentWorks" :key="id" class="rj-chip" :to="`/work/${id}`"
-              :title="`打开 RJ${rjCode(id)}`" @click.stop>
-              RJ{{ rjCode(id) }}
+              :title="`打开 ${rjLabel(id)}`" @click.stop>
+              {{ rjLabel(id) }}
             </router-link>
           </div>
         </q-td>
@@ -82,6 +82,7 @@
 
 <script>
 import NotifyMixin from '../mixins/Notification.js'
+import { formatRJLabel } from '../utils/rjCode'
 
 export default {
   name: 'List',
@@ -214,9 +215,9 @@ export default {
       }
     },
 
-    // 作品 id 就是 RJ 号：7 位及以上补到 8 位，否则补到 6 位（与 WorkCard/WorkDetails 的规则一致）
-    rjCode (id) {
-      return String(id).padStart(id >= 1000000 ? 8 : 6, '0')
+    // 作品 id 的 RJ 展示文本统一由中立的格式化工具生成
+    rjLabel (id) {
+      return formatRJLabel(id)
     },
 
     // 表格行与名称链接共用，保留可中键新开标签页的链接

@@ -14,7 +14,7 @@
            只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
       <div class="absolute-top-left transparent no-padding">
         <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
-          {{`RJ${recentwork.work_id}`}}
+          {{ rjLabel }}
         </q-chip>
       </div>
 
@@ -38,6 +38,7 @@
 
 <script>
 import NotifyMixin from '../mixins/Notification.js'
+import { formatRJLabel } from '../utils/rjCode'
 
 export default {
   name: 'RecentCard',
@@ -63,6 +64,10 @@ export default {
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       return this.recentwork.work_id ? `/api/cover/${this.recentwork.work_id}?token=${token}` : ""
+    },
+
+    rjLabel () {
+      return this.recentwork.work_id ? formatRJLabel(this.recentwork.work_id) : ''
     },
   },
 
