@@ -20,18 +20,23 @@
       </div>
     </div>
     <div>
-      <q-infinite-scroll @load="onLoad" :offset="500" :disable="stopLoad" ref="scroll">
+      <div>
         <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
         <q-list bordered separator class="shadow-2" v-if="works.length">
           <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work"
             @deleteItem="removeFavItem"></FavListItem>
         </q-list>
-        <template v-slot:loading>
-          <div class="row justify-center q-my-md">
-            <q-spinner-dots color="primary" size="lg" />
-          </div>
-        </template>
-      </q-infinite-scroll>
+        <div class="row justify-center q-my-sm" v-if="pagination.totalPages > 1">
+          <q-pagination
+            :model-value="pagination.currentPage"
+            :max="pagination.totalPages"
+            direction-links
+            color="primary"
+            input
+            @update:model-value="changePage"
+          />
+        </div>
+      </div>
     </div>
   </q-page>
 </template>
@@ -81,9 +86,8 @@ export default {
         { label: '搁置', value: 'postponed' }
       ],
       works: [],
-      stopLoad: false,
       requestId: 0,
-      pagination: { currentPage:0, pageSize:12, totalCount:0 },
+      pagination: { currentPage: 1, pageSize: 12, totalCount: 0, totalPages: 1 },
       sortBy: sortOption,
       sortOptions: [
         {
@@ -111,6 +115,7 @@ export default {
   },
 
   created() {
+    this.requestWorksQueue()
   },
 
   mounted() {
@@ -119,19 +124,11 @@ export default {
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
-      this.requestId++
-      this.pagination.currentPage = 0
+      this.reset()
     },
 
     progressFilter(){
-      this.requestId++
-      this.pagination.currentPage = 0
-    },
-
-    'pagination.currentPage'() {
-      if (this.pagination.currentPage === 0) {
-        this.reset();
-      }
+      this.reset()
     },
   },
 
@@ -147,43 +144,48 @@ export default {
       const index = this.works.findIndex(w => w.id === workId)
       if (index !== -1) {
         this.works.splice(index, 1)
+        this.pagination.totalCount = Math.max(0, this.pagination.totalCount - 1)
+        this.pagination.totalPages = Math.max(1, Math.ceil(this.pagination.totalCount / this.pagination.pageSize))
+
+        if (this.works.length === 0 && this.pagination.currentPage > 1) {
+          this.pagination.currentPage--
+          this.requestWorksQueue()
+        }
       }
     },
 
-    onLoad (index, done) {
+    changePage (page) {
+      if (page === this.pagination.currentPage) return
+      this.pagination.currentPage = page
       this.requestWorksQueue()
-        .finally(() => {
-          done()
-        })
     },
 
     reset() {
-      this.stopLoad = true
+      this.pagination.currentPage = 1
       this.works = []
-
-      this.$nextTick(() => {
-        this.stopLoad = false
-        this.$refs.scroll.reset()
-        this.$refs.scroll.resume()
-      })
+      this.requestWorksQueue()
     },
 
 
     requestWorksQueue () {
-      const currentRequestId = this.requestId
+      const currentRequestId = ++this.requestId
       const params = {
         order: this.sortBy.order,
         sort: this.sortBy.sort,
-        page: this.pagination.currentPage + 1
+        page: this.pagination.currentPage
       }
       params.filter = this.progressFilter;
       return this.$axios.get('/api/review', { params })
         .then((response) => {
           if (currentRequestId !== this.requestId) return
           const works = response.data.works
-          this.works = (params.page === 1) ? works.concat() : this.works.concat(works)
-          this.pagination = response.data.pagination
-          this.stopLoad = !this.pagination.hasMore
+          const pagination = response.data.pagination
+          const totalCount = Number(pagination.totalCount) || 0
+          this.works = works
+          this.pagination.currentPage = pagination.currentPage
+          this.pagination.pageSize = pagination.pageSize
+          this.pagination.totalCount = totalCount
+          this.pagination.totalPages = Math.max(1, Math.ceil(totalCount / pagination.pageSize))
         })
         .catch((error) => {
           if (error.response) {
@@ -194,7 +196,6 @@ export default {
           } else {
             this.showErrNotif(error.message || error)
           }
-          this.stopLoad = true
         })
     },
   }
