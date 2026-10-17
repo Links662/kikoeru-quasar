@@ -2,122 +2,71 @@
   <div>
     <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" class="work-cover" copyable />
 
-    <div class="q-pa-sm">
-      <div class="q-px-sm q-py-none">
-        <!-- 标题 -->
+    <div class="q-px-sm q-pt-xs q-pb-sm">
+      <div class="q-px-xs">
         <div class="text-h6 text-weight-regular">
           {{ metadata.title }}
         </div>
 
-        <!-- 社团名 -->
-        <div class="text-subtitle1 text-weight-regular">
+        <div class="q-mt-xs text-subtitle1 text-weight-regular">
           <router-link :to="`/works?circleId=${metadata.circle.id}`" class="text-grey">
             {{ metadata.circle.name }}
           </router-link>
         </div>
 
-        <!-- 评价&评论 -->
-        <div class="row items-center q-gutter-xs">
-          <!-- 评价 -->
-          <div class="col-auto">
-            <q-rating v-model="rating" @update:model-value="setRating" name="rating" size="sm" :color="userMarked ? 'blue' : 'amber'"
-              icon="star_border" icon-selected="star" icon-half="star_half" />
-
-            <!-- 评价分布明细 -->
-            <q-tooltip v-if=metadata.rate_count_detail content-class="text-subtitle1">
-              <div>平均: {{ metadata.rate_average_2dp }}</div>
-              <div v-for="(rate, index) in sortedRatings" :key=index class="row items-center">
-                <div class="col"> {{ rate.review_point }}星 </div>
-
-                <!-- 评价占比 -->
-                <q-linear-progress :value="rate.ratio / 100" color="amber" track-color="white"
-                  class="col-auto rating-bar" />
-
-                <div class="col q-mx-sm"> ({{ rate.count }}) </div>
-              </div>
-            </q-tooltip>
-          </div>
-
-          <div class="col-auto">
-            <span class="text-weight-medium text-body1 text-red">{{ metadata.rate_average_2dp }}</span> <span
-              class="text-grey"> ({{ metadata.rate_count }})</span>
-          </div>
-
-          <!-- 评论数量 -->
-          <div class="col-auto q-px-sm">
-            <q-icon name="chat" size="xs" /> <span class="text-grey"> ({{ metadata.review_count }})</span>
-          </div>
-
-          <!-- DLsite链接 -->
-          <div class="col-auto">
-            <q-icon name="launch" size="xs" /><a class="text-blue" :href="dlsiteUrl"
-              rel="noreferrer noopener" target="_blank">DLsite</a>
-          </div>
-        </div>
+        <WorkRating
+          :metadata="metadata"
+          size="sm"
+          show-review-count
+          show-link
+          class="q-mt-xs"
+        />
       </div>
 
-      <!-- 价格&售出数 -->
-      <div class="q-pt-sm q-pb-none">
-        <span class="q-mx-sm text-weight-medium text-h6 text-red">{{ metadata.price }} 日元</span> 售出数:
-        {{ metadata.dl_count }}
+      <div v-if="metadata.price != null" class="q-px-xs q-mt-sm">
+        <span class="text-weight-medium text-h6 text-red">{{ metadata.price }} 日元</span>
+        <span class="q-ml-sm">售出数: {{ metadata.dl_count }}</span>
+        <span v-if="!metadata.nsfw" class="q-ml-sm all-ages-badge">全年龄</span>
       </div>
 
-      <!-- 标签 -->
-      <div class="q-px-none q-py-sm" v-if="showTags">
-        <router-link v-for="(tag, index) in metadata.tags" :to="`/works?tagId=${tag.id}`" :key=index>
+      <div class="q-mt-sm" v-if="showTags">
+        <router-link v-for="tag in metadata.tags" :to="`/works?tagId=${tag.id}`" :key="tag.id">
           <q-chip size="md" class="shadow-4">
             {{ tag.name }}
           </q-chip>
         </router-link>
       </div>
 
-      <!-- 声优 -->
-      <div class="q-px-none q-pt-sm q-py-sm">
-        <router-link v-for="(va, index) in metadata.vas" :to="`/works?vaId=${va.id}`" :key=index>
+      <div class="q-mt-sm" v-if="metadata.vas && metadata.vas.length">
+        <router-link v-for="va in metadata.vas" :to="`/works?vaId=${va.id}`" :key="va.id">
           <q-chip square size="md" class="shadow-4" color="teal" text-color="white">
             {{ va.name }}
           </q-chip>
         </router-link>
       </div>
 
-      <q-btn-dropdown dense class="q-mt-sm shadow-4 q-mx-xs q-pl-sm" color="cyan" label="标记进度">
-        <q-list>
-          <q-item v-for="item in progressOptions" :key="item.value" clickable class="q-pa-xs"
-            @click="setProgress(item.value)">
-            <q-item-section avatar>
-              <q-avatar icon="headset" v-show="reviewData.progress === item.value" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label>{{ item.label }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-
-      <!-- 这些是普通 class，不能塞进 color（会变成 bg-cyan q-mt-sm ... 这种拼出来的类名） -->
-      <q-btn dense @click="showReviewDialog = true" color="cyan" class="q-mt-sm shadow-4 q-mx-xs q-px-sm" label="写评论" />
-
-      <WriteReview v-if="showReviewDialog" @modifydata="processReview" @closed="closed" :workid="metadata.id"
-        :metadata="reviewData"></WriteReview>
+      <UserWorkRecord
+        :work-id="metadata.id"
+        :metadata="metadata"
+        variant="detail"
+        class="q-mt-sm"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import CoverSFW from 'components/CoverSFW'
-import WriteReview from './WriteReview'
-import NotifyMixin from '../mixins/Notification.js'
-import { formatDlsiteUrl } from '../utils/rjCode'
+import UserWorkRecord from './UserWorkRecord'
+import WorkRating from './WorkRating'
 
 export default {
   name: 'WorkDetails',
 
-  mixins: [NotifyMixin],
-
   components: {
     CoverSFW,
-    WriteReview
+    UserWorkRecord,
+    WorkRating
   },
 
   props: {
@@ -127,154 +76,11 @@ export default {
     }
   },
 
-  data() {
-    return {
-      rating: 0,
-      userMarked: false,
-      showReviewDialog: false,
-      showTags: true,
-      reviewData: {
-        rating: 0,
-        progress: '',
-        reviewText: ''
-      },
-      progressOptions: [
-        { label: '想听', value: 'marked' },
-        { label: '在听', value: 'listening' },
-        { label: '听过', value: 'listened' },
-        { label: '重听', value: 'replay' },
-        { label: '搁置', value: 'postponed' }
-      ]
-    }
-  },
-
-  mounted() {
-    this.reviewData = this.normalizeReview(this.metadata)
-  },
-
   computed: {
-    dlsiteUrl () {
-      if (!this.metadata || !this.metadata.id) return ''
-
-      return formatDlsiteUrl(this.metadata.id)
-    },
-
-    sortedRatings: function() {
-      function compare(a, b) {
-        return (a.review_point > b.review_point) ? -1 : 1;
-      }
-      return this.metadata.rate_count_detail.slice().sort(compare);
+    showTags () {
+      const tags = this.metadata.tags
+      return Array.isArray(tags) && tags.length > 0 && tags[0].name !== null
     }
-  },
-
-  watch: {
-    // 需要用watch因为父component pages/work.vue是先用空值初始化的
-    metadata (newMetaData) {
-      if (newMetaData.userRating) {
-        this.userMarked = true;
-        this.rating = newMetaData.userRating;
-      } else {
-        this.userMarked = false;
-        this.rating = newMetaData.rate_average_2dp || 0;
-      }
-
-      // 极个别作品没有标签
-      if (newMetaData.tags && newMetaData.tags[0].name === null) {
-        this.showTags = false;
-      }
-      this.reviewData = this.normalizeReview(newMetaData)
-    },
-  },
-
-  methods: {
-    normalizeReview(raw) {
-      return {
-        rating: raw.userRating || 0,
-        progress: raw.progress || '',
-        reviewText: raw.review_text || ''
-      }
-    },
-
-    setProgress (newProgress) {
-      this.reviewData.progress = newProgress;
-      const submitPayload = {
-        'user_name': this.$store.state.User.name, // 用户名不会被后端使用
-        'work_id': this.metadata.id,
-        'progress': newProgress
-      };
-      this.submitProgress(submitPayload);
-    },
-
-    submitProgress (payload) {
-      const params = {
-        starOnly: false,
-        progressOnly: true
-      }
-      this.$axios.put('/api/review', payload, {params})
-        .then((response) => {
-          this.showSuccNotif(response.data.message);
-          this.$emit('reset');
-        })
-        .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-        })
-    },
-
-    setRating (newRating) {
-      const submitPayload = {
-        'user_name': this.$store.state.User.name, // 用户名不会被后端使用
-        'work_id': this.metadata.id,
-        'rating': newRating
-      };
-      this.submitRating(submitPayload);
-    },
-
-    submitRating (payload) {
-      this.$axios.put('/api/review', payload)
-        .then((response) => {
-          this.showSuccNotif(response.data.message);
-          this.$emit('reset');
-        })
-        .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-        })
-    },
-
-    processReview(payload) {
-      if (payload.deleted) {
-        this.userMarked = false
-        this.rating = this.metadata.rate_average_2dp || 0;
-        this.reviewData = {
-          rating: 0,
-          progress: '',
-          reviewText: ''
-        }
-      }
-      else {
-        this.reviewData = {
-          rating: payload.rating,
-          progress: payload.progress,
-          reviewText: payload.reviewText
-        }
-        this.rating = payload.rating
-        this.userMarked = true
-      }
-      this.closed()
-    },
-
-    closed() {
-      this.showReviewDialog = false;
-    },
   }
 }
 </script>
@@ -289,5 +95,10 @@ export default {
   -webkit-user-select: none;
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
+}
+
+.all-ages-badge {
+  background: #e6f7d6;
+  color: #56842a;
 }
 </style>

@@ -21,9 +21,11 @@
     </div>
     <div>
       <div>
-        <div class="row justify-center text-grey" v-if="works.length === 0">在作品界面上点击星标、标记进度，标记的音声就会出现在这里啦</div>
-        <q-list bordered separator class="shadow-2" v-if="works.length">
-          <FavListItem v-for="work in works" :key="work.id" :workid="work.id" :metadata="work"
+        <div class="row justify-center text-grey" v-if="visibleWorks.length === 0">
+          这里只显示已标记收听状态的作品。
+        </div>
+        <q-list bordered separator class="shadow-2" v-if="visibleWorks.length">
+          <FavListItem v-for="work in visibleWorks" :key="work.id" :workid="work.id" :metadata="work"
             @deleteItem="removeFavItem"></FavListItem>
         </q-list>
         <div class="row justify-center q-my-sm" v-if="pagination.totalPages > 1">
@@ -44,6 +46,7 @@
 <script>
 import FavListItem from 'components/FavListItem'
 import NotifyMixin from '../mixins/Notification.js'
+import { peekUserWorkRecord } from '../services/userWorkRecord'
 
 export default {
   name: 'Favourites',
@@ -55,6 +58,13 @@ export default {
   computed: {
     direction () {
       return this.sortBy.sort === 'desc'
+    },
+
+    visibleWorks () {
+      return this.works.filter((work) => {
+        const record = peekUserWorkRecord(work.id)
+        return record === null || record.progress === this.progressFilter
+      })
     },
   },
 

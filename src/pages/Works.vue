@@ -357,6 +357,14 @@ export default {
     detailMode(newModeSetting) {
       localStorage.detailMode = newModeSetting;
     },
+
+    // 详情面板里的评分、收听状态和短评改动后，关闭面板时刷新当前页，
+    // 让卡片上的“我的记录”摘要与刚保存的内容保持一致。
+    workId (newWorkId, oldWorkId) {
+      if (oldWorkId !== null && newWorkId === null && this.$route.name === 'works') {
+        this.requestWorksQueue()
+      }
+    },
   },
 
   methods: {
