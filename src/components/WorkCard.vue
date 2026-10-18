@@ -86,15 +86,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.all-ages-badge {
-  background: #e6f7d6;
-  color: #56842a;
-}
-
-.subtitle-badge {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-</style>

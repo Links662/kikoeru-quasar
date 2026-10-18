@@ -4,7 +4,7 @@
       {{ pageTitle }}
     </div>
 
-    <div class="justify-center">
+    <div>
       <!-- 只横向滚动：overflow-auto 负责 x，overflow-hidden-y 压掉可能出现的竖向滚动条 -->
       <div class="recent-scroll q-pa-md overflow-auto overflow-hidden-y" @wheel.prevent="onHorizontalWheel">
         <div class="row q-col-gutter-x-md no-wrap">

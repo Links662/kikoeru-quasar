@@ -1,11 +1,11 @@
 <template>
-  <div class="q-mx-md q-mt-md">
+  <q-page class="q-px-md q-pt-md">
     <!-- 窄屏：搜索条平时缩在蓝色导航栏后面（不占位），在列表顶部下拉才滑出来 -->
     <div
       v-if="isNarrowScreen"
       ref="searchBar"
-      class="works-search-bar"
-      :class="{ 'works-search-bar--shown': narrowSearchVisible }"
+      class="works-search-bar bg-grey-3"
+      :class="{ 'works-search-bar--shown shadow-2': narrowSearchVisible }"
     >
       <q-input
         ref="searchInput"
@@ -15,7 +15,7 @@
         v-model="keyword"
         debounce="500"
         :placeholder="'搜索作品 / 社团 / 声优…'"
-        class="works-search"
+        class="works-search full-width"
         @focus="searchFocused = true"
         @blur="handleSearchBlur"
         @keydown.esc="blurSearchInput"
@@ -30,8 +30,8 @@
 
     <RecentList />
 
-    <div class="works-header-row q-my-sm">
-      <div class="works-title text-h5 text-weight-regular">
+    <div class="row no-wrap items-center justify-between q-my-sm">
+      <div class="works-title col text-h5 text-weight-regular">
         {{ pageTitle }}
         <span v-show="pagination.totalCount">
           ({{ pagination.totalCount }})
@@ -39,7 +39,7 @@
       </div>
 
       <!-- 宽屏：搜索框与标题同行靠右 -->
-      <div v-if="wideSearchVisible" class="works-search-wrap">
+      <div v-if="wideSearchVisible" class="works-search-wrap col-auto q-ml-md">
         <q-input
           dense
           rounded
@@ -47,7 +47,7 @@
           v-model="keyword"
           debounce="500"
           :placeholder="'搜索作品 / 社团 / 声优…'"
-          class="works-search"
+          class="works-search full-width"
           @keyup.enter="syncKeywordToRoute($event.target.value)"
         >
           <template v-slot:append>
@@ -144,7 +144,7 @@
           input />
       </div>
     </div>
-  </div>
+  </q-page>
 </template>
 
 <script>
@@ -678,25 +678,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.works-header-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-}
-
 // 标题：允许被压窄（auto 的最小宽度会把搜索框顶下去）；真遇到断不开的长词，
 // 宁可词内断行，也别让整行往右溢出
 .works-title {
-  min-width: 0;
   overflow-wrap: anywhere;
 }
 
 .works-search-wrap {
-  flex: 0 1 auto;
   width: 260px;
   min-width: 180px;
-  margin-left: 12px;
 }
 
 // 窄屏的搜索条：天然位置就在导航栏下沿，收起时向上缩到蓝色导航栏背后、
@@ -707,12 +697,11 @@ export default {
   z-index: 1000;
   pointer-events: none;
 
-  // 通栏：抵消页面左右 16px 边距；上边把页面 q-mt-md 的 16px 一起抵消，
+  // 通栏：抵消页面左右 16px 边距；上边把页面 q-pt-md 的 16px 一起抵消，
   // 让它天然就贴在导航栏下沿；下边负值让收起时不占位（页面看起来像没它）
   height: 56px;
   margin: -16px -16px -40px;
   padding: 8px 16px;
-  background: #eee;
   transform: translateY(-100%);
   transition: transform 0.22s ease, margin-bottom 0.22s ease;
 }
@@ -721,11 +710,6 @@ export default {
   pointer-events: auto;
   margin-bottom: 8px;
   transform: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-}
-
-.works-search {
-  width: 100%;
 }
 
 </style>

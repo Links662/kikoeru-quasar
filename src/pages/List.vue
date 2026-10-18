@@ -7,6 +7,7 @@
     <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered wrap-cells
       :loading="loading" v-model:pagination="pagination" :rows-per-page-options="[25, 50, 100, 0]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
+      table-header-class="text-grey-9"
       @row-click="openWorks">
       <!-- 搜索、计数、分页都放在表格顶部，避免和右下角的“回到顶部”按钮重叠 -->
       <template v-slot:top>
@@ -291,7 +292,6 @@ export default {
 .list-table :deep(.q-table thead th) {
   font-size: 14px;
   font-weight: 600;
-  color: #424242;
 }
 
 .list-table :deep(.q-table tbody td) {
@@ -301,7 +301,7 @@ export default {
 
 .list-table :deep(.q-table__top) {
   padding: 6px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, .12);
+  border-bottom: 1px solid $separator-color;
 }
 
 /* 表格顶栏里的搜索框 */
@@ -315,7 +315,7 @@ export default {
   }
 }
 
-/* “近期发售”列的 RJ 号标签：主题色淡底 + 主题色文字（Quasar 默认 primary #027be3） */
+/* “近期发售”列的 RJ 号标签：主题色淡底 + 主题色文字 */
 .rj-chips {
   display: flex;
   flex-wrap: wrap;
@@ -326,8 +326,8 @@ export default {
   margin: 2px;
   padding: 0 7px;
   border-radius: 9px;
-  background: rgba(2, 123, 227, .12);
-  color: #027be3;
+  background: rgba($primary, .12);
+  color: $primary;
   font-size: 12px;
   line-height: 18px;
   text-decoration: none;
@@ -335,7 +335,7 @@ export default {
 }
 
 .rj-chip:hover {
-  background: rgba(2, 123, 227, .24);
-  color: #01579b;
+  background: rgba($primary, .24);
+  color: $light-blue-10;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" class="work-cover" copyable />
+    <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" class="work-cover non-selectable" copyable />
 
     <div class="q-px-sm q-pt-xs q-pb-sm">
       <div class="q-px-xs">
@@ -92,19 +92,8 @@ export default {
 // 以它为锚点开始拖选，选区扫过封面和正文，拖动/复制时就成了“复制封面图片”。
 // 封面没有需要选中的文字，直接让它不参与选择、拖拽和长按菜单。
 .work-cover {
-  user-select: none;
-  -webkit-user-select: none;
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
 }
 
-.all-ages-badge {
-  background: #e6f7d6;
-  color: #56842a;
-}
-
-.subtitle-badge {
-  background: #e3f2fd;
-  color: #1565c0;
-}
 </style>

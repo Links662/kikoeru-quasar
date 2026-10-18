@@ -1,5 +1,5 @@
 <template>
-  <div class="user-work-record" :class="`user-work-record--${variant}`">
+  <div class="user-work-record" :class="{ 'column items-start q-gutter-y-sm': variant === 'row' }">
     <template v-if="variant === 'row'">
       <div class="row items-center q-gutter-x-xs">
         <q-rating
@@ -201,12 +201,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.user-work-record--row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-</style>

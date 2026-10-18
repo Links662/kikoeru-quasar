@@ -2,14 +2,14 @@
   <div class="column no-wrap fit bg-white relative-position">
     <!-- 右侧贴边把手：点一下收起面板；鼠标悬停 / 键盘聚焦时展宽并变主色 -->
     <button
-      class="panel-grip"
+      class="panel-grip absolute-right row items-center justify-end bg-transparent no-border no-padding non-selectable cursor-pointer"
       type="button"
       aria-label="收起作品详情"
       @click="$emit('close')"
       @wheel="onGripWheel"
     >
-      <span class="panel-grip__bar">
-        <q-icon name="chevron_left" size="12px" />
+      <span class="panel-grip__bar block relative-position col-auto">
+        <q-icon name="chevron_left" size="12px" class="text-white" />
       </span>
 
       <!-- 触屏点按会闪一下 tooltip，所以只在鼠标设备上挂 -->
@@ -121,27 +121,11 @@ export default {
 <style lang="scss" scoped>
 // 右侧贴边把手：可见的是一条细杆，实际命中区比它宽，避免只有几像素难点
 .panel-grip {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
   z-index: 5;
   width: 16px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  // 把手自己不能成为选择起点：否则按住它拖动会在面板里拉出一段选区
-  user-select: none;
-  -webkit-user-select: none;
 
   &__bar {
-    position: relative;
-    display: block;
     flex: 0 0 auto; // 展开时向左长出容器，不要被 16px 的命中区压回去
     width: 6px;
     height: 96px;
@@ -155,7 +139,6 @@ export default {
     top: 50%;
     right: 0;
     transform: translateY(-50%);
-    color: #fff;
     opacity: 0;
     transition: opacity .18s ease;
   }

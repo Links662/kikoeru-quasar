@@ -8,7 +8,7 @@
       @mouseover="''"
       @mouseout="''"
       @click="onClickPlay()"
-      class="square"
+      class="square shadow-2"
     >
       <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
            只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
@@ -18,11 +18,11 @@
         </q-chip>
       </div>
 
-      <div class="absolute-bottom-right cover-meta">
+      <div class="absolute-bottom-right cover-meta q-pa-xs">
         {{'上次播放到: ' + this.formatSeconds(recentwork.play_time)}}
       </div>
 
-      <div class="text">
+      <div class="text text-white">
         {{recentwork.file_name}}
       </div>
     </q-img>
@@ -156,13 +156,6 @@ export default {
     transition: transform 100ms ease-out, border-radius 200ms ease-out;
     border-radius: 10px;
     margin-right: 10px;
-    box-shadow: 0 1px 5px rgba(128, 128, 128, 0.246), 0 2px 2px rgba(128, 128, 128, 0.102), 0 3px 1px -2px rgba(128, 128, 128, 0.116);
-  }
-
-  // 照片右下角的“上次播放到”：盖过 Quasar 给 `.q-img__content > div` 的 16px 内边距，
-  // 所以必须是 scoped（多一个属性选择器才比那条规则具体）
-  .cover-meta {
-    padding: 5px;
   }
 
   .underline-text{
@@ -184,7 +177,6 @@ export default {
   .square .text {
     display: none;
     background: #181818ad;
-    color: #fff;
     height: fit-content;
     padding: 5px;
     box-sizing: border-box;

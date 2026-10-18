@@ -1,7 +1,7 @@
 <template>
   <q-slide-transition>
     <div v-show="hasTrack && hide" class="bg-white text-black player-bar">
-      <div v-show="showLyricStrip" class="player-bar-lyric">
+      <div v-show="showLyricStrip" class="player-bar-lyric row items-center justify-center">
         <span v-if="currentLyric" class="player-bar-lyric__text text-purple text-bold ellipsis">
           {{ currentLyric }}
         </span>
@@ -109,9 +109,6 @@ $player-bar-btn: 60px;
 // 收起态歌词条：播放条里的一行。底色不另设，跟着播放条的 bg-white 走，
 // 靠下面这条淡分割线和控件分开
 .player-bar-lyric {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   height: 30px;
   padding: 0 12px;
   border-bottom: 1px solid $separator-color;

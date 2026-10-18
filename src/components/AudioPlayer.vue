@@ -2,15 +2,15 @@
   <div>
     <transition name="player-slide">
       <q-card square v-show="hasTrack && !hide"
-        class="fixed-bottom-right bg-white text-black audio-player" @wheel.prevent @touchmove.prevent>
+        class="fixed-bottom-right bg-white text-black audio-player column no-wrap" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
-        <div class="bg-dark row items-center albumart">
+        <div class="bg-dark row items-center albumart relative-position overflow-hidden col-shrink">
           <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
 
           <!-- 歌词：只有当前这一句，压在封面下沿，从下往上弹出来。
                播放列表展开时它就在列表上方，两块可以同时开着 -->
           <transition name="lyrics-pop">
-            <div v-if="lyricsOpen" class="lyrics-view absolute-bottom row items-center justify-center">
+            <div v-if="lyricsOpen" class="lyrics-view absolute-bottom row items-center justify-center overflow-hidden">
               <div class="lyrics-view__line text-center text-h6 text-bold text-purple ellipsis-2-lines">
                 {{ currentLyric }}
               </div>
@@ -24,9 +24,9 @@
         </div>
 
         <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
-        <div class="current-play-list bg-white" v-show="queueOpen">
+        <div class="current-play-list bg-white relative-position col-auto overflow-hidden" v-show="queueOpen">
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
-          <q-list class="queue-list">
+          <q-list class="queue-list overflow-hidden">
             <q-item clickable v-ripple v-for="row in pageTracks" :key="row.index"
               :active="queueIndex === row.index" active-class="text-white bg-teal"
               class="queue-item non-selectable q-py-none q-px-sm"
@@ -58,7 +58,7 @@
             </q-item>
           </q-list>
 
-          <div class="queue-pager">
+          <div class="queue-pager row items-center justify-center">
             <q-pagination :model-value="page + 1" :max="pageCount"
               :max-pages="5" :boundary-numbers="false" direction-links ellipses padding="0"
               color="grey-8" active-color="teal" active-text-color="white" active-design="unelevated"
@@ -571,11 +571,8 @@ export default {
 <style lang="scss" scoped>
 .audio-player {
   // 竖直排布：封面 / 播放列表 / 播放控件；列表展开时由封面收缩让出空间
-  display: flex;
-  flex-direction: column;
-
   // 除封面外都保持自身高度，不参与压缩
-  > * {
+  > *:not(.albumart) {
     flex: 0 0 auto;
   }
 
@@ -596,9 +593,7 @@ export default {
 // 封面：空间不足时收缩；移动端吃掉剩余高度
 .audio-player > .albumart {
   position: relative; // 歌词面板按封面区定位（absolute-full）
-  flex: 0 1 auto;
   min-height: 80px;
-  overflow: hidden;
 
   // 宽度 < $breakpoint-xs-max (599px)
   @media (max-width: $breakpoint-xs-max) {
@@ -623,7 +618,6 @@ export default {
 .lyrics-view {
   padding: 3px 12px;
   background-color: rgba($grey-4, $alpha: 0.7);
-  overflow: hidden;
 }
 
 .lyrics-view__line {
@@ -684,11 +678,8 @@ $queue-block: $queue-body + $queue-pager;
 
 // 内嵌在播放器里的当前播放列表：高度固定成「4 行 + 分页条」，永远不出滚动条
 .current-play-list {
-  position: relative;
   z-index: 1;
-  flex: 0 0 auto;
   height: $queue-block;
-  overflow: hidden;
   // 和下面的播放控件（进度条起）用一条淡分割线隔开
   border-bottom: 1px solid $separator-color;
 }
@@ -696,7 +687,6 @@ $queue-block: $queue-body + $queue-pager;
 // 列表本体：只放一页的行，固定高度，不滚动
 .queue-list {
   height: $queue-body;
-  overflow: hidden;
   // 和下面的分页条之间也隔一条
   border-bottom: 1px solid $separator-color;
 }
@@ -760,9 +750,6 @@ $queue-block: $queue-body + $queue-pager;
 // 分页条：只有原生分页控件，居中一行。
 // 注意不要在这里给 .q-btn 定死宽高，QPagination 的按钮是 2.572em 高的
 .queue-pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   height: $queue-pager;
 }
 

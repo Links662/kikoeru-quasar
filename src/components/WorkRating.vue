@@ -1,6 +1,6 @@
 <template>
-  <div class="work-rating row items-center">
-    <span class="work-rating__stars">
+  <div class="work-rating row items-center q-gutter-x-xs q-gutter-y-xs">
+    <span class="work-rating__stars row inline items-center">
       <q-rating
         :model-value="displayRating"
         :size="size"
@@ -21,7 +21,9 @@
             :value="rate.ratio / 100"
             color="amber"
             track-color="white"
-            class="col-auto rating-bar"
+            size="15px"
+            class="col-auto"
+            style="width: 100px"
           />
           <div class="col q-mx-sm">({{ rate.count }})</div>
         </div>
@@ -157,14 +159,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.work-rating {
-  column-gap: 4px;
-  row-gap: 4px;
-}
-
-.work-rating__stars {
-  display: inline-flex;
-}
-</style>

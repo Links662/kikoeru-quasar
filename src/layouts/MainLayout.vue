@@ -14,13 +14,13 @@
         </q-toolbar-title>
 
         <!-- 导航：固定一行，一行放不下的项收进末尾的下拉菜单 -->
-        <div ref="navRow" class="nav-scroll row no-wrap items-center">
+        <div ref="navRow" class="nav-scroll col row no-wrap items-center overflow-hidden">
           <q-btn
             v-for="(item, index) in shownNavItems"
             :key="'nav' + index"
             flat
             dense
-            class="nav-btn"
+            class="nav-btn col-auto q-mr-xs text-white"
             :class="{ 'nav-active': item.active === true }"
             :icon="item.icon"
             :label="showNavLabel ? item.title : undefined"
@@ -31,7 +31,7 @@
             @click="onNavClick(item)"
           />
 
-          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn nav-more"
+          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn nav-more col-auto q-mr-xs text-white"
             icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 4]">
               <q-list dense class="nav-more-list">
@@ -59,13 +59,13 @@
         </div>
 
         <!-- 只用来量按钮宽度的隐藏行 -->
-        <div ref="navMeasure" class="nav-measure row no-wrap items-center" aria-hidden="true">
+        <div ref="navMeasure" class="nav-measure absolute-top-left invisible row no-wrap items-center" aria-hidden="true">
           <q-btn
             v-for="(item, index) in navItems"
             :key="'measure' + index"
             flat
             dense
-            class="nav-btn"
+            class="nav-btn col-auto q-mr-xs text-white"
             :icon="item.icon"
             :label="showNavLabel ? item.title : undefined"
             tabindex="-1"
@@ -127,8 +127,7 @@
       <transition name="work-panel-slide">
         <div
           v-if="isMobilePanel && workId !== null"
-          class="work-panel-mobile bg-white"
-          :style="mobilePanelStyle"
+          class="work-panel-mobile fixed-top bg-white"
         >
           <WorkPanel :key="workId" :workid="workId" @close="closePanel" />
         </div>
@@ -404,17 +403,11 @@ export default {
     // 页面里的吸顶搜索条要刚好贴在 header 下面（播放器展开时 header 会变高）
     layoutStyle () {
       return {
-        '--app-header-height': `${this.headerHeight}px`
+        '--app-header-height': `${this.headerHeight}px`,
+        '--app-footer-height': `${this.footerHeight}px`
       }
     },
 
-    // 移动端面板只覆盖内容区，所以要用 header / footer 的实际高度定位
-    mobilePanelStyle () {
-      return {
-        top: `${this.headerHeight}px`,
-        bottom: `${this.footerHeight}px`
-      }
-    }
   },
 
   methods: {
@@ -673,34 +666,18 @@ export default {
 
 <style lang="scss" scoped>
 // 顶部导航：固定一行，放不下的项由下拉菜单接管
-  .nav-scroll {
-    flex: 1 1 0%;
-    min-width: 0;
-    overflow: hidden;
-  }
-
 // 纯图标模式：40px 触控区，按钮之间不再额外留 margin。
 // 图标仍为 24px，因此图标边缘间距约 16px。
   .nav-icons .nav-btn {
-    flex: 0 0 auto;
     width: var(--nav-icon-size, 40px);
     height: var(--nav-icon-size, 40px);
-    margin-right: 0;
+    margin-right: 0 !important;
   }
 
 // “更多”始终贴住导航行右端，剩余空间留在它与最后一个可见项之间
   .nav-more {
     margin-left: auto;
-    margin-right: 0;
-  }
-
-// 只用于量宽度，不参与布局
-  .nav-measure {
-    position: absolute;
-    top: 0;
-    left: 0;
-    visibility: hidden;
-    pointer-events: none;
+    margin-right: 0 !important;
   }
 
 // “更多”下拉菜单：紧凑排布，去掉图标与文字之间的多余留白
@@ -723,9 +700,8 @@ export default {
 
 // 移动端作品详情面板：只覆盖内容区（header 与 footer 之间）
   .work-panel-mobile {
-    position: fixed;
-    left: 0;
-    right: 0;
+    top: var(--app-header-height, 0px);
+    bottom: var(--app-footer-height, 0px);
     z-index: 2500;
   }
 

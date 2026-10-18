@@ -26,7 +26,7 @@
       </q-chip>
     </div>
 
-    <div v-if="release" class="absolute-bottom-right cover-meta">
+    <div v-if="release" class="absolute-bottom-right cover-meta q-pa-xs">
       {{release}}
     </div>
   </q-img>
@@ -119,9 +119,4 @@ export default {
   max-width: 560px;
 }
 
-// 右下角的发售日：盖过 Quasar 给 `.q-img__content > div` 的 16px 内边距，
-// 所以必须是 scoped（多一个属性选择器才比那条规则具体）
-.cover-meta {
-  padding: 5px;
-}
 </style>

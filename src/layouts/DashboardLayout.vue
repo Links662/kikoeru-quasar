@@ -5,13 +5,13 @@
         <!-- 屏幕变窄时先收掉「控制台」标志，再窄到手机尺寸才让导航缩成纯图标 -->
         <q-toolbar-title shrink class="gt-sm q-mr-md">控制台</q-toolbar-title>
 
-        <div class="col nav-scroll row no-wrap items-center">
+        <div class="col nav-scroll row no-wrap items-center overflow-auto overflow-hidden-y hide-scrollbar">
           <q-btn
             v-for="(link, index) in links"
             :key="index"
             flat
             dense
-            class="nav-btn"
+            class="nav-btn col-auto q-mr-xs text-white"
             :icon="link.icon"
             :label="showNavLabel ? link.title : undefined"
             :to="link.path"
@@ -130,17 +130,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-  // 顶部导航：窄屏时横向滚动，不换行
-  .nav-scroll {
-    min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
-</style>
