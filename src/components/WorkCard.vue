@@ -21,19 +21,31 @@
         </div>
 
         <div v-show="metadata.title" class="q-mt-xs">
-          <WorkRating
-            :metadata="metadata"
-            show-review-count
-            show-link
-          />
+          <WorkRating :metadata="metadata" show-review-count/>
         </div>
       </div>
 
-      <div v-show="metadata.title" class="q-px-xs q-mt-xs">
-        <span class="text-weight-medium text-h6 text-red">{{ metadata.price }} 日元</span>
-        <span class="q-ml-sm">售出数: {{ metadata.dl_count }}</span>
-        <span v-if="!metadata.nsfw" class="q-ml-sm all-ages-badge">全年龄</span>
-        <span v-if="metadata.subtitle === true" class="q-ml-sm subtitle-badge">有字幕</span>
+      <div v-show="metadata.title" class="row no-wrap items-baseline text-no-wrap q-px-xs q-mt-xs">
+        <span class="text-body1 text-weight-medium text-red">{{ metadata.price }} 日元</span>
+        <span class="q-ml-sm text-body2 text-grey">({{ metadata.dl_count }})</span>
+        <a
+          v-if="dlsiteUrl"
+          class="q-ml-sm text-body2 text-no-wrap text-blue"
+          :href="dlsiteUrl"
+          rel="noreferrer noopener"
+          target="_blank"
+        >
+          <q-icon name="launch" size="xs" />
+          <span class="q-ml-xs">DLsite</span>
+        </a>
+      </div>
+
+      <div
+        v-if="!metadata.nsfw || metadata.subtitle === true"
+        class="row no-wrap items-center q-gutter-xs q-px-xs q-mt-xs"
+      >
+        <q-badge v-if="!metadata.nsfw" color="light-green-2" text-color="light-green-9" label="全年龄" />
+        <q-badge v-if="metadata.subtitle === true" color="blue-1" text-color="blue-9" label="有字幕" />
       </div>
 
       <div class="q-mt-xs" v-if="showTags">
@@ -58,6 +70,7 @@
 <script>
 import CoverSFW from 'components/CoverSFW'
 import WorkRating from './WorkRating'
+import { formatDlsiteUrl } from '../utils/rjCode'
 
 export default {
   name: 'WorkCard',
@@ -79,6 +92,10 @@ export default {
   },
 
   computed: {
+    dlsiteUrl () {
+      return this.metadata.id ? formatDlsiteUrl(this.metadata.id) : ''
+    },
+
     showTags () {
       const tags = this.metadata.tags
       return Array.isArray(tags) && tags.length > 0 && tags[0].name !== null

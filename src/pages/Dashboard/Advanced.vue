@@ -53,9 +53,9 @@
 
           <q-item-section avatar>
             <div class="q-gutter-sm">
-              <q-radio dense v-model="config.tagLanguage" val="zh-cn" label="简" />
-              <q-radio dense v-model="config.tagLanguage" val="zh-tw" label="繁" />
-              <q-radio dense v-model="config.tagLanguage" val="ja-jp" label="日" />
+              <q-radio dense v-model="config.tagLanguage" val="zh-CN" label="简" />
+              <q-radio dense v-model="config.tagLanguage" val="zh-TW" label="繁" />
+              <q-radio dense v-model="config.tagLanguage" val="ja-JP" label="日" />
             </div>
           </q-item-section>
         </q-item>

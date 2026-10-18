@@ -1,6 +1,6 @@
 <template>
   <div class="work-rating row items-center q-gutter-x-xs q-gutter-y-xs">
-    <span class="work-rating__stars row inline items-center">
+    <span class="row inline items-center">
       <q-rating
         :model-value="displayRating"
         :size="size"
@@ -39,16 +39,11 @@
       </span>
     </template>
 
-    <template v-if="showLink">
-      <q-icon name="launch" size="xs" />
-      <a class="text-blue" :href="dlsiteUrl" rel="noreferrer noopener" target="_blank">DLsite</a>
-    </template>
   </div>
 </template>
 
 <script>
 import NotifyMixin from '../mixins/Notification.js'
-import { formatDlsiteUrl } from '../utils/rjCode'
 import {
   createUserWorkRecordService,
   getUserWorkRecord,
@@ -72,10 +67,6 @@ export default {
       default: 'sm'
     },
     showReviewCount: {
-      type: Boolean,
-      default: false
-    },
-    showLink: {
       type: Boolean,
       default: false
     }
@@ -113,11 +104,6 @@ export default {
       return this.metadata.rate_count_detail.slice().sort((a, b) => {
         return (a.review_point > b.review_point) ? -1 : 1
       })
-    },
-
-    dlsiteUrl () {
-      if (!this.metadata.id) return ''
-      return formatDlsiteUrl(this.metadata.id)
     }
   },
 
