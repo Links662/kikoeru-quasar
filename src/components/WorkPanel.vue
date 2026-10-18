@@ -20,8 +20,8 @@
 
     <!-- 详情 + 文件树，独立滚动 -->
     <div ref="scrollBody" class="col scroll work-panel-scroll">
-      <WorkDetails :metadata="metadata" @reset="requestData()" />
-      <WorkTree :tree="tree" :metadata="metadata" :editable="false" />
+      <WorkDetails :metadata="metadata" />
+      <WorkTree :tree="tree" :metadata="metadata" />
     </div>
   </div>
 </template>

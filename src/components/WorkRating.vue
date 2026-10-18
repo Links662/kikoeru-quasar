@@ -4,7 +4,6 @@
       <q-rating
         :model-value="displayRating"
         :size="size"
-        :readonly="!editable"
         :color="personalRating ? 'blue' : 'amber'"
         icon="star_border"
         icon-selected="star"
@@ -72,10 +71,6 @@ export default {
       type: String,
       default: 'sm'
     },
-    editable: {
-      type: Boolean,
-      default: true
-    },
     showReviewCount: {
       type: Boolean,
       default: false
@@ -142,7 +137,7 @@ export default {
 
   methods: {
     async updateRating (rating) {
-      if (!this.editable || !rating || rating === this.personalRating) return
+      if (!rating || rating === this.personalRating) return
 
       const previousRating = this.personalRating
       updateUserWorkRecord(this.metadata.id, { rating })
@@ -150,7 +145,6 @@ export default {
       try {
         const response = await this.recordService.updateRating(this.metadata.id, rating)
         this.showSuccNotif(response.data.message)
-        this.$emit('rating-changed', rating)
       } catch (error) {
         updateUserWorkRecord(this.metadata.id, { rating: previousRating })
         this.showErrNotif(getUserWorkRecordErrorMessage(error))

@@ -51,9 +51,6 @@ export default class AudioEngine {
     this.media = null
     this.lrc = null
 
-    this.watchers = []
-    this.mediaHandlers = []
-
     this.pauseIntentTimer = null
     this.sleepTimer = null
 
@@ -122,31 +119,8 @@ export default class AudioEngine {
     return this
   }
 
-  // 正常运行时引擎与页面同生命周期，这个方法是给页面卸载/测试用的
-  destroy () {
-    this.clearPauseIntentTimer()
-    this.clearSleepTimer()
-
-    this.watchers.forEach((unwatch) => unwatch())
-    this.watchers = []
-
-    if (this.media !== null) {
-      this.mediaHandlers.forEach(([event, handler]) => {
-        this.media.removeEventListener(event, handler)
-      })
-      this.mediaHandlers = []
-      this.media.pause()
-      this.media.removeAttribute('src')
-      this.media.load()
-      if (this.media.parentNode) {
-        this.media.parentNode.removeChild(this.media)
-      }
-      this.media = null
-    }
-  }
-
   bindMediaEvents () {
-    this.mediaHandlers = [
+    const mediaHandlers = [
       ['loadedmetadata', () => this.resumePlayHistory()],
       ['canplay', () => this.onCanplay()],
       ['timeupdate', () => this.onTimeupdate()],
@@ -157,7 +131,7 @@ export default class AudioEngine {
       ['pause', () => this.onPause()]
     ]
 
-    this.mediaHandlers.forEach(([event, handler]) => {
+    mediaHandlers.forEach(([event, handler]) => {
       this.media.addEventListener(event, handler)
     })
   }
@@ -165,19 +139,15 @@ export default class AudioEngine {
   bindStore () {
     const watch = (getter, handler) => this.store.watch(getter, handler)
 
-    this.watchers = [
-      watch(state => state.AudioPlayer.playing, flag => this.onPlayingIntent(flag)),
-      watch((state, getters) => getters['AudioPlayer/currentTrack'].mediaStreamUrl, () => this.onSourceChanged()),
-      watch(state => state.AudioPlayer.muted, flag => { this.media.muted = Boolean(flag) }),
-      watch(state => state.AudioPlayer.volume, value => this.applyVolume(value)),
-      watch(state => state.AudioPlayer.seekTime, time => this.onSeekRequest(time)),
-      watch(state => state.AudioPlayer.sleepMode, () => this.scheduleSleepTimer()),
-      watch(state => state.AudioPlayer.sleepTime, () => this.scheduleSleepTimer())
-    ]
+    watch(state => state.AudioPlayer.playing, flag => this.onPlayingIntent(flag))
+    watch((state, getters) => getters['AudioPlayer/currentTrack'].mediaStreamUrl, () => this.onSourceChanged())
+    watch(state => state.AudioPlayer.volume, value => this.applyVolume(value))
+    watch(state => state.AudioPlayer.seekTime, time => this.onSeekRequest(time))
+    watch(state => state.AudioPlayer.sleepMode, () => this.scheduleSleepTimer())
+    watch(state => state.AudioPlayer.sleepTime, () => this.scheduleSleepTimer())
   }
 
   applyStoredAudioState () {
-    this.media.muted = Boolean(this.state.muted)
     // 与旧实现保持一致：启动时以媒体元素的默认音量为准
     this.commit('SET_VOLUME', this.media.volume)
     this.refreshElementPlaying()

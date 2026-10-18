@@ -16,7 +16,6 @@
         debounce="500"
         :placeholder="'搜索作品 / 社团 / 声优…'"
         class="works-search full-width"
-        @focus="searchFocused = true"
         @blur="handleSearchBlur"
         @keydown.esc="blurSearchInput"
         @keyup.enter="syncKeywordToRoute($event.target.value)"
@@ -245,7 +244,6 @@ export default {
       pageTitle: '',
       keyword: '',
       searchRevealed: false, // 手机上是否已下拉出搜索框
-      searchFocused: false, // 搜索框是否正在输入
       pullStart: null, // 下拉手势起点
       pullSuppressed: false, // 本次触摸已经用于收起搜索框，不再参与下拉手势
       pagination: {
@@ -511,14 +509,12 @@ export default {
       if (bar && target && target.nodeType && bar.contains(target)) return
 
       this.searchRevealed = false
-      this.searchFocused = false
       // 同一次触摸紧接着的下拉不再算“拉出搜索”，免得刚收起又弹出来
       if (event.type === 'touchstart') this.pullSuppressed = true
     },
 
     // 空着不输入又失焦时收回去；有关键词时保持钉住，方便边看结果边改词
     handleSearchBlur () {
-      this.searchFocused = false
       if (this.isNarrowScreen !== true) return
       if (this.keyword !== '') return
       this.searchRevealed = false

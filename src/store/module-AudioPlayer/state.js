@@ -29,7 +29,6 @@ export default {
   queue: [], // [{ hash, title, mediaStreamUrl, mediaDownloadUrl }]
   queueIndex: -1, // -1 = 没有选中曲目（队列为空，或当前这首被移除）
   queueWork: null, // 队列所属作品，整个队列共用一份，见 EMPTY_WORK
-  muted: false,
   volume: 0,
   // 播放器展开时能弹出来的两块内容：当前播放列表，和封面下沿的歌词。
   // 两块各管各的，可以同时开着（歌词压在封面下沿，正好在列表上方）

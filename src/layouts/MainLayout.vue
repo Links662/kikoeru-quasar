@@ -654,10 +654,6 @@ export default {
     logout () {
       // 主动登出：停播 + 清本地会话 + 断开 socket + 回登录页，细节见 services/session.js
       endSession(this)
-    },
-
-    back () {
-      this.$router.go(-1)
     }
   },
 }

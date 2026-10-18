@@ -5,8 +5,6 @@
       :src="coverUrl"
       :ratio="4/3"
       img-class="cover-mask"
-      @mouseover="''"
-      @mouseout="''"
       @click="onClickPlay()"
       class="square shadow-2"
     >
@@ -39,18 +37,10 @@ export default {
 
   mixins: [NotifyMixin],
 
-  components: {
-  },
-
   props: {
     recentwork: {
       type: Object,
       required: true
-    }
-  },
-
-  data () {
-    return {
     }
   },
 

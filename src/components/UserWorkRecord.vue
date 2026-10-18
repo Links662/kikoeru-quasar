@@ -149,10 +149,6 @@ export default {
   },
 
   methods: {
-    emitRecordChanged () {
-      this.$emit('record-changed', { ...this.record })
-    },
-
     async updateRating (rating) {
       if (!rating || rating === this.record.rating) return
 
@@ -162,7 +158,6 @@ export default {
       try {
         const response = await this.recordService.updateRating(this.workId, rating)
         this.showSuccNotif(response.data.message)
-        this.emitRecordChanged()
       } catch (error) {
         updateUserWorkRecord(this.workId, { rating: previousRating })
         this.showErrNotif(getUserWorkRecordErrorMessage(error))
@@ -178,7 +173,6 @@ export default {
       try {
         const response = await this.recordService.updateProgress(this.workId, progress)
         this.showSuccNotif(response.data.message)
-        this.emitRecordChanged()
         this.$emit('progress-changed', progress)
       } catch (error) {
         updateUserWorkRecord(this.workId, { progress: previousProgress })
@@ -189,14 +183,11 @@ export default {
     onNoteSaved (reviewText) {
       updateUserWorkRecord(this.workId, { reviewText })
       this.showReviewDialog = false
-      this.emitRecordChanged()
     },
 
     onRecordDeleted () {
       clearUserWorkRecord(this.workId)
       this.showReviewDialog = false
-      this.emitRecordChanged()
-      this.$emit('record-deleted')
     }
   }
 }

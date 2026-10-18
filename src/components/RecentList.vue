@@ -50,13 +50,6 @@ export default {
         .catch(console.error)
     },
 
-    onClickClearButton () {
-      this.$axios.get('/api/history/deleteRecent')
-        .then(() => {
-          this.recentworks = []
-        })
-    },
-
     onHorizontalWheel(e) {
       e.currentTarget.scrollLeft += e.deltaY * 0.8
     }

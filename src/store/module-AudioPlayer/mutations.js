@@ -116,10 +116,6 @@ const mutations = {
     state.currentTime = second
   },
 
-  TOGGLE_MUTED(state) {
-    state.muted = !state.muted;
-  },
-
   SET_VOLUME(state, val) {
     if (val < 0 || val > 1) return;
     state.volume = val;

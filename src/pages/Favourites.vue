@@ -128,9 +128,6 @@ export default {
     this.requestWorksQueue()
   },
 
-  mounted() {
-  },
-
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
