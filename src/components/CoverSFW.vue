@@ -6,7 +6,7 @@
     class="cover-sfw"
   >
     <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
-         只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
+         叠加内容统一放在 transparent no-padding 包装层里 -->
     <div class="absolute-top-left transparent no-padding">
       <q-chip
         dense
@@ -26,8 +26,10 @@
       </q-chip>
     </div>
 
-    <div v-if="release" class="absolute-bottom-right cover-meta q-pa-xs">
-      {{release}}
+    <div v-if="release" class="absolute-bottom-right transparent no-padding">
+      <q-badge color="brown" text-color="white" class="cover-meta-badge q-ma-xs">
+        {{ release }}
+      </q-badge>
     </div>
   </q-img>
 </template>

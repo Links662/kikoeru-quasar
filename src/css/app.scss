@@ -19,6 +19,10 @@ a {
   color: $blue-9;
 }
 
+.cover-meta-badge {
+  font-size: $chip-font-size;
+}
+
 // 方形图标按钮：与同排的 dense 选择框等高。Quasar 没有等价的尺寸类，
 // 所以三处（height / min-height / width）要一起改；工作区与收藏页共用
 .sort-btn {

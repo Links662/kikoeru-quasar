@@ -11,27 +11,21 @@
       class="square shadow-2"
     >
       <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
-           只有带 !important 的 no-padding 能压掉；下面那层只是内缩 5px -->
+           叠加内容统一放在 transparent no-padding 包装层里 -->
       <div class="absolute-top-left transparent no-padding">
         <q-chip dense square color="brown" text-color="white" class="q-ma-sm">
           {{ rjLabel }}
         </q-chip>
       </div>
 
-      <div class="absolute-bottom-right cover-meta q-pa-xs">
-        {{'上次播放到: ' + this.formatSeconds(recentwork.play_time)}}
-      </div>
-
-      <div class="text text-white">
-        {{recentwork.file_name}}
+      <div class="absolute-bottom transparent no-padding">
+        <div class="recent-caption text-white q-px-sm q-py-xs">
+          <span class="text-body2 text-weight-medium ellipsis-2-lines">{{ recentwork.file_name }}</span>
+          <span>上次播放到: {{ this.formatSeconds(recentwork.play_time) }}</span>
+        </div>
       </div>
     </q-img>
 
-    <div class="underline-text">
-      <span class="mover-1">
-        {{recentwork.file_name}}
-      </span>
-    </div>
 
   </div>
 </template>
@@ -158,32 +152,16 @@ export default {
     margin-right: 10px;
   }
 
-  .underline-text{
-    overflow: hidden;
-    position: relative;
+  .recent-caption {
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
   }
 
-  .underline-text .mover-1 {
-    position: absolute;
-    transform: translate3d(0, 0, 0);
-    animation: moveSlideshow 10s linear infinite;
-  }
-
-  @keyframes moveSlideshow {
-    from { transform: translate3d(150px, 0, 0); }
-    to { transform: translate3d(-100%, 0, 0); }
-  }
-
-  .square .text {
-    display: none;
-    background: #181818ad;
-    height: fit-content;
-    padding: 5px;
-    box-sizing: border-box;
-    transition: opacity 300ms ease-out, border-radius 200ms ease-out;
-    border-radius: 0 0 10px 10px;
-    font-size: 8px;
-    white-space: normal;
+  .recent-caption > span + span {
+    display: block;
+    margin-top: 4px;
+    color: $grey-3;
+    font-size: 12px;
+    line-height: 1.25;
   }
 
   .square:hover {
@@ -193,7 +171,4 @@ export default {
     z-index: 999;
   }
 
-  .square:hover .text {
-    display: inline-block;
-  }
 </style>
