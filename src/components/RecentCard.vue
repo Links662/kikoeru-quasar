@@ -18,8 +18,8 @@
 
       <div class="absolute-bottom transparent no-padding">
         <div class="recent-caption text-white q-px-sm q-py-xs">
-          <span class="text-body2 text-weight-medium ellipsis-2-lines">{{ recentwork.file_name }}</span>
-          <span>上次播放到: {{ this.formatSeconds(recentwork.play_time) }}</span>
+          <span class="text-caption text-weight-medium ellipsis-2-lines"> {{ recentwork.file_name }} </span>
+          <span class="text-caption"> 上次播放到: {{ this.formatSeconds(recentwork.play_time) }} </span>
         </div>
       </div>
     </q-img>
@@ -144,14 +144,6 @@ export default {
 
   .recent-caption {
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
-  }
-
-  .recent-caption > span + span {
-    display: block;
-    margin-top: 4px;
-    color: $grey-3;
-    font-size: 12px;
-    line-height: 1.25;
   }
 
   .square:hover {
