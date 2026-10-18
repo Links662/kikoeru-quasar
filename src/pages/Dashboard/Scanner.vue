@@ -236,7 +236,6 @@ export default {
     SCAN_FINISHED (payload) {
       this.state = 'finished'
       this.finishedMessage = payload.message
-      this.$socket.emit('COUNT_UPDATE')
     },
     SCAN_ERROR () {
       this.state = 'error'

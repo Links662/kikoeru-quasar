@@ -59,20 +59,21 @@
     </div>
 
     <div class="q-my-sm">
-      <div v-if="works.length" class="row justify-between q-mb-sm">
+      <div v-if="works.length || hasActiveFilters" class="row items-center q-mb-sm">
         <!-- 排序选择框 -->
-        <div class="row">
+        <div class="col row items-center">
           <q-select dense rounded outlined behavior="menu" bg-color="white" transition-show="scale"
             transition-hide="scale" v-model="sortOption" :options="options" label="排序" class="q-mr-sm" />
           <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
             :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
         </div>
-        <!-- 分页控件上 -->
-        <div class="row justify-center gt-xs">
-          <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" :boundary-links="$q.screen.gt.sm" direction-links color="primary"
-            input />
+
+        <div class="col-auto row items-center justify-center gt-xs">
+          <q-checkbox dense v-model="filters.allAges" label="全年龄" color="primary" class="q-mr-md" />
+          <q-checkbox dense v-model="filters.subtitle" label="有字幕" color="primary" />
         </div>
-        <div class="row items-center q-gutter-x-sm">
+
+        <div class="col row items-center justify-end q-gutter-x-sm">
           <!-- 切换显示模式 -->
           <div class="col-auto">
             <q-btn-toggle dense rounded spread v-model="listMode" toggle-color="primary" color="white"
@@ -99,6 +100,23 @@
               ]" />
           </div>
         </div>
+
+      </div>
+
+      <div
+        v-if="works.length || hasActiveFilters"
+        class="row items-center justify-center lt-sm q-my-sm"
+      >
+        <q-checkbox dense v-model="filters.allAges" label="全年龄" color="primary" class="q-mr-md" />
+        <q-checkbox dense v-model="filters.subtitle" label="有字幕" color="primary" />
+      </div>
+
+      <div
+        v-if="works.length"
+        class="row justify-center gt-xs q-mb-sm"
+      >
+        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
+          input />
       </div>
 
       <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
@@ -108,6 +126,16 @@
       <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-md">
         <div :class="['col', columnClass]" v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
+        </div>
+      </div>
+
+      <div
+        v-if="!works.length && hasActiveFilters"
+        class="works-empty text-center text-grey q-my-lg"
+      >
+        没有符合当前筛选条件的作品
+        <div class="q-mt-sm">
+          <q-btn flat dense no-caps color="primary" label="清除筛选" @click="clearFilters" />
         </div>
       </div>
       <!-- 分页控件 -->
@@ -126,6 +154,77 @@ import NotifyMixin from '../mixins/Notification.js'
 import RecentList from 'components/RecentList'
 import { mapState } from 'vuex'
 
+const SORT_OPTIONS = [
+  {
+    label: '加入时间',
+    order: 'insert_time',
+    sort: 'desc'
+  },
+  {
+    label: '发布时间',
+    order: 'release',
+    sort: 'desc'
+  },
+  {
+    label: 'RJ号排序',
+    order: 'id',
+    sort: 'desc'
+  },
+  {
+    label: '评价排序',
+    order: 'rate_average_2dp',
+    sort: 'desc'
+  },
+  {
+    label: '销量排序',
+    order: 'dl_count',
+    sort: 'desc'
+  }
+]
+
+const DEFAULT_SORT_OPTION = SORT_OPTIONS[0]
+const DEFAULT_FILTERS = { allAges: false, subtitle: false }
+
+const readStoredSortOption = () => {
+  const stored = localStorage.getItem('sortOption')
+  if (!stored) return { ...DEFAULT_SORT_OPTION }
+
+  try {
+    const parsed = JSON.parse(stored)
+    if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_SORT_OPTION }
+
+    // 忽略不在当前排序白名单中的本地状态。
+    const option = SORT_OPTIONS.find(item => item.order === parsed.order)
+    if (!option) return { ...DEFAULT_SORT_OPTION }
+
+    return {
+      ...option,
+      sort: parsed.sort === 'asc' ? 'asc' : 'desc'
+    }
+  } catch {
+    localStorage.removeItem('sortOption')
+    return { ...DEFAULT_SORT_OPTION }
+  }
+}
+
+const readStoredFilters = () => {
+  const stored = localStorage.getItem('workFilters')
+  if (!stored) return { ...DEFAULT_FILTERS }
+
+  try {
+    const parsed = JSON.parse(stored)
+    if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_FILTERS }
+
+    return {
+      allAges: parsed.allAges === true,
+      subtitle: parsed.subtitle === true
+    }
+  } catch {
+    localStorage.removeItem('workFilters')
+    return { ...DEFAULT_FILTERS }
+  }
+}
+
 export default {
   name: 'Works',
 
@@ -138,22 +237,6 @@ export default {
   },
 
   data () {
-    const storedSort = localStorage.getItem("sortOption");
-    let sortOption = null;
-    if (storedSort) {
-      try {
-        sortOption = JSON.parse(storedSort);
-      } catch {
-        localStorage.removeItem('sortOption');
-      }
-    }
-    else {
-      sortOption = {
-        label: '加入时间',
-        order: 'insert_time',
-        sort: 'desc'
-      }
-    }
     return {
       listMode: 'detail',
       showLabel: true,
@@ -172,39 +255,10 @@ export default {
         pageSize: 12 // 每页数量
       },
       seed: 7, // random sort
-      sortOption: sortOption,
-      options: [
-        {
-          label: '加入时间',
-          order: 'insert_time',
-          sort: 'desc'
-        },
-        {
-          label: '发布时间',
-          order: 'release',
-          sort: 'desc'
-        },
-        {
-          label: 'RJ号排序',
-          order: 'id',
-          sort: 'desc'
-        },
-        {
-          label: 'R18排序',
-          order: 'nsfw',
-          sort: 'desc'
-        },
-        {
-          label: '评价排序',
-          order: 'rate_average_2dp',
-          sort: 'desc'
-        },
-        {
-          label: '销量排序',
-          order: 'dl_count',
-          sort: 'desc'
-        },
-      ]
+      sortOption: readStoredSortOption(),
+      options: SORT_OPTIONS,
+      filters: readStoredFilters(),
+      requestId: 0
     }
   },
 
@@ -273,6 +327,10 @@ export default {
     },
     direction () {
       return this.sortOption.sort === 'desc'
+    },
+
+    hasActiveFilters () {
+      return this.filters.allAges === true || this.filters.subtitle === true
     },
 
     // 详情面板打开后会顶开右侧内容，可用的宽度要减掉面板宽度（移动端面板是浮层，不占宽度）
@@ -344,6 +402,14 @@ export default {
       localStorage.sortOption = JSON.stringify(newSortOptionSetting);
       this.seed = Math.floor(Math.random() * 100);
       this.reset();
+    },
+
+    filters: {
+      deep: true,
+      handler (newFilters) {
+        localStorage.workFilters = JSON.stringify(newFilters);
+        this.reset();
+      }
     },
 
     showLabel (newLabelSetting) {
@@ -474,7 +540,13 @@ export default {
         sort: this.sortOption.sort === 'desc' ? 'asc' : 'desc'
       }
     },
+
+    clearFilters () {
+      this.filters = { ...DEFAULT_FILTERS }
+    },
+
     requestWorksQueue() {
+      const currentRequestId = ++this.requestId
       const params = {
         order: this.sortOption.order,
         sort: this.sortOption.sort,
@@ -482,22 +554,29 @@ export default {
         pageSize: this.pagination.pageSize, // 后端分页，每页多少条
         seed: this.seed
       };
+
+      if (this.filters.allAges === true) params.nsfw = false
+      if (this.filters.subtitle === true) params.subtitle = true
+
       return this.$axios.get(this.url, { params })
         .then((response) => {
-          const works = response.data.works;
-          this.works = works; // 直接覆盖，不再追加
-          this.pagination.totalCount = response.data.pagination.totalCount;
-          this.pagination.pageSize = response.data.pagination.pageSize;
-          this.pagination.totalPages = Math.ceil(this.pagination.totalCount / this.pagination.pageSize);
-          this.pagination.currentPage = response.data.pagination.currentPage;
+          if (currentRequestId !== this.requestId) return
+
+          const pagination = response.data.pagination
+          const totalCount = Number(pagination.totalCount) || 0
+          this.works = response.data.works; // 直接覆盖，不再追加
+          this.pagination.totalCount = totalCount;
+          this.pagination.pageSize = pagination.pageSize;
+          this.pagination.totalPages = Math.max(1, Math.ceil(totalCount / pagination.pageSize));
+          this.pagination.currentPage = pagination.currentPage;
         })
         .catch((error) => {
+          if (currentRequestId !== this.requestId) return
           this.handleRequestError(error);
         });
     },
 
     handlePageChange(page) {
-      console.log("当前页码:", page); // 确保页码有更新
       this.pagination.currentPage = page || 1;
       this.requestWorksQueue();
     },
@@ -563,8 +642,11 @@ export default {
 
     reset () {
       this.refreshPageTitle()
-      this.pagination.currentPage = 1
       this.pagination.pageSize = 12
+      if (this.pagination.currentPage !== 1) {
+        this.pagination.currentPage = 1
+        return
+      }
       this.requestWorksQueue()
     },
 
