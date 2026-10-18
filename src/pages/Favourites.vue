@@ -81,7 +81,7 @@ export default {
     else {
       sortOption = {
         label: '标记时间',
-        order: 'updated_at',
+        order: 'updatedAt',
         sort: 'desc'
       }
     }
@@ -102,12 +102,12 @@ export default {
       sortOptions: [
         {
           label: '标记时间',
-          order: 'updated_at',
+          order: 'updatedAt',
           sort: 'desc'
         },
         {
           label: '评价排序',
-          order: 'userRating',
+          order: 'rating',
           sort: 'desc'
         },
         {

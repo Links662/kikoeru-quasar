@@ -11,7 +11,7 @@
       </router-link>
     </q-item-section>
 
-    <q-item-section class="q-gutter-y-sm column items-start" top>
+    <q-item-section class="q-gutter-y-xs column items-start" top>
       <q-item-label lines="2" class="text-body2">
         <router-link :to="`/work/${metadata.id}`" class="col-auto text-black">
           {{ metadata.title }}

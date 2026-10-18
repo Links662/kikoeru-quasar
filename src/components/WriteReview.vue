@@ -101,7 +101,7 @@ export default {
           reviewText: this.reviewText
         })
         this.showSuccNotif(response.data.message)
-        this.$emit('saved', this.reviewText)
+        this.$emit('saved', response.data.record)
       } catch (error) {
         this.showErrNotif(getUserWorkRecordErrorMessage(error))
       } finally {

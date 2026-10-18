@@ -131,6 +131,7 @@ export default {
       try {
         const response = await this.recordService.updateRating(this.metadata.id, rating)
         this.showSuccNotif(response.data.message)
+        hydrateUserWorkRecord(this.metadata.id, response.data.record)
       } catch (error) {
         updateUserWorkRecord(this.metadata.id, { rating: previousRating })
         this.showErrNotif(getUserWorkRecordErrorMessage(error))

@@ -1,5 +1,5 @@
 <template>
-  <div class="user-work-record" :class="{ 'column items-start q-gutter-y-sm': variant === 'row' }">
+  <div class="user-work-record" :class="{ 'user-work-record--row': variant === 'row' }">
     <template v-if="variant === 'row'">
       <div class="row items-center q-gutter-x-xs">
         <q-rating
@@ -158,6 +158,7 @@ export default {
       try {
         const response = await this.recordService.updateRating(this.workId, rating)
         this.showSuccNotif(response.data.message)
+        hydrateUserWorkRecord(this.workId, response.data.record)
       } catch (error) {
         updateUserWorkRecord(this.workId, { rating: previousRating })
         this.showErrNotif(getUserWorkRecordErrorMessage(error))
@@ -173,6 +174,7 @@ export default {
       try {
         const response = await this.recordService.updateProgress(this.workId, progress)
         this.showSuccNotif(response.data.message)
+        hydrateUserWorkRecord(this.workId, response.data.record)
         this.$emit('progress-changed', progress)
       } catch (error) {
         updateUserWorkRecord(this.workId, { progress: previousProgress })
@@ -180,8 +182,8 @@ export default {
       }
     },
 
-    onNoteSaved (reviewText) {
-      updateUserWorkRecord(this.workId, { reviewText })
+    onNoteSaved (record) {
+      hydrateUserWorkRecord(this.workId, record)
       this.showReviewDialog = false
     },
 
@@ -192,3 +194,12 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.user-work-record--row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+</style>
