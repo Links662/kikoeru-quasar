@@ -27,6 +27,7 @@
         <span class="text-weight-medium text-h6 text-red">{{ metadata.price }} 日元</span>
         <span class="q-ml-sm">售出数: {{ metadata.dl_count }}</span>
         <span v-if="!metadata.nsfw" class="q-ml-sm all-ages-badge">全年龄</span>
+        <span v-if="metadata.subtitle === true" class="q-ml-sm subtitle-badge">有字幕</span>
       </div>
 
       <div class="q-mt-sm" v-if="showTags">
@@ -100,5 +101,10 @@ export default {
 .all-ages-badge {
   background: #e6f7d6;
   color: #56842a;
+}
+
+.subtitle-badge {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 </style>

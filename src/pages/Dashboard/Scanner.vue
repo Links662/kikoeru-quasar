@@ -22,6 +22,16 @@
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          color="indigo"
+          label="扫描字幕"
+          :disable="state === 'running' || !socketConnected"
+          @click="performSubtitleScan()"
+        />
+      </div>
+
+      <div class="col-xs-6 col-sm-4 row q-pa-sm">
+        <q-btn
+          class="col"
           color="primary"
           label="刷新作品信息"
           :disable="state === 'running' || !socketConnected"
@@ -262,6 +272,12 @@ export default {
       this.resetScanState()
       this.state = 'running'
       this.$socket.emit('PERFORM_UPDATE')
+    },
+
+    performSubtitleScan () {
+      this.resetScanState()
+      this.state = 'running'
+      this.$socket.emit('PERFORM_SUBTITLE_SCAN')
     },
 
     // 只维护封面：补缺失、重新生成过期缩略图、把本地生成的降级图换成 DLsite 原图
