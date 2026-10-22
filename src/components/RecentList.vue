@@ -29,7 +29,8 @@ export default {
   data () {
     return {
       recentworks: [],
-      pageTitle: 'Recent Track'
+      pageTitle: 'Recent Track',
+      requestId: 0
     }
   },
 
@@ -40,14 +41,54 @@ export default {
   activated() {
     this.requestRecentWorks()
   },
+
+  sockets: {
+    HISTORY_UPDATED (payload) {
+      this.applyHistoryUpdate(payload)
+    },
+
+    // 断线期间可能漏掉事件，重连后全量校准一次
+    connect () {
+      this.requestRecentWorks()
+    }
+  },
   
   methods: {
     async requestRecentWorks() {
+      const currentRequestId = ++this.requestId
       this.$axios.get('/api/history/recent')
         .then(res => {
-          this.recentworks = res.data
+          if (currentRequestId !== this.requestId) return
+          this.recentworks = Array.isArray(res.data) ? res.data : []
         })
         .catch(console.error)
+    },
+
+    applyHistoryUpdate (payload) {
+      const history = payload && payload.history
+      if (!history || history.work_id === undefined) return
+
+      const workId = Number(history.work_id)
+      const fileIndex = Number(history.file_index)
+      if (!Number.isFinite(workId) || !Number.isFinite(fileIndex)) return
+
+      const limit = Math.max(1, Number(payload.limit) || 20)
+      const updated = {
+        ...history,
+        work_id: workId,
+        file_index: fileIndex
+      }
+      const shouldHydrate = this.recentworks.length === 0
+
+      // 让仍在路上的 GET 结果失效，避免旧快照覆盖刚收到的实时数据
+      this.requestId += 1
+      this.recentworks = [
+        updated,
+        ...this.recentworks.filter(item => Number(item.work_id) !== workId)
+      ].slice(0, limit)
+
+      // 首次事件早于列表首屏请求返回时，补一次完整列表，避免只显示当前这一条
+      if (shouldHydrate) this.requestRecentWorks()
     },
 
     onHorizontalWheel(e) {

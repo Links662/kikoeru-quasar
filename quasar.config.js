@@ -26,6 +26,22 @@ module.exports = function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#property-framework
     framework: {
+      config: {
+        notify: {
+          timeout: 5000,
+          actions: [
+            {
+              icon: 'close',
+              color: 'white',
+              round: true,
+              dense: true,
+              size: 'sm',
+              'aria-label': '关闭通知'
+            }
+          ]
+        }
+      },
+
       iconSet: 'material-icons', // Quasar icon set
       lang: 'en-US', // Quasar language pack
 

@@ -240,6 +240,28 @@ export default {
     }
   },
 
+  created () {
+    // 主界面也会保持一条带当前账号身份的 socket 连接，用于接收历史记录等
+    // 只属于当前用户的实时事件。管理员进入 /admin 后沿用同一条连接。
+    const token = this.$q.localStorage.getItem('jwt-token') || ''
+    this.$socket.io.opts.query.auth_token = token
+
+    if (!this.$socket.connected) {
+      this.$socket.open()
+    }
+  },
+
+  sockets: {
+    // 服务端主动断开表示账号已经被禁用或删除，主界面也需要立即结束会话
+    disconnect (reason) {
+      if (reason !== 'io server disconnect') return
+
+      if (endSession(this)) {
+        this.showWarnNotif('当前账号已被禁用或删除，已退出登录')
+      }
+    }
+  },
+
   mounted () {
     this.initUser();
     this.readSharedConfig();

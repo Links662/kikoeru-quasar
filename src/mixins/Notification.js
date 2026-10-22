@@ -5,7 +5,7 @@ export default {
         message,
         color: 'positive',
         icon: 'done',
-        timeout: 500
+        timeout: 2000
       })
     },
 
@@ -14,6 +14,7 @@ export default {
         message,
         color: 'warning',
         icon: 'warning',
+        timeout: 5000
       })
     },
 
@@ -21,7 +22,8 @@ export default {
       this.$q.notify({
         message,
         color: 'negative',
-        icon: 'error'
+        icon: 'error',
+        timeout: 0
       })
     }
   }
