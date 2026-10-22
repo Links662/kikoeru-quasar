@@ -381,15 +381,15 @@ export default {
       const resultLogs = this.results.map(res => {
         const rjLabel = res.workId ? formatRJLabel(res.workId) : ''
         if (res.result === 'added') {
-          return { level: 'info', message: `[${rjLabel}] 添加成功! Added: ${res.count}` }
+          return { level: 'info', message: `[${rjLabel}] 添加成功：${res.count} 项` }
         } else if (res.result === 'repaired') {
-          return { level: 'info', message: `[${rjLabel}] 封面修复成功! Repaired: ${res.count}` }
+          return { level: 'info', message: `[${rjLabel}] 封面修复成功：${res.count} 项` }
         } else if (res.result === 'upgraded') {
-          return { level: 'info', message: `[${rjLabel}] 封面升级成功! Upgraded: ${res.count}` }
+          return { level: 'info', message: `[${rjLabel}] 封面升级成功：${res.count} 项` }
         } else if (res.result === 'updated') {
-          return { level: 'info', message: `[${rjLabel}] 更新成功! Updated: ${res.count}` }
+          return { level: 'info', message: `[${rjLabel}] 更新成功：${res.count} 项` }
         } else {
-          return { level: 'error', message: `[${rjLabel}] 处理失败! Failed: ${res.count}` }
+          return { level: 'error', message: `[${rjLabel}] 处理失败：${res.count} 项` }
         }
       })
 

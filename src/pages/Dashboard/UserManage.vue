@@ -37,7 +37,8 @@
         </q-toolbar>
 
         <div class="q-pa-sm">
-          <q-select dense outlined label="用户组" v-model="newuser.group" :options="groups" class="q-mb-md" />
+          <q-select dense outlined label="用户组" v-model="newuser.group" :options="groups"
+            emit-value map-options class="q-mb-md" />
 
           <q-input outlined dense
             v-model="newuser.name" label="用户名"
@@ -119,6 +120,11 @@
 import NotifyMixin from '../../mixins/Notification.js'
 import { endSession } from '../../services/session'
 
+const USER_GROUP_LABELS = {
+  user: '普通用户',
+  administrator: '管理员'
+}
+
 export default {
   mixins: [NotifyMixin],
 
@@ -127,7 +133,15 @@ export default {
       selected: [],
       columns: [
         { name: 'desc', required: true, label: '用户名', align: 'left', field: 'name', sortable: true },
-        { name: 'calories', required: true, label: '用户组', align: 'center', field: 'group', sortable: true },
+        {
+          name: 'calories',
+          required: true,
+          label: '用户组',
+          align: 'center',
+          field: 'group',
+          format: value => USER_GROUP_LABELS[value] || value,
+          sortable: true
+        },
         { name: 'status', required: true, label: '账户状态', align: 'center', field: 'disabled', sortable: true },
       ],
       users: [],
@@ -139,7 +153,7 @@ export default {
         password: '',
         group: 'user'
       },
-      groups: ['user', 'administrator'],
+      groups: Object.entries(USER_GROUP_LABELS).map(([value, label]) => ({ label, value })),
       loadingAddNewUser: false,
 
       userName: '',
@@ -152,7 +166,9 @@ export default {
 
   methods: {
     getSelectedString () {
-      return this.selected.length === 0 ? '' : `${this.selected.length} record${this.selected.length > 1 ? 's' : ''} selected of ${this.users.length}`
+      return this.selected.length === 0
+        ? ''
+        : `已选中 ${this.selected.length} 个用户，共 ${this.users.length} 个`
     },
 
     // 服务端返回的是 SQLite 的 0 / 1，这里做一次归一化，避免字符串 '0' 被判成真
@@ -172,10 +188,10 @@ export default {
         password: this.newuser.password,
         group: this.newuser.group
       })
-        .then((response) => {
+        .then(() => {
           this.users.push(this.newuser)
           this.loadingAddNewUser = false
-          this.showSuccNotif(response.data.message)
+          this.showSuccNotif('用户已添加')
           this.requestUsers()
         })
         .catch((error) => {
@@ -206,14 +222,14 @@ export default {
       this.$axios.delete('/api/credentials/user', {
         data: { users: deletable },
       })
-        .then((response) => {
+        .then(() => {
           deletable.forEach(selectedUser => {
             const index = this.users.findIndex(user => user.name === selectedUser.name)
             this.users.splice(index, 1)
           })
           this.selected = []
           this.loadingDeleteUsers = false
-          this.showSuccNotif(response.data.message)
+          this.showSuccNotif(`已删除 ${deletable.length} 个用户`)
           this.requestUsers()
         })
         .catch((error) => {
@@ -239,7 +255,7 @@ export default {
       })
         .then((response) => {
           this.loadingUpdateAdminPassword = false
-          this.showSuccNotif(response.data.message)
+          this.showSuccNotif('密码已修改')
 
           // 只有改自己的密码才需要重新登录；
           // 管理员改别人的密码不该把自己踢下线（self 由服务端判定）
@@ -283,7 +299,7 @@ export default {
       })
         .then((response) => {
           this.loadingStatusUser = ''
-          this.showSuccNotif(response.data.message)
+          this.showSuccNotif(`已${enabled ? '启用' : '禁用'}用户 ${user.name}`)
 
           // 刚把自己禁用了：服务端已经不再接受这个会话，当场退登
           // （这时也不能再拉用户列表，那个请求必然 401）

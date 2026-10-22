@@ -295,7 +295,7 @@
         <q-item>
           <q-item-section>
             <q-item-label>屏蔽远程连接</q-item-label>
-            <q-item-label caption>只允许本地访问，默认为false。更改此设置需要重启程序</q-item-label>
+            <q-item-label caption>只允许本地访问，默认关闭。更改此设置需要重启程序</q-item-label>
           </q-item-section>
 
           <q-item-section avatar>
@@ -434,9 +434,9 @@ export default {
       this.$axios.put('/api/config/admin', {
         config: this.config
       })
-        .then((response) => {
+        .then(() => {
           this.loading = false
-          this.showSuccNotif(response.data.message)
+          this.showSuccNotif('设置已保存')
         })
         .catch((error) => {
           this.loading = false

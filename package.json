@@ -20,7 +20,7 @@
     "kikoeru"
   ],
   "scripts": {
-    "test": "node_modules/.bin/eslint .",
+    "test": "eslint .",
     "dev": "quasar dev",
     "build": "quasar build && quasar build -m pwa"
   },

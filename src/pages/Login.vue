@@ -2,7 +2,7 @@
   <q-form @submit="onSubmit" class="absolute-center q-gutter-md login-form">
     <q-input filled v-model="name" label="用户名" class="fit"
       lazy-rules
-      :rules="[ val => val.length >= 5 || '密码长度至少为 5' ]"
+      :rules="[ val => val.length >= 5 || '用户名长度至少为 5' ]"
     />
     
     <q-input filled type="password" v-model="password" label="密码"  class="fit"
@@ -38,7 +38,7 @@ export default {
           try {
             this.$q.localStorage.set('jwt-token', res.data.token)
             setAxiosHeaders(res.data.token)
-            this.showSuccNotif('登录成功.')
+            this.showSuccNotif('登录成功')
             this.$router.push('/')
           } catch (error) {
             // 由于Web Storage API错误，

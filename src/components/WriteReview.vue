@@ -100,7 +100,7 @@ export default {
           ...this.record,
           reviewText: this.reviewText
         })
-        this.showSuccNotif(response.data.message)
+        this.showSuccNotif('短评已保存')
         this.$emit('saved', response.data.record)
       } catch (error) {
         this.showErrNotif(getUserWorkRecordErrorMessage(error))
@@ -114,8 +114,8 @@ export default {
       this.deleting = true
 
       try {
-        const response = await this.recordService.remove(this.workid)
-        this.showSuccNotif(response.data.message)
+        await this.recordService.remove(this.workid)
+        this.showSuccNotif('记录已清除')
         this.deleteConfirm = false
         this.$emit('deleted')
       } catch (error) {

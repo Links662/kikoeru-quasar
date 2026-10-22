@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-px-md q-pt-md q-pb-md">
     <div class="text-h5 text-weight-regular q-mb-sm">
-      All {{ restrict }}
+      {{ pageTitle }}
     </div>
 
     <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered wrap-cells
@@ -14,7 +14,7 @@
         <div class="row items-center full-width">
           <div class="col-12 col-sm-auto">
             <q-input dense rounded outlined v-model="keyword" class="list-search"
-              :placeholder="`Search for a ${restrict}...`">
+              :placeholder="searchPlaceholder">
               <template v-slot:append>
                 <q-icon v-if="keyword === ''" name="search" />
                 <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
@@ -139,6 +139,24 @@ export default {
   },
 
   computed: {
+    pageTitle () {
+      const titles = {
+        circles: '全部社团',
+        tags: '全部标签',
+        vas: '全部声优'
+      }
+      return titles[this.restrict] || '列表'
+    },
+
+    searchPlaceholder () {
+      const placeholders = {
+        circles: '搜索社团名称…',
+        tags: '搜索标签名称…',
+        vas: '搜索声优名称…'
+      }
+      return placeholders[this.restrict] || '搜索名称…'
+    },
+
     url () {
       return `/api/${this.restrict}/`
     },

@@ -8,13 +8,13 @@
     </p>
     
     <p class="text-faded">
-      Sorry, nothing here...<strong>(404)</strong>
+      抱歉，页面不存在。<strong>(404)</strong>
     </p>
     <q-btn
       color="secondary"
       class="error-btn"
       to="/"
-      label="Go back"
+      label="返回首页"
     />
   </div>
 </template>

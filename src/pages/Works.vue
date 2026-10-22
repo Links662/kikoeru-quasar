@@ -606,13 +606,13 @@ export default {
 
             switch (restrict) {
               case 'tags':
-                pageTitle = 'Works of tag: '
+                pageTitle = '标签作品：'
                 break
               case 'vas':
-                pageTitle = 'Works of vas: '
+                pageTitle = '声优作品：'
                 break
               case 'circles':
-                pageTitle = 'Works of circles: '
+                pageTitle = '社团作品：'
                 break
             }
             pageTitle += name || ''
@@ -630,9 +630,9 @@ export default {
             }
           })
       } else if (this.$route.query.keyword) {
-        this.pageTitle = `Search by ${this.$route.query.keyword}`
+        this.pageTitle = `搜索：${this.$route.query.keyword}`
       } else {
-        this.pageTitle = 'All works'
+        this.pageTitle = '全部作品'
       }
     },
 

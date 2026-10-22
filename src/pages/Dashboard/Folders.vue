@@ -119,8 +119,8 @@ export default {
       this.$axios.put('/api/config/admin', {
         config: this.config
       })
-        .then((response) => {
-          this.showSuccNotif(response.data.message)
+        .then(() => {
+          this.showSuccNotif('设置已保存')
           this.loading = false
         })
         .catch((error) => {

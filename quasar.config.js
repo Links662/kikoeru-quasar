@@ -43,7 +43,7 @@ module.exports = function (/* ctx */) {
       },
 
       iconSet: 'material-icons', // Quasar icon set
-      lang: 'en-US', // Quasar language pack
+      lang: 'zh-CN', // Quasar language pack
 
       // Possible values for "all":
       // * 'auto' - Auto-import needed Quasar components & directives
@@ -105,7 +105,7 @@ module.exports = function (/* ctx */) {
     // Exposed to /src/index.template.html as template parameters.
     htmlVariables: {
       productName: 'Kikoeru',
-      productDescription: 'A self-hosted web media player for listening to your DLsite voice works.'
+      productDescription: '用于收听 DLsite 音声作品的自托管 Web 媒体播放器。'
     },
 
     // https://v2.quasar.dev/quasar-cli-webpack/developing-ssr/configuring-ssr
@@ -132,7 +132,7 @@ module.exports = function (/* ctx */) {
       manifest: {
         name: 'Kikoeru',
         short_name: 'Kikoeru',
-        description: 'A self-hosted web media player for listening to your DLsite voice works.',
+        description: '用于收听 DLsite 音声作品的自托管 Web 媒体播放器。',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#ffffff',

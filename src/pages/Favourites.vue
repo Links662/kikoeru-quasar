@@ -86,7 +86,7 @@ export default {
       }
     }
     return {
-      pageTitle: 'Progress',
+      pageTitle: '收听进度',
       progressFilter: 'marked',
       progressOptions: [
         { label: '想听', value: 'marked' },

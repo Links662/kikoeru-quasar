@@ -157,7 +157,7 @@ export default {
 
       try {
         const response = await this.recordService.updateRating(this.workId, rating)
-        this.showSuccNotif(response.data.message)
+        this.showSuccNotif('评分已保存')
         hydrateUserWorkRecord(this.workId, response.data.record)
       } catch (error) {
         updateUserWorkRecord(this.workId, { rating: previousRating })
@@ -173,7 +173,7 @@ export default {
 
       try {
         const response = await this.recordService.updateProgress(this.workId, progress)
-        this.showSuccNotif(response.data.message)
+        this.showSuccNotif('进度已更新')
         hydrateUserWorkRecord(this.workId, response.data.record)
         this.$emit('progress-changed', progress)
       } catch (error) {

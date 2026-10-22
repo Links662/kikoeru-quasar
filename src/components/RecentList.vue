@@ -29,7 +29,7 @@ export default {
   data () {
     return {
       recentworks: [],
-      pageTitle: 'Recent Track',
+      pageTitle: '最近播放',
       requestId: 0
     }
   },
