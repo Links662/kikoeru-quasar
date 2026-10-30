@@ -84,6 +84,7 @@
 <script>
 import NotifyMixin from '../mixins/Notification.js'
 import { formatRJLabel } from '../utils/rjCode'
+import { workConditionLink } from '../utils/workQuery'
 
 export default {
   name: 'List',
@@ -91,7 +92,7 @@ export default {
   mixins: [NotifyMixin],
 
   props: {
-    restrict: {
+    conditionType: {
       type: String
     }
   },
@@ -141,37 +142,28 @@ export default {
   computed: {
     pageTitle () {
       const titles = {
-        circles: '全部社团',
-        tags: '全部标签',
-        vas: '全部声优'
+        circle: '全部社团',
+        tag: '全部标签',
+        va: '全部声优'
       }
-      return titles[this.restrict] || '列表'
+      return titles[this.conditionType] || '列表'
     },
 
     searchPlaceholder () {
       const placeholders = {
-        circles: '搜索社团名称…',
-        tags: '搜索标签名称…',
-        vas: '搜索声优名称…'
+        circle: '搜索社团名称…',
+        tag: '搜索标签名称…',
+        va: '搜索声优名称…'
       }
-      return placeholders[this.restrict] || '搜索名称…'
+      return placeholders[this.conditionType] || '搜索名称…'
+    },
+
+    apiField () {
+      return `${this.conditionType}s`
     },
 
     url () {
-      return `/api/${this.restrict}/`
-    },
-
-    queryField () {
-      switch (this.restrict) {
-        case 'circles':
-          return 'circleId'
-        case 'tags':
-          return 'tagId'
-        case 'vas':
-          return 'vaId'
-        default:
-          return 'circleId'
-      }
+      return `/api/${this.apiField}/`
     },
 
     filteredItems () {
@@ -241,7 +233,7 @@ export default {
 
     // 表格行与名称链接共用，保留可中键新开标签页的链接
     worksLink (item) {
-      return { path: '/works', query: { [this.queryField]: item.id } }
+      return workConditionLink(this.$route, this.conditionType, item.id)
     },
 
     openWorks (evt, row) {
@@ -274,7 +266,7 @@ export default {
       const favourite = previous ? 0 : 1
       item.favourite = favourite
 
-      this.$axios.put(`/api/${this.restrict}/${item.id}/favourite`, { favourite: !!favourite })
+      this.$axios.put(`/api/${this.apiField}/${item.id}/favourite`, { favourite: !!favourite })
         .then(() => {
           this.showSuccNotif(favourite ? `${item.name} 已收藏` : `${item.name} 已取消收藏`)
         })

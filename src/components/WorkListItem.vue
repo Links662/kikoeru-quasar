@@ -15,7 +15,11 @@
 
       <q-item-label>
         <div class="row q-gutter-x-sm q-gutter-y-xs">
-          <router-link :to="`/works?circleId=${metadata.circle.id}`" class="col-auto text-grey">
+          <router-link
+            :to="workConditionLink($route, 'circle', metadata.circle.id)"
+            class="col-auto text-grey"
+            @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
+          >
             {{ metadata.circle.name }}
           </router-link>
 
@@ -23,9 +27,10 @@
 
           <router-link
             v-for="(va, index) in metadata.vas"
-            :to="`/works?vaId=${va.id}`"
+            :to="workConditionLink($route, 'va', va.id)"
             :key=index
             class="col-auto text-primary"
+            @click="handleWorkConditionClick($event, $route, 'va', va.id)"
           >
             {{ va.name }}
           </router-link>
@@ -36,9 +41,10 @@
         <div class="row q-gutter-x-sm q-gutter-y-xs">
           <router-link
             v-for="(tag, index) in metadata.tags"
-            :to="`/works?tagId=${tag.id}`"
+            :to="workConditionLink($route, 'tag', tag.id)"
             :key=index
             class="col-auto text-grey"
+            @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
           >
             {{ tag.name }}
           </router-link>
@@ -49,9 +55,12 @@
 </template>
 
 <script>
+import WorkConditionLinks from '../mixins/WorkConditionLinks'
 
 export default {
   name: 'WorkListItem',
+
+  mixins: [WorkConditionLinks],
 
   props: {
     metadata: {

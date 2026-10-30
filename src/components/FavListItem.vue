@@ -19,7 +19,11 @@
       </q-item-label>
 
       <div class="row q-gutter-x-sm col-auto">
-        <router-link :to="`/works?circleId=${metadata.circle.id}`" class="col-auto text-grey">
+        <router-link
+          :to="workConditionLink($route, 'circle', metadata.circle.id)"
+          class="col-auto text-grey"
+          @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
+        >
           {{ metadata.circle.name }}
         </router-link>
 
@@ -30,8 +34,9 @@
         <router-link
           v-for="va in metadata.vas"
           :key="va.id"
-          :to="`/works?vaId=${va.id}`"
+          :to="workConditionLink($route, 'va', va.id)"
           class="col-auto text-primary"
+          @click="handleWorkConditionClick($event, $route, 'va', va.id)"
         >
           {{ va.name }}
         </router-link>
@@ -50,9 +55,12 @@
 
 <script>
 import UserWorkRecord from './UserWorkRecord'
+import WorkConditionLinks from '../mixins/WorkConditionLinks'
 
 export default {
   name: 'FavListItem',
+
+  mixins: [WorkConditionLinks],
 
   components: {
     UserWorkRecord

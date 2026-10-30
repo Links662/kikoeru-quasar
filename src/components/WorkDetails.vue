@@ -9,7 +9,11 @@
         </div>
 
         <div class="q-mt-xs text-subtitle1 text-weight-regular">
-          <router-link :to="`/works?circleId=${metadata.circle.id}`" class="text-grey">
+          <router-link
+            :to="workConditionLink($route, 'circle', metadata.circle.id)"
+            class="text-grey"
+            @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
+          >
             {{ metadata.circle.name }}
           </router-link>
         </div>
@@ -46,7 +50,12 @@
       </div>
 
       <div class="q-mt-sm" v-if="showTags">
-        <router-link v-for="tag in metadata.tags" :to="`/works?tagId=${tag.id}`" :key="tag.id">
+        <router-link
+          v-for="tag in metadata.tags"
+          :to="workConditionLink($route, 'tag', tag.id)"
+          :key="tag.id"
+          @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
+        >
           <q-chip size="md" class="shadow-4">
             {{ tag.name }}
           </q-chip>
@@ -54,7 +63,12 @@
       </div>
 
       <div class="q-mt-sm" v-if="metadata.vas && metadata.vas.length">
-        <router-link v-for="va in metadata.vas" :to="`/works?vaId=${va.id}`" :key="va.id">
+        <router-link
+          v-for="va in metadata.vas"
+          :to="workConditionLink($route, 'va', va.id)"
+          :key="va.id"
+          @click="handleWorkConditionClick($event, $route, 'va', va.id)"
+        >
           <q-chip square size="md" class="shadow-4" color="teal" text-color="white">
             {{ va.name }}
           </q-chip>
@@ -76,9 +90,12 @@ import CoverSFW from 'components/CoverSFW'
 import UserWorkRecord from './UserWorkRecord'
 import WorkRating from './WorkRating'
 import { formatDlsiteUrl } from '../utils/rjCode'
+import WorkConditionLinks from '../mixins/WorkConditionLinks'
 
 export default {
   name: 'WorkDetails',
+
+  mixins: [WorkConditionLinks],
 
   components: {
     CoverSFW,

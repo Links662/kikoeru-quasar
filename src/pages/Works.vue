@@ -57,6 +57,35 @@
       </div>
     </div>
 
+    <div v-if="conditionChips.length" class="work-condition-bar q-mb-sm">
+      <q-chip
+        v-for="condition in conditionChips"
+        :key="condition.key"
+        removable
+        dense
+        square
+        color="primary"
+        text-color="white"
+        :icon="condition.icon"
+        @remove="removeCondition(condition)"
+      >
+        {{ condition.label }}
+      </q-chip>
+      <div class="condition-clear-actions">
+        <q-btn
+          outline
+          rounded
+          dense
+          no-caps
+          color="grey-8"
+          icon="filter_alt_off"
+          label="清除全部"
+          class="condition-clear-btn"
+          @click="clearConditions"
+        />
+      </div>
+    </div>
+
     <div class="q-my-sm">
       <div v-if="works.length || hasActiveFilters" class="row items-center q-mb-sm">
         <!-- 排序选择框 -->
@@ -152,6 +181,14 @@ import WorkListItem from 'components/WorkListItem'
 import NotifyMixin from '../mixins/Notification.js'
 import RecentList from 'components/RecentList'
 import { mapState } from 'vuex'
+import {
+  clearWorkConditions,
+  getWorkConditionParams,
+  hasWorkConditions,
+  readWorkConditions,
+  removeWorkCondition,
+  setWorkKeywordResult
+} from '../utils/workQuery'
 
 const SORT_OPTIONS = [
   {
@@ -256,7 +293,13 @@ export default {
       sortOption: readStoredSortOption(),
       options: SORT_OPTIONS,
       filters: readStoredFilters(),
-      requestId: 0
+      conditionLabels: {
+        circle: {},
+        tag: {},
+        va: {}
+      },
+      requestId: 0,
+      conditionLabelRequestId: 0
     }
   },
 
@@ -307,28 +350,55 @@ export default {
       panelWidth: 'panelWidth'
     }),
 
-    url () {
-      const query = this.$route.query
-      let result = ""
-      if (query.circleId) {
-        result = `/api/circles/${this.$route.query.circleId}/works`
-      } else if (query.tagId) {
-        result = `/api/tags/${this.$route.query.tagId}/works`
-      } else if (query.vaId) {
-        result = `/api/vas/${this.$route.query.vaId}/works`
-      } else if (query.keyword) {
-        result = `/api/search/${query.keyword}`
-      } else {
-        result = '/api/works'
+    workConditions () {
+      return readWorkConditions(this.$route.query)
+    },
+
+    conditionRequestKey () {
+      return JSON.stringify(getWorkConditionParams(this.workConditions))
+    },
+
+    conditionChips () {
+      const conditions = this.workConditions
+      const typeConfig = [
+        { type: 'circle', ids: conditions.circleIds, icon: 'group' },
+        { type: 'tag', ids: conditions.tagIds, icon: 'label' },
+        { type: 'va', ids: conditions.vaIds, icon: 'record_voice_over' }
+      ]
+      const chips = []
+
+      typeConfig.forEach(({ type, ids, icon }) => {
+        ids.forEach(id => {
+          chips.push({
+            type,
+            id,
+            key: `${type}:${id}`,
+            icon,
+            label: this.conditionLabels[type][id] || `#${id}`
+          })
+        })
+      })
+
+      if (conditions.keyword) {
+        chips.push({
+          type: 'keyword',
+          id: conditions.keyword,
+          key: 'keyword',
+          icon: 'search',
+          label: conditions.keyword
+        })
       }
-      return result
+
+      return chips
     },
     direction () {
       return this.sortOption.sort === 'desc'
     },
 
     hasActiveFilters () {
-      return this.filters.allAges === true || this.filters.subtitle === true
+      return hasWorkConditions(this.workConditions) ||
+        this.filters.allAges === true ||
+        this.filters.subtitle === true
     },
 
     // 详情面板打开后会顶开右侧内容，可用的宽度要减掉面板宽度（移动端面板是浮层，不占宽度）
@@ -385,7 +455,7 @@ export default {
       this.focusSearchIfRequested(value)
     },
 
-    url: {
+    conditionRequestKey: {
       immediate: true,
       handler() {
         this.reset();
@@ -438,10 +508,16 @@ export default {
       const current = this.$route.query.keyword || ''
       if (keyword === current) return
 
-      // 搜索接口只认 keyword，切到搜索时把 circleId / tagId / vaId 这些过滤条件丢掉
+      const result = setWorkKeywordResult(this.$route.query, keyword)
+      if (!result.allowed) {
+        this.keyword = current
+        this.showWarnNotif(result.message)
+        return
+      }
+
       this.$router.replace({
         path: '/works',
-        query: keyword === '' ? {} : { keyword }
+        query: result.query
       }).catch(() => {})
     },
 
@@ -539,6 +615,24 @@ export default {
 
     clearFilters () {
       this.filters = { ...DEFAULT_FILTERS }
+      this.$router.push({
+        path: '/works',
+        query: clearWorkConditions(this.$route.query)
+      }).catch(() => {})
+    },
+
+    removeCondition (condition) {
+      this.$router.push({
+        path: '/works',
+        query: removeWorkCondition(this.$route.query, condition.type, condition.id)
+      }).catch(() => {})
+    },
+
+    clearConditions () {
+      this.$router.push({
+        path: '/works',
+        query: clearWorkConditions(this.$route.query)
+      }).catch(() => {})
     },
 
     requestWorksQueue() {
@@ -554,7 +648,9 @@ export default {
       if (this.filters.allAges === true) params.nsfw = false
       if (this.filters.subtitle === true) params.subtitle = true
 
-      return this.$axios.get(this.url, { params })
+      Object.assign(params, getWorkConditionParams(this.workConditions))
+
+      return this.$axios.get('/api/works', { params })
         .then((response) => {
           if (currentRequestId !== this.requestId) return
 
@@ -586,58 +682,47 @@ export default {
       }
     },
     refreshPageTitle () {
-      if (this.$route.query.circleId || this.$route.query.tagId || this.$route.query.vaId) {
-        let url = '', restrict = ''
-        if (this.$route.query.circleId) {
-          restrict = 'circles'
-          url = `/api/${restrict}/${this.$route.query.circleId}`
-        } else if (this.$route.query.tagId) {
-          restrict = 'tags'
-          url = `/api/${restrict}/${this.$route.query.tagId}`
-        } else {
-          restrict = 'vas'
-          url = `/api/${restrict}/${this.$route.query.vaId}`
-        }
+      this.pageTitle = hasWorkConditions(this.workConditions) ? '筛选作品' : '全部作品'
+    },
 
-        this.$axios.get(url)
-          .then((response) => {
-            const name = response.data.name
-            let pageTitle
+    refreshConditionLabels () {
+      const conditions = this.workConditions
+      const currentRequestId = ++this.conditionLabelRequestId
+      const hasEntityConditions = conditions.circleIds.length ||
+        conditions.tagIds.length ||
+        conditions.vaIds.length
 
-            switch (restrict) {
-              case 'tags':
-                pageTitle = '标签作品：'
-                break
-              case 'vas':
-                pageTitle = '声优作品：'
-                break
-              case 'circles':
-                pageTitle = '社团作品：'
-                break
-            }
-            pageTitle += name || ''
-
-            this.pageTitle = pageTitle
-          })
-          .catch((error) => {
-            if (error.response) {
-              // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-              if (error.response.status !== 401) {
-                this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-              }
-            } else {
-              this.showErrNotif(error.message || error)
-            }
-          })
-      } else if (this.$route.query.keyword) {
-        this.pageTitle = `搜索：${this.$route.query.keyword}`
-      } else {
-        this.pageTitle = '全部作品'
+      if (!hasEntityConditions) {
+        this.conditionLabels = { circle: {}, tag: {}, va: {} }
+        return
       }
+
+      this.$axios.get('/api/work-filter-labels', {
+        params: getWorkConditionParams(conditions)
+      })
+        .then(response => {
+          if (currentRequestId !== this.conditionLabelRequestId) return
+
+          const toLabelMap = items => items.reduce((result, item) => {
+            result[String(item.id)] = item.name
+            return result
+          }, {})
+
+          this.conditionLabels = {
+            circle: toLabelMap(response.data.circles || []),
+            tag: toLabelMap(response.data.tags || []),
+            va: toLabelMap(response.data.vas || [])
+          }
+        })
+        .catch(error => {
+          if (currentRequestId !== this.conditionLabelRequestId) return
+          this.handleRequestError(error)
+        })
     },
 
     reset () {
       this.refreshPageTitle()
+      this.refreshConditionLabels()
       this.pagination.pageSize = 12
       if (this.pagination.currentPage !== 1) {
         this.pagination.currentPage = 1
@@ -683,6 +768,40 @@ export default {
 .works-search-wrap {
   width: 260px;
   min-width: 180px;
+}
+
+.work-condition-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.work-condition-bar :deep(.q-chip) {
+  max-width: 100%;
+}
+
+.work-condition-bar :deep(.q-chip__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.condition-clear-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.condition-clear-btn:hover {
+  color: $primary !important;
+}
+
+.condition-clear-btn {
+  min-height: 21px;
+  padding: 0 8px;
+  font-size: 13px !important;
 }
 
 // 窄屏的搜索条：天然位置就在导航栏下沿，收起时向上缩到蓝色导航栏背后、

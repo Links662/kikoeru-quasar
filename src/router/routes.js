@@ -51,17 +51,17 @@ const routes = [
       },
       {
         path: 'circles',
-        props: { restrict: "circles" },
+        props: { conditionType: 'circle' },
         component: List
       },
       {
         path: 'tags',
-        props: { restrict: "tags" },
+        props: { conditionType: 'tag' },
         component: List
       },
       {
         path: 'vas',
-        props: { restrict: "vas" },
+        props: { conditionType: 'va' },
         component: List
       },
       {

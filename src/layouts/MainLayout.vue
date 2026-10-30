@@ -560,7 +560,10 @@ export default {
       if (document.querySelector('.q-dialog') !== null) return
 
       event.preventDefault()
-      this.$router.push({ path: '/works', query: { focusSearch: '1' } }).catch(() => {})
+      const query = this.$route.name === 'works'
+        ? { ...this.$route.query, focusSearch: '1' }
+        : { focusSearch: '1' }
+      this.$router.push({ path: '/works', query }).catch(() => {})
     },
 
     initUser () {
