@@ -38,6 +38,7 @@
 import { copyToClipboard } from 'quasar'
 import NotifyMixin from '../mixins/Notification.js'
 import { formatRJLabel } from '../utils/rjCode'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'CoverSFW',
@@ -70,7 +71,7 @@ export default {
   computed: {
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.workid ? `/api/cover/${this.workid}?token=${token}` : ""
+      return buildCoverUrl(this.workid, token)
     },
 
     // 角标上显示的和复制出去的是同一份文本，别在两处各拼一次

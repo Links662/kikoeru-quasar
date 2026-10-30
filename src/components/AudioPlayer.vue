@@ -139,6 +139,7 @@
 
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 // 当前播放列表每页固定显示的行数
 const QUEUE_PAGE_SIZE = 4
@@ -245,7 +246,7 @@ export default {
     coverUrl() {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
-      return id ? `/api/cover/${id}?token=${token}` : ""
+      return buildCoverUrl(id, token)
     },
 
     // 进度条上限：duration 未就绪时给一个安全值，避免 q-slider 的 min 等于 max
@@ -264,7 +265,7 @@ export default {
     thumbCoverUrl() {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
-      return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
+      return buildCoverUrl(id, token, 'sam')
     },
 
     volume: {

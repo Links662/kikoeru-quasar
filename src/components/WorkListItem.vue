@@ -56,6 +56,7 @@
 
 <script>
 import WorkConditionLinks from '../mixins/WorkConditionLinks'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'WorkListItem',
@@ -78,7 +79,7 @@ export default {
     // 配合上面的 contain，正方形封面正好铺满、其它比例上下留白，不会裁掉两侧
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.metadata.id ? `/api/cover/${this.metadata.id}?type=sam&token=${token}` : ""
+      return buildCoverUrl(this.metadata.id, token, 'sam')
     },
   }
 }

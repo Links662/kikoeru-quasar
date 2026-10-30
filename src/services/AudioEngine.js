@@ -1,6 +1,7 @@
 import axios from 'axios'
 import Lyric from 'lrc-file-parser'
 import { LocalStorage, SessionStorage } from 'quasar'
+import { buildCoverUrl, buildMediaUrl } from '../utils/mediaUrl'
 
 // 播放进度写库间隔（秒）
 const HISTORY_UPDATE_INTERVAL = 30
@@ -84,7 +85,7 @@ export default class AudioEngine {
 
   get coverUrl () {
     const id = this.currentWork.id
-    return id ? `/api/cover/${id}?token=${this.token}` : ''
+    return buildCoverUrl(id, this.token)
   }
 
   // NSFW 模式（MainLayout 里切换、CSS 里生效的同一个本地偏好）
@@ -228,7 +229,7 @@ export default class AudioEngine {
     const url = this.currentTrack.mediaStreamUrl
     if (!url) return ''
 
-    const withToken = `${url}?token=${this.token}`
+    const withToken = buildMediaUrl(url, this.token)
 
     try {
       // currentSrc 始终是绝对 URL，两者必须用同一种形式比较
@@ -545,14 +546,14 @@ export default class AudioEngine {
     this.commit('SET_CURRENT_LYRIC', '')
     this.lrc.setLyric('')
 
-    const url = `/api/media/check-lrc/${hash}?token=${this.token}`
+    const url = buildMediaUrl(`/api/media/check-lrc/${hash}`, this.token)
 
     axios.get(url)
       .then((response) => {
         if (response.data.result) {
           // 有 lrc 歌词文件
           this.commit('SET_LYRIC_AVAILABLE', true)
-          const lrcUrl = `/api/media/stream/${response.data.hash}?token=${this.token}`
+          const lrcUrl = buildMediaUrl(`/api/media/stream/${response.data.hash}`, this.token)
           axios.get(lrcUrl)
             .then(res => {
               this.lrc.setLyric(res.data)

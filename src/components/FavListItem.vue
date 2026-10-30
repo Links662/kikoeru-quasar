@@ -56,6 +56,7 @@
 <script>
 import UserWorkRecord from './UserWorkRecord'
 import WorkConditionLinks from '../mixins/WorkConditionLinks'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'FavListItem',
@@ -80,7 +81,7 @@ export default {
   computed: {
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.workid ? `/api/cover/${this.workid}?type=240x240&token=${token}` : ''
+      return buildCoverUrl(this.workid, token, '240x240')
     }
   }
 }

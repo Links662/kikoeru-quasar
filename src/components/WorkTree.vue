@@ -43,6 +43,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import { buildMediaUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'WorkTree',
@@ -155,7 +156,10 @@ export default {
     download (file) {
       const token = this.$q.localStorage.getItem('jwt-token') || '';
       // Fallback to old API for an old backend
-      const url = file.mediaDownloadUrl ? `${file.mediaDownloadUrl}?token=${token}` : `/api/media/download/${file.hash}?token=${token}`;
+      const url = buildMediaUrl(
+        file.mediaDownloadUrl || `/api/media/download/${file.hash}`,
+        token
+      );
       const link = document.createElement('a');
       link.href = url;
       link.target="_blank";
@@ -165,7 +169,10 @@ export default {
     openFile (file) {
       const token = this.$q.localStorage.getItem('jwt-token') || '';
       // Fallback to old API for an old backend
-      const url = file.mediaStreamUrl ? `${file.mediaStreamUrl}?token=${token}` : `/api/media/stream/${file.hash}?token=${token}`;
+      const url = buildMediaUrl(
+        file.mediaStreamUrl || `/api/media/stream/${file.hash}`,
+        token
+      );
       const link = document.createElement('a');
       link.href = url;
       link.target="_blank";

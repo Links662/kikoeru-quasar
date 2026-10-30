@@ -29,6 +29,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'PlayerBar',
@@ -38,7 +39,7 @@ export default {
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
       const id = this.currentWork.id
-      return id ? `/api/cover/${id}?type=sam&token=${token}` : ""
+      return buildCoverUrl(id, token, 'sam')
     },
 
     playingIcon () {

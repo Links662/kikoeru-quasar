@@ -31,6 +31,7 @@
 <script>
 import NotifyMixin from '../mixins/Notification.js'
 import { formatRJLabel } from '../utils/rjCode'
+import { buildCoverUrl } from '../utils/mediaUrl'
 
 export default {
   name: 'RecentCard',
@@ -47,7 +48,7 @@ export default {
   computed: {
     coverUrl () {
       const token = this.$q.localStorage.getItem('jwt-token') || ''
-      return this.recentwork.work_id ? `/api/cover/${this.recentwork.work_id}?token=${token}` : ""
+      return buildCoverUrl(this.recentwork.work_id, token)
     },
 
     rjLabel () {
