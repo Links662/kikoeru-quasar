@@ -37,7 +37,7 @@
         </q-toolbar>
 
         <div class="q-pa-sm">
-          <q-select dense outlined label="用户组" v-model="newuser.group" :options="groups"
+          <q-select dense outlined behavior="menu" dropdown-icon="keyboard_arrow_down" label="用户组" v-model="newuser.group" :options="groups"
             emit-value map-options class="q-mb-md" />
 
           <q-input outlined dense

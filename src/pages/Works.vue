@@ -62,7 +62,7 @@
           no-caps
           color="primary"
           icon="filter_alt_off"
-          label="清除筛选"
+          label="清除条件"
           @click="clearConditions"
         />
       </div>

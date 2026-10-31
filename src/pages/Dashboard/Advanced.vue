@@ -250,6 +250,8 @@
               use-chips
               dense
               options-dense
+              behavior="menu"
+              dropdown-icon="keyboard_arrow_down"
               class="admin-field"
             />
           </q-item-section>

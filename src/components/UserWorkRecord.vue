@@ -68,6 +68,7 @@
           outlined
           rounded
           behavior="menu"
+          dropdown-icon="keyboard_arrow_down"
           aria-label="标记进度"
           class="app-control-field user-work-record__progress-select text-grey-9"
           :menu-offset="[0, 6]"

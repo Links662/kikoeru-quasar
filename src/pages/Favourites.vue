@@ -31,6 +31,7 @@
           outlined
           rounded
           behavior="menu"
+          dropdown-icon="keyboard_arrow_down"
           aria-label="进度筛选"
           class="app-control-field progress-filter-select text-grey-9"
           :menu-offset="[0, 6]"

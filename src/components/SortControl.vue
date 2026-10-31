@@ -12,6 +12,7 @@
       rounded
       behavior="menu"
       aria-label="排序方式"
+      dropdown-icon="keyboard_arrow_down"
       class="app-control-field sort-select text-grey-9"
       :menu-offset="[0, 6]"
     />

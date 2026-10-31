@@ -27,7 +27,9 @@
               map-options
               option-label="label"
               option-value="value"
+              dropdown-icon="keyboard_arrow_down"
               class="app-control-field rows-per-page-select"
+              behavior="menu"
               aria-label="每页显示数量"
               :options="rowsPerPageOptions"
               v-model="pagination.rowsPerPage"
