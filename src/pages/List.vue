@@ -1,58 +1,49 @@
 <template>
   <q-page class="q-px-md q-pt-md q-pb-md">
-    <div class="text-h5 text-weight-regular q-mb-sm">
-      {{ pageTitle }}
+    <div class="row no-wrap items-center justify-between q-mb-sm">
+      <div class="list-title col text-h5 text-weight-regular">
+        {{ pageTitle }}
+      </div>
+      <div v-if="!isNarrowScreen" class="list-search-wrap col-auto q-ml-md">
+        <SearchInput
+          v-model="keyword"
+          debounce="500"
+          :placeholder="searchPlaceholder"
+          class="full-width"
+        />
+      </div>
     </div>
 
-    <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered dense wrap-cells
-      :loading="loading" v-model:pagination="pagination" :rows-per-page-options="[25, 50, 100, 0]"
+    <div v-if="isNarrowScreen" class="q-mb-sm">
+      <SearchInput
+        v-model="keyword"
+        debounce="500"
+        :placeholder="searchPlaceholder"
+        class="full-width"
+      />
+    </div>
+
+    <q-table class="list-table" :rows="items" :columns="columns" row-key="id" flat bordered dense wrap-cells
+      :loading="loading" :pagination="pagination" :rows-per-page-options="[]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
       table-header-class="text-grey-9"
+      @request="onTableRequest"
       @row-click="openWorks">
-      <!-- 搜索、计数、分页都放在表格顶部，避免和右下角的“回到顶部”按钮重叠 -->
-      <template v-slot:top>
-        <div class="row items-center full-width">
-          <div class="col-12 col-sm-auto">
-            <SearchInput v-model="keyword" class="list-search" :placeholder="searchPlaceholder" />
-          </div>
-          <div class="col-auto q-ml-md text-grey-8">{{ rangeLabel }}</div>
-          <q-space />
-          <div class="col-auto">
-            <q-select
-              dense
-              outlined
-              rounded
-              options-dense
-              emit-value
-              map-options
-              option-label="label"
-              option-value="value"
-              dropdown-icon="keyboard_arrow_down"
-              class="app-control-field rows-per-page-select"
-              behavior="menu"
-              aria-label="每页显示数量"
-              :options="rowsPerPageOptions"
-              v-model="pagination.rowsPerPage"
-              :menu-offset="[0, 6]"
-              @update:model-value="pagination.page = 1"
-            />
-          </div>
-        </div>
-      </template>
-
       <!-- 分页放到底部正中（左右方向键也可翻页，见 handlePageKeyEvent） -->
       <template v-slot:bottom>
         <div class="row items-center justify-center full-width">
-          <q-pagination v-model="pagination.page" :max="pagesNumber" boundary-numbers
-            :max-pages="$q.screen.lt.sm ? 3 : 7" color="primary" />
+          <q-pagination :model-value="pagination.page" :max="pagesNumber" direction-links color="primary" input
+            @update:model-value="changePage" />
         </div>
       </template>
 
       <template v-slot:body-cell-index="props">
-        <q-td :props="props" class="text-grey-6">{{ props.rowIndex + 1 }}</q-td>
+        <q-td :props="props" class="text-grey-6">
+          {{ (pagination.page - 1) * pageSize + props.rowIndex + 1 }}
+        </q-td>
       </template>
 
-      <!-- Quasar 对右对齐的列会把排序箭头放在文字前面，这里统一放到文字后面 -->
+      <!-- 排序箭头放在文字后面 -->
       <template v-slot:header-cell-count="props">
         <q-th
           :props="props"
@@ -137,21 +128,16 @@ export default {
         sortBy: 'favourite',
         descending: true,
         page: 1,
-        rowsPerPage: 50
+        rowsPerPage: 0,
+        rowsNumber: 0
       },
-      rowsPerPageOptions: [
-        { label: '25 条/页', value: 25 },
-        { label: '50 条/页', value: 50 },
-        { label: '100 条/页', value: 100 },
-        { label: '全部', value: 0 }
-      ],
+      pageSize: 50,
       columns: [
         { name: 'index', label: '#', align: 'right', headerStyle: 'width: 56px' },
         { name: 'favourite', label: '收藏', field: 'favourite', align: 'center', sortable: true, headerStyle: 'width: 96px' },
         { name: 'name', label: '名称', field: 'name', align: 'left', sortable: true, headerStyle: 'width: 22%' },
         { name: 'recent', label: '近期发售', align: 'left' },
-        // 排序箭头自己画（见 header-cell-count），所以这里不开 sortable
-        { name: 'count', label: '作品数', field: 'count', align: 'right', headerStyle: 'width: 112px', classes: 'text-weight-medium' }
+        { name: 'count', label: '作品数', field: 'count', align: 'right', sortable: true, headerStyle: 'width: 112px', classes: 'text-weight-medium' }
       ]
     }
   },
@@ -196,39 +182,28 @@ export default {
       return `/api/${this.apiField}/`
     },
 
-    filteredItems () {
-      return this.items.filter(item => item.name.toLowerCase().indexOf(this.keyword.toLowerCase()) !== -1)
-    },
-
-    rangeLabel () {
-      const total = this.filteredItems.length
-      if (total === 0) {
-        return this.keyword ? '没有匹配的结果' : '暂时没有数据'
-      }
-      const { page, rowsPerPage } = this.pagination
-      if (!rowsPerPage) {
-        return `共 ${total} 项`
-      }
-      const start = (page - 1) * rowsPerPage + 1
-      const end = Math.min(page * rowsPerPage, total)
-      return `${start}-${end} / 共 ${total} 项`
-    },
-
     pagesNumber () {
-      const { rowsPerPage } = this.pagination
-      return rowsPerPage
-        ? Math.max(1, Math.ceil(this.filteredItems.length / rowsPerPage))
-        : 1
+      return Math.max(1, Math.ceil(this.pagination.rowsNumber / this.pageSize))
     },
 
     // 窄屏上 RJ 标签会折成很多行把行高撑开，直接不显示这一列
     visibleColumns () {
       return this.$q.screen.lt.sm ? ['index', 'favourite', 'name', 'count'] : void 0
+    },
+
+    isNarrowScreen () {
+      return this.$q.screen.lt.sm
     }
   },
 
   watch: {
+    keyword () {
+      this.pagination.page = 1
+      this.requestList()
+    },
+
     url () {
+      this.pagination.page = 1
       this.requestList()
     }
   },
@@ -250,9 +225,9 @@ export default {
       if (['input', 'textarea'].includes(activeEl)) return
 
       if (e.key === 'ArrowLeft' && this.pagination.page > 1) {
-        this.pagination.page--
+        this.changePage(this.pagination.page - 1)
       } else if (e.key === 'ArrowRight' && this.pagination.page < this.pagesNumber) {
-        this.pagination.page++
+        this.changePage(this.pagination.page + 1)
       }
     },
 
@@ -272,9 +247,19 @@ export default {
 
     requestList () {
       this.loading = true
-      this.$axios.get(this.url)
+      const params = {
+        page: this.pagination.page,
+        keyword: this.keyword,
+        sortBy: this.pagination.sortBy || 'favourite',
+        sort: this.pagination.descending ? 'desc' : 'asc'
+      }
+      this.$axios.get(this.url, { params })
         .then((response) => {
-          this.items = response.data.concat()
+          const { items, pagination } = response.data
+          this.items = Array.isArray(items) ? items : []
+          this.pagination.page = pagination.currentPage
+          this.pageSize = pagination.pageSize
+          this.pagination.rowsNumber = pagination.totalCount
           this.loading = false
         })
         .catch((error) => {
@@ -288,6 +273,21 @@ export default {
             this.showErrNotif(error.message || error)
           }
         })
+    },
+
+    onTableRequest ({ pagination }) {
+      this.pagination = {
+        ...this.pagination,
+        ...pagination,
+        rowsPerPage: 0
+      }
+      this.requestList()
+    },
+
+    changePage (page) {
+      if (!page || page === this.pagination.page) return
+      this.pagination.page = page
+      this.requestList()
     },
 
     toggleFavourite (item) {
@@ -322,7 +322,7 @@ export default {
   table-layout: fixed;
 }
 
-/* 窄屏上让列宽跟着内容走，否则"作品数"列会被压成一条缝 */
+/* 窄屏上让列宽跟着内容走，避免固定列宽把内容挤成一条缝。 */
 @media (max-width: $breakpoint-xs-max) {
   .list-table :deep(.q-table) {
     table-layout: auto;
@@ -343,23 +343,13 @@ export default {
   font-size: 15px;
 }
 
-.list-table :deep(.q-table__top) {
-  border-bottom: 1px solid $separator-color;
+.list-title {
+  overflow-wrap: anywhere;
 }
 
-/* 表格顶栏里的搜索框 */
-.list-search {
-  width: 300px;
-}
-
-.rows-per-page-select {
-  min-width: 120px;
-}
-
-@media (max-width: $breakpoint-xs-max) {
-  .list-search {
-    width: 100%;
-  }
+.list-search-wrap {
+  width: 260px;
+  min-width: 180px;
 }
 
 </style>

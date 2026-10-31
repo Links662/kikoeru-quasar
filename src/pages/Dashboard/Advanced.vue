@@ -356,6 +356,22 @@
         </q-item>
         <q-item>
           <q-item-section>
+            <q-item-label>列表每页显示数量</q-item-label>
+            <q-item-label caption>默认 50</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.listPageSize"
+              aria-label="列表每页显示数量"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+        <q-item>
+          <q-item-section>
             <q-item-label>历史记录显示数量</q-item-label>
             <q-item-label caption>默认 20</q-item-label>
           </q-item-section>
