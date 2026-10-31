@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="bg-grey-3" :style="layoutStyle">
-    <q-header ref="header" class="shadow-4">
+    <q-header ref="header" class="shadow-1">
       <q-toolbar
         :class="{ 'nav-icons': !showNavLabel }"
         :style="navIconStyle"
@@ -120,7 +120,7 @@
           <component :is="Component" />
         </keep-alive>
       </router-view>
-      <q-page-scroller v-if="workId === null" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
+      <q-page-scroller v-if="workId === null || !isMobilePanel" position="bottom-right" :scroll-offset="150" :offset="[18, 18]">
         <q-btn fab-mini icon="keyboard_arrow_up" color="accent" />
       </q-page-scroller>
 

@@ -5,7 +5,7 @@
       v-if="isNarrowScreen"
       ref="searchBar"
       class="works-search-bar bg-grey-3 q-px-md q-py-sm"
-      :class="{ 'works-search-bar--shown shadow-2': narrowSearchVisible }"
+      :class="{ 'works-search-bar--shown': narrowSearchVisible }"
     >
       <SearchInput
         ref="searchInput"
@@ -938,6 +938,7 @@ export default {
   pointer-events: auto;
   margin-bottom: 8px;
   transform: none;
+  border-bottom: 1px solid $separator-color;
 }
 
 </style>
