@@ -1,71 +1,91 @@
 <template>
-  <div class="user-work-record" :class="{ 'user-work-record--row': variant === 'row' }">
+  <div
+    class="user-work-record"
+    :class="{ 'column items-start q-gutter-y-xs': variant === 'row' }"
+  >
     <template v-if="variant === 'row'">
-      <div class="row items-center q-gutter-x-xs">
+      <div class="row items-center">
         <q-rating
-          v-if="record.rating"
           :model-value="record.rating"
           @update:model-value="updateRating"
           size="sm"
-          color="blue"
+          color="grey-6"
+          color-selected="amber"
+          color-half="amber"
           icon="star_border"
           icon-selected="star"
           icon-half="star_half"
-          class="col-auto"
+          no-dimming
+          class="col-auto app-rating"
           aria-label="我的评分"
         />
-        <span v-if="record.updatedAt" class="col-auto text-grey">{{ record.updatedAt }}</span>
       </div>
 
-      <q-item-label v-if="record.reviewText">
-        <pre class="q-ma-none">{{ record.reviewText }}</pre>
-      </q-item-label>
+      <div class="user-work-record__review text-body2 full-width">
+        <pre v-if="record.reviewText" class="q-ma-none">{{ record.reviewText }}</pre>
+        <pre v-else class="q-ma-none text-grey">暂无评论</pre>
+      </div>
 
-      <q-btn-toggle
-        :model-value="record.progress"
-        @update:model-value="updateProgress"
-        dense
-        no-caps
-        rounded
-        toggle-color="primary"
-        color="white"
-        text-color="black"
-        class="q-pa-none"
-        :options="progressOptions"
-      />
+      <div class="user-work-record__actions row wrap items-center full-width">
+        <q-btn-toggle
+          :model-value="record.progress"
+          @update:model-value="updateProgress"
+          dense
+          unelevated
+          rounded
+          spread
+          no-caps
+          toggle-color="primary"
+          color="white"
+          text-color="grey-9"
+          class="user-work-record__progress bg-white"
+          :options="progressOptions"
+        />
+        <span
+          v-if="record.updatedAt"
+          class="user-work-record__timestamp text-caption text-grey text-no-wrap"
+          :aria-label="`标记时间：${record.updatedAt}`"
+        >
+          <q-icon name="schedule" size="xs" class="q-mr-xs" />
+          {{ record.updatedAt }}
+        </span>
+      </div>
     </template>
 
     <template v-else>
-      <div class="row items-center">
-        <q-btn-dropdown
+      <div class="row items-center q-gutter-x-xs">
+        <q-select
+          :model-value="record.progress"
+          @update:model-value="updateProgress"
+          :options="progressOptions"
+          emit-value
+          map-options
+          option-label="label"
+          option-value="value"
+          options-dense
+          options-selected-class="text-primary"
           dense
-          color="cyan"
-          class="shadow-4 q-mx-xs q-pl-sm"
-          label="标记进度"
+          outlined
+          rounded
+          behavior="menu"
+          aria-label="标记进度"
+          class="app-control-field user-work-record__progress-select text-grey-9"
+          :menu-offset="[0, 6]"
         >
-          <q-list>
-            <q-item
-              v-for="item in progressOptions"
-              :key="item.value"
-              clickable
-              class="q-pa-xs"
-              @click="updateProgress(item.value)"
-            >
-              <q-item-section avatar>
-                <q-avatar icon="headset" v-show="record.progress === item.value" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label>{{ item.label }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
+          <template #selected>
+            <span class="ellipsis">{{ progressLabel }}</span>
+          </template>
+        </q-select>
 
         <q-btn
           dense
-          color="cyan"
-          class="shadow-4 q-mx-xs q-px-sm"
+          unelevated
+          rounded
+          no-caps
+          color="white"
+          text-color="grey-9"
+          class="app-control-button"
+          padding="4px 8px"
           label="编辑评论"
           @click="showReviewDialog = true"
         />
@@ -131,6 +151,11 @@ export default {
   computed: {
     record () {
       return getUserWorkRecord(this.workId)
+    },
+
+    progressLabel () {
+      const option = this.progressOptions.find(item => item.value === this.record.progress)
+      return option ? option.label : '标记进度'
     }
   },
 
@@ -196,10 +221,32 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.user-work-record--row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.user-work-record__review pre {
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.user-work-record__actions {
   gap: 8px;
+}
+
+.user-work-record__timestamp {
+  margin-left: auto;
+  text-align: right;
+}
+
+.user-work-record__progress-select {
+  width: 112px;
+  flex: 0 0 112px;
+}
+
+.user-work-record__progress {
+  overflow: hidden;
+  border: 1px solid $separator-color;
+}
+
+.user-work-record__progress :deep(.q-btn:not(:last-child)) {
+  border-right: 1px solid $separator-color;
 }
 </style>

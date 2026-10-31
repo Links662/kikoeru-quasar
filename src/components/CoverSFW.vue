@@ -18,11 +18,6 @@
         v-on="copyListeners"
       >
         {{ rjText }}
-
-        <!-- 触屏点按也会闪一下 tooltip，所以只在鼠标设备上提示 -->
-        <q-tooltip v-if="copyable && !hasTouch">
-          点击复制 RJ 号
-        </q-tooltip>
       </q-chip>
     </div>
 
@@ -77,10 +72,6 @@ export default {
     // 角标上显示的和复制出去的是同一份文本，别在两处各拼一次
     rjText () {
       return this.workid ? formatRJLabel(this.workid) : ''
-    },
-
-    hasTouch () {
-      return this.$q.platform.has.touch === true
     },
 
     // 角标只有详情面板里能点：列表页的角标本来就活在 router-link 里，

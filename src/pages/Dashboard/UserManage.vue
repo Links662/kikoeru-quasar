@@ -79,6 +79,7 @@
               :model-value="isEnabled(props.row)"
               :disable="loadingStatusUser === props.row.name"
               color="primary"
+              :aria-label="`${isEnabled(props.row) ? '禁用' : '启用'}用户 ${props.row.name}`"
               @update:model-value="value => setUserStatus(props.row, value)"
             />
             <span

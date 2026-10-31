@@ -4,6 +4,54 @@ a {
   text-decoration:none;
 }
 
+// 工具栏和筛选区共用的轻量控件表面。
+.app-control-button {
+  height: $toolbar-control-height;
+  min-height: $toolbar-control-height;
+  border: 1px solid $separator-color;
+}
+
+.app-control-field {
+  .q-field__control,
+  .q-field__marginal {
+    height: $toolbar-control-height;
+  }
+
+  .q-field__control {
+    background: #fff;
+  }
+
+  &.q-field--auto-height .q-field__control {
+    min-height: $toolbar-control-height;
+  }
+
+  &.q-field--auto-height .q-field__native {
+    min-height: 0;
+  }
+}
+
+.app-rating .q-rating__icon {
+  text-shadow: none;
+}
+
+.app-control-group {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: $toolbar-control-height;
+  overflow: hidden;
+  border: 1px solid $separator-color;
+  border-radius: $button-rounded-border-radius;
+
+  .q-btn {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .q-btn:not(:last-child) {
+    border-right: 1px solid $separator-color;
+  }
+}
+
 // 顶部导航按钮的选中态
 .q-btn.nav-active {
   background: rgba(255, 255, 255, 0.24);
@@ -13,15 +61,9 @@ a {
   font-size: $chip-font-size;
 }
 
-// 方形图标按钮：与同排的 dense 选择框等高。Quasar 没有等价的尺寸类，
-// 所以三处（height / min-height / width）要一起改；工作区与收藏页共用
-.sort-btn {
-  height: 40px;
-  min-height: 40px;
-  width: 40px;
-
-  border: 1px solid rgba(0, 0, 0, 0.23);
-  box-shadow: none;
+// 封面内容卡片统一使用外层裁切，图片本身不再重复定义圆角。
+.app-cover-card {
+  border-radius: $cover-card-border-radius;
 }
 
 // NSFW 模式：body 上挂 .nsfw-mode 时，R18 作品的封面打码（全年龄的封面照旧）。

@@ -22,6 +22,7 @@
           :metadata="metadata"
           size="sm"
           show-review-count
+          show-rating-distribution
           class="q-mt-xs"
         />
       </div>
@@ -41,22 +42,20 @@
         </a>
       </div>
 
-      <div
-        v-if="!metadata.nsfw || metadata.subtitle === true"
-        class="row no-wrap items-center q-gutter-xs q-px-xs q-mt-xs"
-      >
-        <q-badge v-if="!metadata.nsfw" color="light-green-2" text-color="light-green-9" label="全年龄" />
-        <q-badge v-if="metadata.subtitle === true" color="blue-1" text-color="blue-9" label="有字幕" />
-      </div>
-
-      <div class="q-mt-sm" v-if="showTags">
+      <div class="q-mt-sm" v-if="showTagRow">
+        <q-chip v-if="!metadata.nsfw" size="md" color="light-green-2" text-color="light-green-9">
+          全年龄
+        </q-chip>
+        <q-chip v-if="metadata.subtitle === true" size="md" color="blue-1" text-color="blue-9">
+          中文字幕
+        </q-chip>
         <router-link
           v-for="tag in metadata.tags"
           :to="workConditionLink($route, 'tag', tag.id)"
           :key="tag.id"
           @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
         >
-          <q-chip size="md" class="shadow-4">
+          <q-chip size="md" color="blue-grey-1" text-color="blue-grey-9">
             {{ tag.name }}
           </q-chip>
         </router-link>
@@ -69,7 +68,7 @@
           :key="va.id"
           @click="handleWorkConditionClick($event, $route, 'va', va.id)"
         >
-          <q-chip square size="md" class="shadow-4" color="teal" text-color="white">
+          <q-chip size="md" color="teal-1" text-color="teal-9">
             {{ va.name }}
           </q-chip>
         </router-link>
@@ -79,7 +78,7 @@
         :work-id="metadata.id"
         :metadata="metadata"
         variant="detail"
-        class="q-mt-sm"
+        class="q-mt-sm q-ml-xs"
       />
     </div>
   </div>
@@ -118,6 +117,10 @@ export default {
     showTags () {
       const tags = this.metadata.tags
       return Array.isArray(tags) && tags.length > 0 && tags[0].name !== null
+    },
+
+    showTagRow () {
+      return !this.metadata.nsfw || this.metadata.subtitle === true || this.showTags
     }
   }
 }

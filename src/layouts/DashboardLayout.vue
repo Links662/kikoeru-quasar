@@ -22,7 +22,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-page-container>
+    <q-page-container class="dashboard-content">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -130,3 +130,10 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.dashboard-content :deep(.q-card) {
+  border: 1px solid $separator-color;
+  box-shadow: none;
+}
+</style>

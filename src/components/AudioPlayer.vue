@@ -17,20 +17,20 @@
             </div>
           </transition>
 
-          <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down" @click="toggleHide()"
+          <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down"
+            aria-label="收起播放器" @click="toggleHide()"
             class="absolute-top-left q-ma-sm" />
           <q-btn dense round size="md" color="white" text-color="dark" icon="info_outline"
-            class="absolute-top-right q-ma-sm" @click="openWorkDetail()" />
+            aria-label="打开作品详情" class="absolute-top-right q-ma-sm" @click="openWorkDetail()" />
         </div>
 
         <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
         <div class="current-play-list bg-white relative-position col-auto overflow-hidden" v-show="queueOpen">
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
           <q-list class="queue-list overflow-hidden">
-            <q-item clickable v-ripple v-for="row in pageTracks" :key="row.index"
+            <q-item v-for="row in pageTracks" :key="row.index"
               :active="queueIndex === row.index" active-class="text-white bg-teal"
-              class="queue-item non-selectable q-py-none q-px-sm"
-              @click="onClickTrack(row.index)">
+              class="queue-item non-selectable q-py-none q-px-sm">
               <!-- 上/下箭头：点一下把这条曲目挪一位（拖动已取消，鼠标和触摸都走这里） -->
               <q-item-section side class="queue-arrows">
                 <q-btn flat icon="arrow_upward" aria-label="上移"
@@ -41,18 +41,26 @@
                   :disable="row.index === queue.length - 1" @click.stop="moveTrack(row.index, 1)" />
               </q-item-section>
 
-              <q-item-section avatar>
-                <q-img fit="contain" :src="thumbCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
-              </q-item-section>
+              <q-item-section
+                role="button"
+                tabindex="0"
+                :aria-label="`播放 ${row.track.title}`"
+                class="queue-select"
+                @click="onClickTrack(row.index)"
+                @keydown.enter.prevent="onClickTrack(row.index)"
+                @keydown.space.prevent="onClickTrack(row.index)"
+              >
+                <div class="row no-wrap items-center full-width q-gutter-x-sm">
+                  <q-img fit="contain" :src="thumbCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
 
-              <q-item-section>
-                <q-item-label lines="2" :title="row.track.title" class="queue-item__title">
-                  {{ shortTitle(row.track.title) }}
-                </q-item-label>
+                  <q-item-label lines="2" :title="row.track.title" class="queue-item__title col">
+                    {{ shortTitle(row.track.title) }}
+                  </q-item-label>
+                </div>
               </q-item-section>
 
               <q-item-section side class="queue-remove">
-                <q-btn flat round icon="clear"
+                <q-btn flat round icon="clear" aria-label="从播放列表移除"
                   :color="queueIndex === row.index ? 'white' : 'red'" @click.stop="removeFromQueue(row.index)" />
               </q-item-section>
             </q-item>
@@ -80,6 +88,7 @@
             label
             thumb-size="12px"
             color="primary"
+            aria-label="播放进度"
             @update:model-value="onSeekInput"
             @change="onSeekChange"
           />
@@ -104,18 +113,22 @@
           <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
           <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
             :color="isPressing('queue') ? 'negative' : (queueOpen ? 'primary' : undefined)"
+            aria-label="展开播放列表；长按清空"
             @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
             @mouseleave="cancelPress" @contextmenu.prevent
             class="col-auto non-selectable control-btn" />
           <!-- 短按：上一首；长按：后退 -->
           <q-btn flat dense size="lg" :icon="isPressing('previous') ? rewindIcon : 'skip_previous'"
+            aria-label="上一首；长按后退"
             @click="onPressClick('previous')" @mousedown="startPress('previous')"
             @touchstart="startPress('previous')" @mouseleave="cancelPress"
             class="col-auto non-selectable control-btn" />
-          <q-btn flat dense size="28px" :icon="playingIcon" @click="togglePlaying()"
+          <q-btn flat dense size="28px" :icon="playingIcon" :aria-label="playing ? '暂停' : '播放'"
+            @click="togglePlaying()"
             class="col-auto control-btn control-btn--play" />
           <!-- 短按：下一首；长按：前进 -->
           <q-btn flat dense size="lg" :icon="isPressing('next') ? forwardIcon : 'skip_next'"
+            aria-label="下一首；长按前进"
             @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
             @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
           <!-- 歌词开关：没有歌词文件时置灰不可点。和播放列表互不影响，两者可同时开着 -->
@@ -129,7 +142,7 @@
         <div class="row items-center justify-center q-mx-sm volume-row" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
           <q-slider v-model="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
-            :step="0.01" thumb-size="12px" color="primary" />
+            :step="0.01" thumb-size="12px" color="primary" aria-label="音量" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
       </q-card>
@@ -571,23 +584,31 @@ export default {
 
 <style lang="scss" scoped>
 .audio-player {
+  // The player is fixed to the viewport; keep its top below the navigation bar.
+  --player-top-boundary: max(var(--app-header-height, 0px), 50px);
+
   // 竖直排布：封面 / 播放列表 / 播放控件；列表展开时由封面收缩让出空间
   // 除封面外都保持自身高度，不参与压缩
   > *:not(.albumart) {
     flex: 0 0 auto;
   }
 
+  // Prevent content from spilling over the card's top edge on very short screens.
+  overflow: hidden;
+
   // 宽度 > $breakpoint-sm-min
   @media (min-width: $breakpoint-sm-min) {
     width: 330px;
     margin: 0px 10px 10px 0px;
-    max-height: calc(100vh - 20px);
+    max-height: calc(100vh - var(--player-top-boundary) - 20px);
+    max-height: calc(100dvh - var(--player-top-boundary) - 20px);
   }
 
   // 宽度 < $breakpoint-xs-max (599px)
   @media (max-width: $breakpoint-xs-max) {
     width: 100%;
-    height: 100%;
+    height: calc(100vh - var(--player-top-boundary));
+    height: calc(100dvh - var(--player-top-boundary));
   }
 }
 

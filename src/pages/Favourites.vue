@@ -5,26 +5,51 @@
     </div>
     <div class="row wrap justify-between items-center q-mb-sm">
       <div class="col-auto gt-xs">
-        <q-btn-toggle v-model="progressFilter" toggle-color="primary" color="white" text-color="black" rounded
-          :options="progressOptions" />
+        <div class="app-control-group bg-white">
+          <q-btn-toggle
+            v-model="progressFilter"
+            unelevated
+            spread
+            toggle-color="primary"
+            color="white"
+            text-color="grey-9"
+            :options="progressOptions"
+          />
+        </div>
       </div>
-      <div class="col-4 lt-sm">
-        <q-select dense rounded outlined behavior="menu" v-model="progressFilter" :options="progressOptions"
-          option-label="label" option-value="value" emit-value map-options label="进度筛选" bg-color="white" />
+      <div class="col-auto lt-sm">
+        <q-select
+          v-model="progressFilter"
+          :options="progressOptions"
+          emit-value
+          map-options
+          option-label="label"
+          option-value="value"
+          options-dense
+          options-selected-class="text-primary"
+          dense
+          outlined
+          rounded
+          behavior="menu"
+          aria-label="进度筛选"
+          class="app-control-field progress-filter-select text-grey-9"
+          :menu-offset="[0, 6]"
+        />
       </div>
-      <div class="col-auto row items-center q-ml-sm">
-        <q-select dense rounded outlined behavior="menu" v-model="sortBy" :options="sortOptions" bg-color="white"
-          class="q-mx-sm" />
-        <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
-          :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
-      </div>
+      <SortControl
+        v-model="sortBy"
+        :options="sortOptions"
+        :direction="direction"
+        class="col-auto q-ml-sm"
+        @toggle-direction="switchSortMode"
+      />
     </div>
     <div>
       <div>
         <div class="row justify-center text-grey" v-if="visibleWorks.length === 0">
           这里只显示已标记收听状态的作品。
         </div>
-        <q-list bordered separator class="shadow-2" v-if="visibleWorks.length">
+        <q-list bordered separator v-if="visibleWorks.length">
           <FavListItem v-for="work in visibleWorks" :key="work.id" :workid="work.id" :metadata="work"
             @deleteItem="removeFavItem"></FavListItem>
         </q-list>
@@ -45,6 +70,7 @@
 
 <script>
 import FavListItem from 'components/FavListItem'
+import SortControl from 'components/SortControl'
 import NotifyMixin from '../mixins/Notification.js'
 import { peekUserWorkRecord } from '../services/userWorkRecord'
 
@@ -52,7 +78,8 @@ export default {
   name: 'Favourites',
   mixins: [NotifyMixin],
   components: {
-    FavListItem
+    FavListItem,
+    SortControl
   },
 
   computed: {
@@ -209,3 +236,10 @@ export default {
 }
 
 </script>
+
+<style lang="scss" scoped>
+.progress-filter-select {
+  width: 112px;
+  flex: 0 0 112px;
+}
+</style>

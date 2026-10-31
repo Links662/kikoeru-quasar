@@ -6,6 +6,7 @@
           fit="contain"
           :src="coverUrl"
           :img-class="metadata.nsfw ? 'cover-mask' : ''"
+          :ratio="4 / 3"
           class="fav-cover"
         />
       </router-link>
@@ -46,7 +47,7 @@
         :work-id="workid"
         :metadata="metadata"
         variant="row"
-        class="full-width"
+        class="full-width q-mt-none"
         @progress-changed="$emit('deleteItem', workid)"
       />
     </q-item-section>
@@ -92,7 +93,6 @@ export default {
 // 这里 160x120 与 4:3 缩略图比例一致，本来就不会裁；
 // 用 contain 是为了和其他几处保持一致，也防止以后换成别的比例的封面
 .fav-cover {
-  height: 120px;
-  width: 160px;
+  width: clamp(96px, 42vw, 160px);
 }
 </style>

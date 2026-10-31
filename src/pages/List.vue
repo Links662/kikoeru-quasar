@@ -4,7 +4,7 @@
       {{ pageTitle }}
     </div>
 
-    <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered wrap-cells
+    <q-table class="list-table" :rows="filteredItems" :columns="columns" row-key="id" flat bordered dense wrap-cells
       :loading="loading" v-model:pagination="pagination" :rows-per-page-options="[25, 50, 100, 0]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
       table-header-class="text-grey-9"
@@ -13,19 +13,27 @@
       <template v-slot:top>
         <div class="row items-center full-width">
           <div class="col-12 col-sm-auto">
-            <q-input dense rounded outlined v-model="keyword" class="list-search"
-              :placeholder="searchPlaceholder">
-              <template v-slot:append>
-                <q-icon v-if="keyword === ''" name="search" />
-                <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
-              </template>
-            </q-input>
+            <SearchInput v-model="keyword" class="list-search" :placeholder="searchPlaceholder" />
           </div>
           <div class="col-auto q-ml-md text-grey-8">{{ rangeLabel }}</div>
           <q-space />
           <div class="col-auto">
-            <q-select dense borderless options-dense emit-value map-options
-              :options="rowsPerPageOptions" v-model="pagination.rowsPerPage" @update:model-value="pagination.page = 1" />
+            <q-select
+              dense
+              outlined
+              rounded
+              options-dense
+              emit-value
+              map-options
+              option-label="label"
+              option-value="value"
+              class="app-control-field rows-per-page-select"
+              aria-label="每页显示数量"
+              :options="rowsPerPageOptions"
+              v-model="pagination.rowsPerPage"
+              :menu-offset="[0, 6]"
+              @update:model-value="pagination.page = 1"
+            />
           </div>
         </div>
       </template>
@@ -44,7 +52,16 @@
 
       <!-- Quasar 对右对齐的列会把排序箭头放在文字前面，这里统一放到文字后面 -->
       <template v-slot:header-cell-count="props">
-        <q-th :props="props" class="sortable" @click="props.sort('count')">
+        <q-th
+          :props="props"
+          class="sortable"
+          role="button"
+          tabindex="0"
+          aria-label="按作品数排序"
+          @click="props.sort('count')"
+          @keydown.enter.prevent="props.sort('count')"
+          @keydown.space.prevent="props.sort('count')"
+        >
           <span>作品数</span>
           <q-icon name="arrow_upward" size="xs" class="q-table__sort-icon q-table__sort-icon--left" />
         </q-th>
@@ -52,9 +69,15 @@
 
       <template v-slot:body-cell-favourite="props">
         <q-td :props="props" class="text-center">
-          <q-icon :name="props.row.favourite ? 'star' : 'star_border'"
-            :color="props.row.favourite ? 'amber' : 'grey-6'" size="sm" class="cursor-pointer"
-            @click.stop.prevent="toggleFavourite(props.row)" />
+          <q-btn
+            flat
+            round
+            dense
+            :icon="props.row.favourite ? 'star' : 'star_border'"
+            :color="props.row.favourite ? 'amber' : 'grey-6'"
+            :aria-label="props.row.favourite ? '取消收藏' : '收藏'"
+            @click.stop.prevent="toggleFavourite(props.row)"
+          />
         </q-td>
       </template>
 
@@ -69,10 +92,10 @@
       <!-- 名称已经是链接，这里只列最近发售的 RJ 号（点开即作品详情面板） -->
       <template v-slot:body-cell-recent="props">
         <q-td :props="props">
-          <div class="rj-chips">
-            <router-link v-for="id in props.row.recentWorks" :key="id" class="rj-chip" :to="`/work/${id}`"
+          <div class="row q-gutter-xs">
+            <router-link v-for="id in props.row.recentWorks" :key="id" :to="`/work/${id}`"
               :title="`打开 ${rjLabel(id)}`" @click.stop>
-              {{ rjLabel(id) }}
+              <q-badge rounded outline color="primary">{{ rjLabel(id) }}</q-badge>
             </router-link>
           </div>
         </q-td>
@@ -85,11 +108,16 @@
 import NotifyMixin from '../mixins/Notification.js'
 import { formatRJLabel } from '../utils/rjCode'
 import { workConditionLink } from '../utils/workQuery'
+import SearchInput from 'components/SearchInput'
 
 export default {
   name: 'List',
 
   mixins: [NotifyMixin],
+
+  components: {
+    SearchInput
+  },
 
   props: {
     conditionType: {
@@ -304,13 +332,16 @@ export default {
   font-weight: 600;
 }
 
+.list-table :deep(.q-table thead tr),
 .list-table :deep(.q-table tbody td) {
-  font-size: 15px;
   height: 40px;
 }
 
+.list-table :deep(.q-table tbody td) {
+  font-size: 15px;
+}
+
 .list-table :deep(.q-table__top) {
-  padding: 6px 16px;
   border-bottom: 1px solid $separator-color;
 }
 
@@ -319,33 +350,14 @@ export default {
   width: 300px;
 }
 
+.rows-per-page-select {
+  min-width: 120px;
+}
+
 @media (max-width: $breakpoint-xs-max) {
   .list-search {
     width: 100%;
   }
 }
 
-/* “近期发售”列的 RJ 号标签：主题色淡底 + 主题色文字 */
-.rj-chips {
-  display: flex;
-  flex-wrap: wrap;
-  margin: -2px;
-}
-
-.rj-chip {
-  margin: 2px;
-  padding: 0 7px;
-  border-radius: 9px;
-  background: rgba($primary, .12);
-  color: $primary;
-  font-size: 12px;
-  line-height: 18px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.rj-chip:hover {
-  background: rgba($primary, .24);
-  color: $light-blue-10;
-}
 </style>

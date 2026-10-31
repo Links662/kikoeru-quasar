@@ -12,7 +12,7 @@
             <q-item-label caption>播放时后退按钮跳跃秒数</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <div class="q-gutter-sm">
               <!-- val 用字符串：本页 UI 状态（data 与 requestConfig）都是字符串，提交时才 parseInt -->
               <q-radio dense v-model="rewindSeekTime" val="5" label="5 秒" />
@@ -28,7 +28,7 @@
             <q-item-label caption>播放时前进按钮跳跃秒数</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <div class="q-gutter-sm">
               <q-radio dense v-model="forwardSeekTime" val="5" label="5 秒" />
               <q-radio dense v-model="forwardSeekTime" val="10" label="10 秒" />
@@ -51,7 +51,7 @@
             <q-item-label caption>从 DLSite 爬取的标签元数据的语言</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <div class="q-gutter-sm">
               <q-radio dense v-model="config.tagLanguage" val="zh-CN" label="简" />
               <q-radio dense v-model="config.tagLanguage" val="zh-TW" label="繁" />
@@ -66,9 +66,10 @@
             <q-item-label caption>默认 10000 毫秒</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.dlsiteTimeout"
+              aria-label="DLsite 超时时间"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -82,9 +83,10 @@
             <q-item-label caption>默认 10000 毫秒</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.hvdbTimeout"
+              aria-label="HVDB 超时时间"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -98,9 +100,10 @@
             <q-item-label caption>默认 2000 毫秒</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.retryDelay"
+              aria-label="重新请求间隔时间"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -114,9 +117,10 @@
             <q-item-label caption>默认 5</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.retry"
+              aria-label="请求最大尝试次数"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -130,9 +134,10 @@
             <q-item-label caption>默认 16</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.maxParallelism"
+              aria-label="爬虫并行任务数量"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -146,9 +151,10 @@
             <q-item-label caption>此项为空时默认为本机</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model="config.httpProxyHost"
+              aria-label="HTTP 代理服务主机 IP"
               input-class="text-right"
               class="admin-field"
             />
@@ -161,9 +167,10 @@
             <q-item-label caption>此项为 0 时默认不使用代理</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.httpProxyPort"
+              aria-label="HTTP 代理服务端口号"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -185,9 +192,10 @@
             <q-item-label caption>默认 2</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.scannerMaxRecursionDepth"
+              aria-label="最大递归扫描深度"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -201,7 +209,7 @@
           </q-item-section>
 
           <q-item-section side>
-            <q-toggle v-model="config.skipCleanup" dense />
+            <q-toggle v-model="config.skipCleanup" dense aria-label="扫描时跳过清理失效作品" />
           </q-item-section>
         </q-item>
 
@@ -213,9 +221,10 @@
             </q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.coverUpgradeIntervalDays"
+              aria-label="封面升级间隔"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -232,9 +241,10 @@
             </q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-select
               v-model="config.coverUpgradeTypes"
+              aria-label="参与升级的缩略图"
               :options="coverUpgradeOptions"
               multiple
               use-chips
@@ -260,8 +270,13 @@
             <q-item-label caption>是否启用用户验证（生产环境下无法修改此设置）</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
-            <q-toggle v-model="config.auth" dense :disable="config.production" />
+          <q-item-section side>
+            <q-toggle
+              v-model="config.auth"
+              dense
+              aria-label="启用用户验证"
+              :disable="config.production"
+            />
           </q-item-section>
         </q-item>
 
@@ -271,8 +286,8 @@
             <q-item-label caption>对网络传输启用Gzip压缩</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
-            <q-toggle v-model="config.enableGzip" dense/>
+          <q-item-section side>
+            <q-toggle v-model="config.enableGzip" dense aria-label="启用 Gzip" />
           </q-item-section>
         </q-item>
 
@@ -282,9 +297,10 @@
             <q-item-label caption>服务器监听端口号</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.listenPort"
+              aria-label="服务器监听端口号"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -298,8 +314,8 @@
             <q-item-label caption>只允许本地访问，默认关闭。更改此设置需要重启程序</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
-            <q-toggle v-model="config.blockRemoteConnection" dense/>
+          <q-item-section side>
+            <q-toggle v-model="config.blockRemoteConnection" dense aria-label="屏蔽远程连接" />
           </q-item-section>
         </q-item>
 
@@ -309,9 +325,10 @@
             <q-item-label caption>默认 2592000 秒</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.expiresIn"
+              aria-label="token 过期时间"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -325,9 +342,10 @@
             <q-item-label caption>默认 12</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.pageSize"
+              aria-label="每页显示的音声数量"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -340,9 +358,10 @@
             <q-item-label caption>默认 20</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
+          <q-item-section side>
             <q-input
               v-model.number="config.recentCount"
+              aria-label="历史记录显示数量"
               type="number"
               input-class="text-right"
               class="admin-field"
@@ -363,8 +382,8 @@
             <q-item-label caption>使用程序所在位置下的sqlite文件夹，并忽略databaseFolderDir设置（如无必要请勿修改，更改此设置需要重启程序）</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
-            <q-toggle v-model="config.dbUseDefaultPath" dense />
+          <q-item-section side>
+            <q-toggle v-model="config.dbUseDefaultPath" dense aria-label="数据库使用默认路径" />
           </q-item-section>
         </q-item>
 
@@ -374,8 +393,8 @@
             <q-item-label caption>使用程序所在位置下的covers文件夹，并忽略封面文件夹路径设置</q-item-label>
           </q-item-section>
 
-          <q-item-section avatar>
-            <q-toggle v-model="config.coverUseDefaultPath" dense />
+          <q-item-section side>
+            <q-toggle v-model="config.coverUseDefaultPath" dense aria-label="封面使用默认路径" />
           </q-item-section>
         </q-item>
       </q-list>

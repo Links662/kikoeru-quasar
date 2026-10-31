@@ -11,11 +11,6 @@
       <span class="panel-grip__bar block relative-position col-auto">
         <q-icon name="chevron_left" size="12px" class="text-white" />
       </span>
-
-      <!-- 触屏点按会闪一下 tooltip，所以只在鼠标设备上挂 -->
-      <q-tooltip v-if="!hasTouch" anchor="center right" self="center left" :offset="[8, 0]">
-        收起详情
-      </q-tooltip>
     </button>
 
     <!-- 详情 + 文件树，独立滚动 -->
@@ -61,13 +56,6 @@ export default {
   watch: {
     workid () {
       this.reset()
-    }
-  },
-
-  computed: {
-    // 触屏设备没有 hover，要靠按下态来表达，tooltip 也只在鼠标设备上挂
-    hasTouch () {
-      return this.$q.platform.has.touch === true
     }
   },
 

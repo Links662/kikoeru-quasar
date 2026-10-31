@@ -4,15 +4,19 @@
       <q-rating
         :model-value="displayRating"
         :size="size"
-        :color="personalRating ? 'blue' : 'amber'"
+        color="grey-6"
+        color-selected="amber"
+        color-half="amber"
         icon="star_border"
         icon-selected="star"
         icon-half="star_half"
+        no-dimming
+        class="app-rating"
         aria-label="作品评分"
         @update:model-value="updateRating"
       />
 
-      <q-tooltip v-if="sortedRatings.length" content-class="text-subtitle1">
+      <q-tooltip v-if="showRatingDistribution && sortedRatings.length" content-class="text-subtitle1">
         <div>DLsite 平均: {{ average }}</div>
         <div v-for="rate in sortedRatings" :key="rate.review_point" class="row items-center">
           <div class="col">{{ rate.review_point }}星</div>
@@ -21,10 +25,9 @@
             color="amber"
             track-color="white"
             size="15px"
-            class="col-auto"
-            style="width: 100px"
+            class="rating-bar col-auto q-mx-sm"
           />
-          <div class="col q-mx-sm">({{ rate.count }})</div>
+          <div class="col">({{ rate.count }})</div>
         </div>
       </q-tooltip>
     </span>
@@ -67,6 +70,10 @@ export default {
       default: 'sm'
     },
     showReviewCount: {
+      type: Boolean,
+      default: false
+    },
+    showRatingDistribution: {
       type: Boolean,
       default: false
     }
@@ -140,3 +147,9 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.rating-bar {
+  width: 100px;
+}
+</style>

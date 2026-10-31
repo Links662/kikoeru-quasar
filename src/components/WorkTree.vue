@@ -28,7 +28,7 @@
             <q-icon size="md" v-else-if="item.type === 'text'" color="info" name="description" />
             <q-icon size="md" v-else-if="item.type === 'image'" color="orange" name="photo" />
             <q-icon size="md" v-else-if="item.type === 'other'" color="info" name="description" />
-            <q-btn v-else round dense color="primary" :icon="playIcon(item.hash)" @click="onClickPlayButton(item.hash)" />
+            <q-icon v-else size="md" color="primary" :name="playIcon(item.hash)" />
           </q-item-section>
 
           <q-item-section>
@@ -131,8 +131,8 @@ export default {
         this.openFile(item);
       } else if (item.type === 'other') {
         this.download(item);
-      } else if (this.currentTrack.hash !== item.hash) {
-        this.playTracks(item.hash)
+      } else if (item.type === 'audio') {
+        this.onClickPlayButton(item.hash)
       }
     },
 

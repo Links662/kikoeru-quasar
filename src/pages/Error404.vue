@@ -3,6 +3,7 @@
     <p>
       <img
         src="~assets/sad.svg"
+        alt=""
         class="error-logo"
       >
     </p>

@@ -1,10 +1,9 @@
 <template>
-  <q-card>
+  <q-card bordered flat class="app-cover-card work-card overflow-hidden">
     <router-link :to="`/work/${metadata.id}`">
       <CoverSFW :workid="metadata.id" :nsfw="metadata.nsfw" :release="metadata.release" />
     </router-link>
 
-    <q-separator />
 
     <div v-if="!thumbnailMode" class="q-px-sm q-py-xs">
       <div class="q-px-xs">
@@ -44,22 +43,20 @@
         </a>
       </div>
 
-      <div
-        v-if="!metadata.nsfw || metadata.subtitle === true"
-        class="row no-wrap items-center q-gutter-xs q-px-xs q-mt-xs"
-      >
-        <q-badge v-if="!metadata.nsfw" color="light-green-2" text-color="light-green-9" label="全年龄" />
-        <q-badge v-if="metadata.subtitle === true" color="blue-1" text-color="blue-9" label="有字幕" />
-      </div>
-
-      <div class="q-mt-xs" v-if="showTags">
+      <div class="q-mt-xs" v-if="showTagRow">
+        <q-chip v-if="!metadata.nsfw" size="md" color="light-green-2" text-color="light-green-9">
+          全年龄
+        </q-chip>
+        <q-chip v-if="metadata.subtitle === true" size="md" color="blue-1" text-color="blue-9">
+          中文字幕
+        </q-chip>
         <router-link
           v-for="tag in metadata.tags"
           :to="workConditionLink($route, 'tag', tag.id)"
           :key="tag.id"
           @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
         >
-          <q-chip size="md" class="shadow-2">
+          <q-chip size="md" color="blue-grey-1" text-color="blue-grey-9">
             {{ tag.name }}
           </q-chip>
         </router-link>
@@ -72,7 +69,7 @@
           :key="va.id"
           @click="handleWorkConditionClick($event, $route, 'va', va.id)"
         >
-          <q-chip square size="md" class="shadow-2" color="teal" text-color="white">
+          <q-chip size="md" color="teal-1" text-color="teal-9">
             {{ va.name }}
           </q-chip>
         </router-link>
@@ -116,7 +113,25 @@ export default {
     showTags () {
       const tags = this.metadata.tags
       return Array.isArray(tags) && tags.length > 0 && tags[0].name !== null
+    },
+
+    showTagRow () {
+      return !this.metadata.nsfw || this.metadata.subtitle === true || this.showTags
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.work-card {
+  transition: transform 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .work-card:hover,
+  .work-card:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+  }
+}
+</style>

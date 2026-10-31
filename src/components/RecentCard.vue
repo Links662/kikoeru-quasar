@@ -1,12 +1,18 @@
 <template>
-  <div>
-    <!-- 最近播放这排是例外：开了 NSFW 模式就一律糊，不按 R18 判断 -->
+  <!-- 最近播放这排是例外：开了 NSFW 模式就一律糊，不按 R18 判断 -->
+  <q-item
+    clickable
+    v-ripple
+    :aria-label="playLabel"
+    class="app-cover-card recent-card bg-white non-selectable q-pa-none overflow-hidden"
+    @click="onClickPlay()"
+  >
     <q-img
       :src="coverUrl"
       :ratio="4/3"
+      alt=""
       img-class="cover-mask"
-      @click="onClickPlay()"
-      class="square shadow-2"
+      class="recent-cover full-width"
     >
       <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，
            叠加内容统一放在 transparent no-padding 包装层里 -->
@@ -23,9 +29,7 @@
         </div>
       </div>
     </q-img>
-
-
-  </div>
+  </q-item>
 </template>
 
 <script>
@@ -53,6 +57,11 @@ export default {
 
     rjLabel () {
       return this.recentwork.work_id ? formatRJLabel(this.recentwork.work_id) : ''
+    },
+
+    playLabel () {
+      const fileName = this.recentwork.file_name || this.rjLabel
+      return `播放 ${fileName}`
     },
   },
 
@@ -137,21 +146,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .square {
-    transition: transform 100ms ease-out, border-radius 200ms ease-out;
-    border-radius: 10px;
-    margin-right: 10px;
+  .recent-card {
+    transition: transform 160ms ease-out, box-shadow 160ms ease-out;
+    border: 1px solid $separator-color;
+    box-shadow: none;
   }
 
   .recent-caption {
     background: linear-gradient(transparent, rgba(0, 0, 0, 0.78));
   }
 
-  .square:hover {
-    border-radius: 10px;
-    transform: scale(1.1);
-    box-shadow: 0 0 2px #000a;
-    z-index: 999;
+  @media (hover: hover) and (pointer: fine) {
+    .recent-card:hover,
+    .recent-card:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+    }
   }
 
 </style>

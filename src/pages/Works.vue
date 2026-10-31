@@ -4,27 +4,19 @@
     <div
       v-if="isNarrowScreen"
       ref="searchBar"
-      class="works-search-bar bg-grey-3"
+      class="works-search-bar bg-grey-3 q-px-md q-py-sm"
       :class="{ 'works-search-bar--shown shadow-2': narrowSearchVisible }"
     >
-      <q-input
+      <SearchInput
         ref="searchInput"
-        dense
-        rounded
-        outlined
         v-model="keyword"
         debounce="500"
-        :placeholder="'搜索作品 / 社团 / 声优…'"
-        class="works-search full-width"
+        placeholder="搜索作品 / 社团 / 声优…"
+        class="full-width"
         @blur="handleSearchBlur"
         @keydown.esc="blurSearchInput"
         @keyup.enter="syncKeywordToRoute($event.target.value)"
-      >
-        <template v-slot:append>
-          <q-icon v-if="keyword === ''" name="search" />
-          <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
-        </template>
-      </q-input>
+      />
     </div>
 
     <RecentList />
@@ -39,25 +31,17 @@
 
       <!-- 宽屏：搜索框与标题同行靠右 -->
       <div v-if="wideSearchVisible" class="works-search-wrap col-auto q-ml-md">
-        <q-input
-          dense
-          rounded
-          outlined
+        <SearchInput
           v-model="keyword"
           debounce="500"
-          :placeholder="'搜索作品 / 社团 / 声优…'"
-          class="works-search full-width"
+          placeholder="搜索作品 / 社团 / 声优…"
+          class="full-width"
           @keyup.enter="syncKeywordToRoute($event.target.value)"
-        >
-          <template v-slot:append>
-            <q-icon v-if="keyword === ''" name="search" />
-            <q-icon v-else name="clear" class="cursor-pointer" @click="keyword = ''" />
-          </template>
-        </q-input>
+        />
       </div>
     </div>
 
-    <div v-if="conditionChips.length" class="work-condition-bar q-mb-sm">
+    <div v-if="conditionChips.length" class="work-condition-bar row wrap items-center q-gutter-xs q-mb-sm">
       <q-chip
         v-for="condition in conditionChips"
         :key="condition.key"
@@ -71,87 +55,95 @@
       >
         {{ condition.label }}
       </q-chip>
-      <div class="condition-clear-actions">
+      <div class="row items-center justify-end q-ml-auto">
         <q-btn
           outline
           rounded
           dense
+          size="sm"
           no-caps
-          color="grey-8"
+          color="primary"
           icon="filter_alt_off"
           label="清除全部"
-          class="condition-clear-btn"
           @click="clearConditions"
         />
       </div>
     </div>
 
     <div class="q-my-sm">
-      <div v-if="works.length || hasActiveFilters" class="row items-center q-mb-sm">
-        <!-- 排序选择框 -->
-        <div class="col row items-center">
-          <q-select dense rounded outlined behavior="menu" bg-color="white" transition-show="scale"
-            transition-hide="scale" v-model="sortOption" :options="options" label="排序" class="q-mr-sm" />
-          <q-btn dense rounded unelevated color="white" class="sort-btn" text-color="black"
-            :icon="direction ? 'arrow_downward' : 'arrow_upward'" @click="switchSortMode" />
+      <div v-if="works.length || hasActiveFilters" class="work-toolbar row items-center q-mb-sm">
+        <!-- 排序字段与方向切换 -->
+        <SortControl
+          v-model="sortOption"
+          :options="options"
+          :direction="direction"
+          class="col"
+          @toggle-direction="switchSortMode"
+        />
+
+        <!-- 作品筛选 -->
+        <div class="app-control-group bg-white">
+          <q-btn-group dense unelevated aria-label="作品筛选">
+            <q-btn
+              dense
+              icon="no_adult_content"
+              aria-label="全年龄"
+              :aria-pressed="filters.allAges"
+              :color="filters.allAges ? 'primary' : 'white'"
+              :text-color="filters.allAges ? 'white' : 'grey-9'"
+              @click="filters.allAges = !filters.allAges"
+            >
+            </q-btn>
+            <q-btn
+              dense
+              icon="subtitles"
+              aria-label="中文字幕"
+              :aria-pressed="filters.subtitle"
+              :color="filters.subtitle ? 'primary' : 'white'"
+              :text-color="filters.subtitle ? 'white' : 'grey-9'"
+              @click="filters.subtitle = !filters.subtitle"
+            >
+            </q-btn>
+          </q-btn-group>
         </div>
 
-        <div class="col-auto row items-center justify-center gt-xs">
-          <q-checkbox dense v-model="filters.allAges" label="全年龄" color="primary" class="q-mr-md" />
-          <q-checkbox dense v-model="filters.subtitle" label="有字幕" color="primary" />
-        </div>
-
-        <div class="col row items-center justify-end q-gutter-x-sm">
-          <!-- 切换显示模式 -->
-          <div class="col-auto">
-            <q-btn-toggle dense rounded spread v-model="listMode" toggle-color="primary" color="white"
-              text-color="primary" :options="[
-                { icon: 'apps', value: 'detail' },
-                { icon: 'list', value: 'list' }
+        <!-- 切换显示模式 -->
+        <div class="work-toolbar__display col-auto row items-center justify-end">
+          <div class="app-control-group bg-white">
+            <q-btn-toggle dense unelevated spread class="col-auto"
+              v-model="listMode" toggle-color="primary" color="white"
+              text-color="grey-9" :options="[
+                { icon: 'apps', value: 'detail', attrs: { 'aria-label': '详细模式' } },
+                { icon: 'list', value: 'list', attrs: { 'aria-label': '列表模式' } }
               ]" />
           </div>
           <!-- 列表模式：标签开关 -->
-          <div class="col-auto" v-if="listMode === 'list'">
-            <q-btn-toggle dense rounded spread v-model="showLabel" toggle-color="primary" color="white"
-              text-color="primary" :options="[
-                { icon: 'label', value: true },
-                { icon: 'label_off', value: false }
+          <div v-if="listMode === 'list'" class="app-control-group bg-white">
+            <q-btn-toggle dense unelevated spread class="col-auto"
+              v-model="showLabel" toggle-color="primary" color="white"
+              text-color="grey-9" :options="[
+                { icon: 'label', value: true, attrs: { 'aria-label': '显示标签' } },
+                { icon: 'label_off', value: false, attrs: { 'aria-label': '隐藏标签' } }
               ]" />
           </div>
 
           <!-- 详情模式：缩放开关 -->
-          <div class="col-auto" v-if="listMode !== 'list'">
-            <q-btn-toggle dense rounded spread v-model="detailMode" toggle-color="primary" color="white"
-              text-color="primary" :options="[
-                { icon: 'zoom_in', value: true },
-                { icon: 'zoom_out', value: false }
+          <div v-if="listMode !== 'list'" class="app-control-group bg-white">
+            <q-btn-toggle dense unelevated spread class="col-auto"
+              v-model="detailMode" toggle-color="primary" color="white"
+              text-color="grey-9" :options="[
+                { icon: 'zoom_in', value: true, attrs: { 'aria-label': '放大封面' } },
+                { icon: 'zoom_out', value: false, attrs: { 'aria-label': '缩小封面' } }
               ]" />
           </div>
         </div>
 
       </div>
-
-      <div
-        v-if="works.length || hasActiveFilters"
-        class="row items-center justify-center lt-sm q-my-sm"
-      >
-        <q-checkbox dense v-model="filters.allAges" label="全年龄" color="primary" class="q-mr-md" />
-        <q-checkbox dense v-model="filters.subtitle" label="有字幕" color="primary" />
-      </div>
-
-      <div
-        v-if="works.length"
-        class="row justify-center gt-xs q-mb-sm"
-      >
-        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
-          input />
-      </div>
-
-      <q-list v-if="listMode === 'list'" bordered separator class="shadow-2">
+      <q-list v-if="listMode === 'list'" bordered separator>
         <WorkListItem v-for="work in works" :key="work.id" :metadata="work" :showLabel="showLabel" />
       </q-list>
 
-      <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-md q-col-gutter-y-md">
+      <div v-else-if="listMode === 'detail'" class="row q-col-gutter-x-sm q-col-gutter-y-sm">
         <div :class="['col', columnClass]" v-for="work in works" :key="work.id">
           <WorkCard :metadata="work" :thumbnailMode="!detailMode" class="fit"/>
         </div>
@@ -180,6 +172,8 @@ import WorkCard from 'components/WorkCard'
 import WorkListItem from 'components/WorkListItem'
 import NotifyMixin from '../mixins/Notification.js'
 import RecentList from 'components/RecentList'
+import SearchInput from 'components/SearchInput'
+import SortControl from 'components/SortControl'
 import { mapState } from 'vuex'
 import {
   clearWorkConditions,
@@ -269,7 +263,9 @@ export default {
   components: {
     WorkCard,
     WorkListItem,
-    RecentList
+    RecentList,
+    SearchInput,
+    SortControl
   },
 
   data () {
@@ -614,11 +610,11 @@ export default {
     },
 
     clearFilters () {
-      this.filters = { ...DEFAULT_FILTERS }
+            this.filters = { ...DEFAULT_FILTERS }
       this.$router.push({
         path: '/works',
         query: clearWorkConditions(this.$route.query)
-      }).catch(() => {})
+            }).catch(() => {})
     },
 
     removeCondition (condition) {
@@ -629,10 +625,10 @@ export default {
     },
 
     clearConditions () {
-      this.$router.push({
+            this.$router.push({
         path: '/works',
         query: clearWorkConditions(this.$route.query)
-      }).catch(() => {})
+            }).catch(() => {})
     },
 
     requestWorksQueue() {
@@ -770,11 +766,19 @@ export default {
   min-width: 180px;
 }
 
-.work-condition-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
+.work-toolbar {
+  gap: 8px;
+}
+
+// 排序控件保留紧凑的最小宽度，避免极窄屏把字段文字挤到溢出。
+.work-toolbar :deep(.sort-control) {
+  min-width: 120px;
+}
+
+// 显示控件组放不下时自然换到下一行，并继续靠右；不再固定在 sm 断点换行。
+.work-toolbar__display {
+  margin-left: auto;
+  gap: 8px;
 }
 
 .work-condition-bar :deep(.q-chip) {
@@ -787,23 +791,6 @@ export default {
   white-space: nowrap;
 }
 
-.condition-clear-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-.condition-clear-btn:hover {
-  color: $primary !important;
-}
-
-.condition-clear-btn {
-  min-height: 21px;
-  padding: 0 8px;
-  font-size: 13px !important;
-}
-
 // 窄屏的搜索条：天然位置就在导航栏下沿，收起时向上缩到蓝色导航栏背后、
 // 并且用负 margin 不占位（页面就像没它一样）；下拉（或有关键词）时从栏下滑出来
 .works-search-bar {
@@ -814,9 +801,8 @@ export default {
 
   // 通栏：抵消页面左右 16px 边距；上边把页面 q-pt-md 的 16px 一起抵消，
   // 让它天然就贴在导航栏下沿；下边负值让收起时不占位（页面看起来像没它）
-  height: 56px;
-  margin: -16px -16px -40px;
-  padding: 8px 16px;
+  height: $toolbar-control-height + 16px;
+  margin: -16px -16px calc(-1 * #{$toolbar-control-height});
   transform: translateY(-100%);
   transition: transform 0.22s ease, margin-bottom 0.22s ease;
 }

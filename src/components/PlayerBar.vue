@@ -19,9 +19,12 @@
           </q-item-section>
         </q-item>
 
-        <q-btn flat size="lg" icon="skip_previous" @click="previousTrack()" class="col-auto gt-sm player-bar-btn"/>
-        <q-btn flat size="lg" :icon="playingIcon" @click="togglePlaying()" class="col-auto player-bar-btn" />
-        <q-btn flat size="lg" icon="skip_next" @click="nextTrack()" class="col-auto gt-sm player-bar-btn"/>
+        <q-btn flat size="lg" icon="skip_previous" aria-label="上一首"
+          @click="previousTrack()" class="col-auto gt-sm player-bar-btn"/>
+        <q-btn flat size="lg" :icon="playingIcon" :aria-label="playing ? '暂停' : '播放'"
+          @click="togglePlaying()" class="col-auto player-bar-btn" />
+        <q-btn flat size="lg" icon="skip_next" aria-label="下一首"
+          @click="nextTrack()" class="col-auto gt-sm player-bar-btn"/>
       </div>
     </div>
   </q-slide-transition>

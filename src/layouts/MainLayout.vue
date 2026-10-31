@@ -4,6 +4,7 @@
       <q-toolbar
         :class="{ 'nav-icons': !showNavLabel }"
         :style="navIconStyle"
+        @click="collapsePlayer"
       >
         <!-- 屏幕变窄时先收掉 Kikoeru 标志（只在宽屏显示），
              再窄到 5 个文字项放不下时才让导航缩成纯图标 -->
@@ -615,6 +616,9 @@ export default {
 
     // 详情面板打开时点导航栏上的按钮，等价于点“返回”：先收起面板再执行跳转 / 动作
     onNavClick (item) {
+      // 导航优先占据前景：展开的播放器先收回底部播放条，避免挡住下一次浏览
+      this.collapsePlayer()
+
       // keepPanel 的动作（随心听）会自己换掉当前详情，收起再展开只会闪一下
       if (item.keepPanel !== true) {
         this.closePanel()

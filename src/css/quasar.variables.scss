@@ -22,3 +22,9 @@ $positive  : #21BA45;
 $negative  : #C10015;
 $info      : #31CCEC;
 $warning   : #F2C037;
+
+// 工具栏中的搜索框、筛选按钮等紧凑控件统一高度。
+$toolbar-control-height: 34px;
+
+// 作品卡片等内容容器的统一圆角。
+$cover-card-border-radius: 8px;

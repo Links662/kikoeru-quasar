@@ -30,12 +30,16 @@ if (process.env.DEV !== true) {
         textColor: 'white',
         icon: 'cached',
         actions: [
-          { label: '刷新', color: 'white' }
+          {
+            label: '刷新',
+            color: 'white',
+            handler () {
+              window.location.reload()
+            }
+          }
         ],
-        timeout: 10000,
-        onDismiss () {
-          location.reload(true)
-        }
+        multiLine: false,
+        timeout: 10000
       })
     },
 
