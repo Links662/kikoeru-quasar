@@ -57,14 +57,12 @@
       </q-chip>
       <div class="row items-center justify-end q-ml-auto">
         <q-btn
-          outline
-          rounded
+          flat
           dense
-          size="sm"
           no-caps
           color="primary"
           icon="filter_alt_off"
-          label="清除全部"
+          label="清除筛选"
           @click="clearConditions"
         />
       </div>

@@ -32,7 +32,7 @@
             @click="onNavClick(item)"
           />
 
-          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense round class="nav-btn nav-more col-auto q-mr-xs text-white"
+          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense rounded class="nav-btn nav-more col-auto q-mr-xs text-white"
             icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 4]">
               <q-list dense class="nav-more-list">
