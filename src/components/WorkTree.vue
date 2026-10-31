@@ -11,7 +11,7 @@
       </q-breadcrumbs-el>
     </q-breadcrumbs>
 
-    <q-card>
+    <q-card flat bordered>
       <q-list separator>
         <q-item
           clickable
