@@ -9,6 +9,7 @@ a {
   height: $toolbar-control-height;
   min-height: $toolbar-control-height;
   border: 1px solid $separator-color;
+  border-radius: $button-rounded-border-radius;
 }
 
 .app-control-field {

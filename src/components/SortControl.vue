@@ -22,7 +22,7 @@
       unelevated
       color="white"
       text-color="grey-9"
-      class="sort-direction-btn app-control-button q-ml-sm"
+      class="sort-direction-btn app-control-button q-ml-xs"
       aria-label="切换排序方向"
       :icon="direction ? 'arrow_downward' : 'arrow_upward'"
       @click="$emit('toggle-direction')"

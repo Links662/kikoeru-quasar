@@ -79,64 +79,178 @@
           @toggle-direction="switchSortMode"
         />
 
-        <!-- 作品筛选 -->
-        <div class="app-control-group bg-white">
-          <q-btn-group dense unelevated aria-label="作品筛选">
-            <q-btn
-              dense
-              icon="no_adult_content"
-              aria-label="全年龄"
-              :aria-pressed="filters.allAges"
-              :color="filters.allAges ? 'primary' : 'white'"
-              :text-color="filters.allAges ? 'white' : 'grey-9'"
-              @click="filters.allAges = !filters.allAges"
-            >
-            </q-btn>
-            <q-btn
-              dense
-              icon="subtitles"
-              aria-label="中文字幕"
-              :aria-pressed="filters.subtitle"
-              :color="filters.subtitle ? 'primary' : 'white'"
-              :text-color="filters.subtitle ? 'white' : 'grey-9'"
-              @click="filters.subtitle = !filters.subtitle"
-            >
-            </q-btn>
-          </q-btn-group>
-        </div>
-
-        <!-- 切换显示模式 -->
-        <div class="work-toolbar__display col-auto row items-center justify-end">
+        <template v-if="!isNarrowScreen">
+          <!-- 作品筛选 -->
           <div class="app-control-group bg-white">
-            <q-btn-toggle dense unelevated spread class="col-auto"
-              v-model="listMode" toggle-color="primary" color="white"
-              text-color="grey-9" :options="[
-                { icon: 'apps', value: 'detail', attrs: { 'aria-label': '详细模式' } },
-                { icon: 'list', value: 'list', attrs: { 'aria-label': '列表模式' } }
-              ]" />
-          </div>
-          <!-- 列表模式：标签开关 -->
-          <div v-if="listMode === 'list'" class="app-control-group bg-white">
-            <q-btn-toggle dense unelevated spread class="col-auto"
-              v-model="showLabel" toggle-color="primary" color="white"
-              text-color="grey-9" :options="[
-                { icon: 'label', value: true, attrs: { 'aria-label': '显示标签' } },
-                { icon: 'label_off', value: false, attrs: { 'aria-label': '隐藏标签' } }
-              ]" />
+            <q-btn-group dense unelevated aria-label="作品筛选">
+              <q-btn
+                dense
+                icon="no_adult_content"
+                aria-label="全年龄"
+                :aria-pressed="filters.allAges"
+                :color="filters.allAges ? 'primary' : 'white'"
+                :text-color="filters.allAges ? 'white' : 'grey-9'"
+                @click="filters.allAges = !filters.allAges"
+              >
+              </q-btn>
+              <q-btn
+                dense
+                icon="subtitles"
+                aria-label="中文字幕"
+                :aria-pressed="filters.subtitle"
+                :color="filters.subtitle ? 'primary' : 'white'"
+                :text-color="filters.subtitle ? 'white' : 'grey-9'"
+                @click="filters.subtitle = !filters.subtitle"
+              >
+              </q-btn>
+            </q-btn-group>
           </div>
 
-          <!-- 详情模式：缩放开关 -->
-          <div v-if="listMode !== 'list'" class="app-control-group bg-white">
-            <q-btn-toggle dense unelevated spread class="col-auto"
-              v-model="detailMode" toggle-color="primary" color="white"
-              text-color="grey-9" :options="[
-                { icon: 'zoom_in', value: true, attrs: { 'aria-label': '放大封面' } },
-                { icon: 'zoom_out', value: false, attrs: { 'aria-label': '缩小封面' } }
-              ]" />
+          <!-- 切换显示模式 -->
+          <div class="work-toolbar__display col-auto row items-center justify-end">
+            <div class="app-control-group bg-white">
+              <q-btn-toggle dense unelevated spread class="col-auto"
+                v-model="listMode" toggle-color="primary" color="white"
+                text-color="grey-9" :options="[
+                  { icon: 'apps', value: 'detail', attrs: { 'aria-label': '详细模式' } },
+                  { icon: 'list', value: 'list', attrs: { 'aria-label': '列表模式' } }
+                ]" />
+            </div>
+            <!-- 列表模式：标签开关 -->
+            <div v-if="listMode === 'list'" class="app-control-group bg-white">
+              <q-btn-toggle dense unelevated spread class="col-auto"
+                v-model="showLabel" toggle-color="primary" color="white"
+                text-color="grey-9" :options="[
+                  { icon: 'label', value: true, attrs: { 'aria-label': '显示标签' } },
+                  { icon: 'label_off', value: false, attrs: { 'aria-label': '隐藏标签' } }
+                ]" />
+            </div>
+
+            <!-- 详情模式：缩放开关 -->
+            <div v-if="listMode !== 'list'" class="app-control-group bg-white">
+              <q-btn-toggle dense unelevated spread class="col-auto"
+                v-model="detailMode" toggle-color="primary" color="white"
+                text-color="grey-9" :options="[
+                  { icon: 'zoom_in', value: true, attrs: { 'aria-label': '放大封面' } },
+                  { icon: 'zoom_out', value: false, attrs: { 'aria-label': '缩小封面' } }
+                ]" />
+            </div>
           </div>
-        </div>
+        </template>
+
+        <q-btn
+          v-else
+          dense
+          unelevated
+          no-caps
+          color="white"
+          text-color="grey-9"
+          class="app-control-button q-ml-auto"
+          aria-controls="work-settings-panel"
+          :aria-expanded="settingsOpen"
+          :aria-label="settingsOpen ? '收起筛选与显示' : '展开筛选与显示'"
+          @click="settingsOpen = !settingsOpen"
+        >
+          <q-icon :name="settingsOpen ? 'expand_less' : 'tune'" />
+          <span class="q-ml-xs">筛选与显示</span>
+          <q-badge v-if="activeFilterCount" color="primary" class="q-ml-xs">
+            {{ activeFilterCount }}
+          </q-badge>
+        </q-btn>
 
       </div>
+
+      <q-slide-transition>
+        <q-card
+          v-if="isNarrowScreen && settingsOpen"
+          id="work-settings-panel"
+          flat
+          bordered
+          class="work-settings-panel q-mb-sm"
+        >
+          <q-list dense separator>
+            <q-item>
+              <q-item-section>
+                <q-item-label>作品筛选</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <div class="row items-center q-gutter-x-xs">
+                  <q-checkbox
+                    v-model="filters.allAges"
+                    dense
+                    color="primary"
+                    label="全年龄"
+                  />
+                  <q-checkbox
+                    v-model="filters.subtitle"
+                    dense
+                    color="primary"
+                    label="中文字幕"
+                  />
+                </div>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section>
+                <q-item-label>显示方式</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn-toggle
+                  v-model="listMode"
+                  dense
+                  unelevated
+                  toggle-color="primary"
+                  color="grey-2"
+                  text-color="grey-9"
+                  :options="[
+                    { label: '详细', value: 'detail' },
+                    { label: '列表', value: 'list' }
+                  ]"
+                />
+              </q-item-section>
+            </q-item>
+            <q-item v-if="listMode !== 'list'">
+              <q-item-section>
+                <q-item-label>封面大小</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn-toggle
+                  v-model="detailMode"
+                  dense
+                  unelevated
+                  toggle-color="primary"
+                  color="grey-2"
+                  text-color="grey-9"
+                  :options="[
+                    { label: '放大', value: true },
+                    { label: '缩小', value: false }
+                  ]"
+                />
+              </q-item-section>
+            </q-item>
+            <q-item v-if="listMode === 'list'">
+              <q-item-section>
+                <q-item-label>显示作品标签</q-item-label>
+              </q-item-section>
+              <q-item-section side>
+                <q-btn-toggle
+                  v-model="showLabel"
+                  dense
+                  unelevated
+                  toggle-color="primary"
+                  color="grey-2"
+                  text-color="grey-9"
+                  :options="[
+                    { label: '显示', value: true },
+                    { label: '隐藏', value: false }
+                  ]"
+                />
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card>
+      </q-slide-transition>
+
       <q-list v-if="listMode === 'list'" bordered separator>
         <WorkListItem v-for="work in works" :key="work.id" :metadata="work" :showLabel="showLabel" />
       </q-list>
@@ -271,6 +385,7 @@ export default {
       listMode: 'detail',
       showLabel: true,
       detailMode: true,
+      settingsOpen: false,
       works: [],
       pageTitle: '',
       keyword: '',
@@ -395,6 +510,11 @@ export default {
         this.filters.subtitle === true
     },
 
+    activeFilterCount () {
+      return Number(this.filters.allAges === true) +
+        Number(this.filters.subtitle === true)
+    },
+
     // 详情面板打开后会顶开右侧内容，可用的宽度要减掉面板宽度（移动端面板是浮层，不占宽度）
     availableWidth () {
       const panelOpen = this.workId !== null && !this.isMobilePanel
@@ -447,6 +567,10 @@ export default {
 
     '$route.query.focusSearch' (value) {
       this.focusSearchIfRequested(value)
+    },
+
+    isNarrowScreen (narrow) {
+      if (narrow !== true) this.settingsOpen = false
     },
 
     conditionRequestKey: {
@@ -765,7 +889,7 @@ export default {
 }
 
 .work-toolbar {
-  gap: 8px;
+  gap: 4px;
 }
 
 // 排序控件保留紧凑的最小宽度，避免极窄屏把字段文字挤到溢出。
@@ -776,7 +900,12 @@ export default {
 // 显示控件组放不下时自然换到下一行，并继续靠右；不再固定在 sm 断点换行。
 .work-toolbar__display {
   margin-left: auto;
-  gap: 8px;
+  gap: 4px;
+}
+
+.work-settings-panel {
+  border-radius: $cover-card-border-radius;
+  overflow: hidden;
 }
 
 .work-condition-bar :deep(.q-chip) {
