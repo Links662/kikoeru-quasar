@@ -1,5 +1,5 @@
 <template>
-  <!-- 最近播放这排是例外：开了 NSFW 模式就一律糊，不按 R18 判断 -->
+  <!-- 与普通作品卡片一致：仅 R18 作品在 NSFW 模式下打码 -->
   <q-item
     clickable
     v-ripple
@@ -11,7 +11,7 @@
       :src="coverUrl"
       :ratio="4/3"
       alt=""
-      img-class="cover-mask"
+      :img-class="recentwork.nsfw ? 'cover-mask' : ''"
       class="recent-cover full-width"
     >
       <!-- 封面叠层默认被 Quasar 的 `.q-img__content > div` 撑了 16px 内边距，

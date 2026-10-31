@@ -140,7 +140,7 @@ npm run build
 - 手写组件优先沿用现有 Vue Options API 风格；服务层可以使用 Composition API 的 `reactive`。
 - NSFW 打码由全局 CSS `body.nsfw-mode .cover-mask` 控制：
   - R18 封面节点按条件添加 `cover-mask`；
-  - 最近播放列表是特殊例外，开启 NSFW 模式时统一打码；
+  - 最近播放列表按历史接口返回的 `nsfw` 判断，仅打码 R18 作品；
   - 普通文字、RJ 号和发售日不应被模糊。
 - 移动端详情面板覆盖内容区，桌面端使用左侧抽屉；两者状态都来自 `WorkPanel`。
 - 移动端详情面板和展开播放器会互相遮挡，保持现有“后打开者优先、另一方收起”的行为。
