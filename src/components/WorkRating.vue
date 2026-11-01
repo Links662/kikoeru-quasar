@@ -47,13 +47,39 @@
     </button>
     <span v-else class="text-grey">({{ rateCount }})</span>
 
+    <template v-if="showRank && rankEntries.length">
+      <button
+        type="button"
+        class="bg-transparent no-border q-pa-none cursor-pointer"
+        :aria-label="rankSummary"
+      >
+        <span class="row items-center q-pl-xs ">
+          <q-icon name="emoji_events" size="xs" color="amber-8" />
+          <span class="q-ml-xs text-grey">({{ rankEntries.length }})</span>
+        </span>
+        <q-menu
+          anchor="bottom middle"
+          self="top middle"
+          :offset="[0, 4]"
+          class="bg-grey-9 text-white q-pa-sm"
+        >
+          <div class="text-weight-medium q-mb-xs">DLsite 排行</div>
+          <div
+            v-for="(rank, index) in rankEntries"
+            :key="`${rank.term}-${rank.category}-${rank.rank_date}-${index}`"
+          >
+            {{ formatRank(rank) }}
+          </div>
+        </q-menu>
+      </button>
+    </template>
+
     <template v-if="showReviewCount">
-      <span class="q-px-sm row items-center">
-        <q-icon name="chat" size="xs" />
+      <span class="q-pl-xs row items-center">
+        <q-icon name="forum" size="xs" />
         <span class="q-ml-xs text-grey">({{ reviewCount }})</span>
       </span>
     </template>
-
   </div>
 </template>
 
@@ -82,6 +108,10 @@ export default {
       default: 'sm'
     },
     showReviewCount: {
+      type: Boolean,
+      default: false
+    },
+    showRank: {
       type: Boolean,
       default: false
     },
@@ -117,6 +147,22 @@ export default {
       return Number(this.metadata.review_count) || 0
     },
 
+    rankEntries () {
+      const ranks = Array.isArray(this.metadata.rank)
+        ? this.metadata.rank
+        : (this.metadata.rank ? [this.metadata.rank] : [])
+
+      return ranks.filter(rank => {
+        const value = Number(rank && rank.rank)
+        return Number.isFinite(value) && value > 0
+      })
+    },
+
+    rankSummary () {
+      if (!this.rankEntries.length) return ''
+      return `查看 DLsite 排行，共 ${this.rankEntries.length} 条`
+    },
+
     sortedRatings () {
       if (!Array.isArray(this.metadata.rate_count_detail)) return []
 
@@ -141,6 +187,19 @@ export default {
   },
 
   methods: {
+    formatRank (rank) {
+      const labels = {
+        day: '日榜',
+        week: '周榜',
+        month: '月榜',
+        year: '年榜',
+        total: '累计榜'
+      }
+      const term = labels[rank.term] || '排行榜'
+      const date = rank.rank_date ? ` · ${rank.rank_date}` : ''
+      return `${term}第 ${rank.rank} 名${date}`
+    },
+
     async updateRating (rating) {
       if (!rating || rating === this.personalRating) return
 

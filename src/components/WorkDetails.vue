@@ -23,6 +23,7 @@
           size="sm"
           show-review-count
           show-rating-distribution
+          show-rank
           class="q-mt-xs"
         />
       </div>

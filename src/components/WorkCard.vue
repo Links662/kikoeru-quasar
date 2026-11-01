@@ -24,7 +24,7 @@
         </div>
 
         <div v-show="metadata.title" class="q-mt-xs">
-          <WorkRating :metadata="metadata" show-review-count/>
+          <WorkRating :metadata="metadata" />
         </div>
       </div>
 
