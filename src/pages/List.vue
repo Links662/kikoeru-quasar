@@ -49,6 +49,13 @@
       table-header-class="app-text"
       @request="onTableRequest"
       @row-click="openWorks">
+      <template v-slot:no-data="{ message }">
+        <template v-if="!requestPending">
+          <q-icon class="q-table__bottom-nodata-icon" name="warning" />
+          {{ message }}
+        </template>
+      </template>
+
       <!-- 分页放到底部正中（左右方向键也可翻页，见 handlePageKeyEvent） -->
       <template v-slot:bottom>
         <div class="row items-center justify-center full-width">
@@ -149,6 +156,8 @@ export default {
       items: [],
       keyword: '',
       loading: false,
+      requestPending: false,
+      loadingTimer: null,
       listRequestId: 0,
       requestScheduled: false,
       labelTabs,
@@ -181,6 +190,7 @@ export default {
   },
 
   beforeUnmount () {
+    clearTimeout(this.loadingTimer)
     window.removeEventListener('keydown', this.handlePageKeyEvent)
   },
 
@@ -269,7 +279,14 @@ export default {
 
     requestList () {
       const requestId = ++this.listRequestId
-      this.loading = true
+      this.requestPending = true
+      clearTimeout(this.loadingTimer)
+      // 快速请求不展示进度，避免 loading 只闪一下；较慢请求仍能及时反馈。
+      this.loadingTimer = setTimeout(() => {
+        if (requestId === this.listRequestId) {
+          this.loading = true
+        }
+      }, 200)
       const params = {
         page: this.pagination.page,
         keyword: this.keyword,
@@ -279,6 +296,8 @@ export default {
       this.$axios.get(this.url, { params })
         .then((response) => {
           if (requestId !== this.listRequestId) return
+          clearTimeout(this.loadingTimer)
+          this.requestPending = false
           const { items, pagination } = response.data
           this.items = Array.isArray(items) ? items : []
           this.pagination.page = pagination.currentPage
@@ -288,6 +307,8 @@ export default {
         })
         .catch((error) => {
           if (requestId !== this.listRequestId) return
+          clearTimeout(this.loadingTimer)
+          this.requestPending = false
           this.loading = false
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
