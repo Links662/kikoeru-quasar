@@ -329,6 +329,10 @@ export default {
       return this.$q.screen.width >= NAV_LABELS_MIN_VIEWPORT_WIDTH
     },
 
+    isLabelRoute () {
+      return ['/circles', '/tags', '/vas'].includes(this.$route.path)
+    },
+
     // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
     navIconStyle () {
       return {
@@ -352,19 +356,9 @@ export default {
           path: '/progress'
         },
         {
-          title: '社团',
-          icon: 'group',
-          path: '/circles'
-        },
-        {
-          title: '标签',
-          icon: 'label',
-          path: '/tags'
-        },
-        {
-          title: '声优',
-          icon: 'mic',
-          path: '/vas'
+          title: '分类',
+          icon: 'category',
+          path: this.isLabelRoute ? this.$route.path : '/circles',
         },
         {
           title: '隐私模式',

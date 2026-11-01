@@ -2,7 +2,7 @@
   <q-page class="q-px-md q-pt-md q-pb-md">
     <div class="row no-wrap items-center justify-between q-mb-sm">
       <div class="list-title col text-h5 text-weight-regular">
-        {{ pageTitle }}
+        分类浏览
       </div>
       <div v-if="!isNarrowScreen" class="list-search-wrap col-auto q-ml-md">
         <SearchInput
@@ -13,6 +13,26 @@
         />
       </div>
     </div>
+
+    <q-tabs
+      align="left"
+      no-caps
+      inline-label
+      active-color="primary"
+      indicator-color="primary"
+      class="q-mb-sm"
+      aria-label="分类类型"
+    >
+      <q-route-tab
+        v-for="tab in labelTabs"
+        :key="tab.type"
+        :name="tab.type"
+        :label="tab.label"
+        :icon="tab.icon"
+        :to="tab.path"
+        exact
+      />
+    </q-tabs>
 
     <div v-if="isNarrowScreen" class="q-mb-sm">
       <SearchInput
@@ -103,6 +123,12 @@ import { formatRJLabel } from '../utils/rjCode'
 import { workConditionLink } from '../utils/workQuery'
 import SearchInput from 'components/SearchInput'
 
+const labelTabs = [
+  { type: 'circle', label: '社团', icon: 'group', path: '/circles' },
+  { type: 'tag', label: '标签', icon: 'label', path: '/tags' },
+  { type: 'va', label: '声优', icon: 'mic', path: '/vas' }
+]
+
 export default {
   name: 'List',
 
@@ -123,6 +149,9 @@ export default {
       items: [],
       keyword: '',
       loading: false,
+      listRequestId: 0,
+      requestScheduled: false,
+      labelTabs,
       // 默认按收藏列降序，收藏项置顶；点表头可切换其它排序
       pagination: {
         sortBy: 'favourite',
@@ -156,15 +185,6 @@ export default {
   },
 
   computed: {
-    pageTitle () {
-      const titles = {
-        circle: '全部社团',
-        tag: '全部标签',
-        va: '全部声优'
-      }
-      return titles[this.conditionType] || '列表'
-    },
-
     searchPlaceholder () {
       const placeholders = {
         circle: '搜索社团名称…',
@@ -199,12 +219,14 @@ export default {
   watch: {
     keyword () {
       this.pagination.page = 1
-      this.requestList()
+      this.scheduleRequestList()
     },
 
-    url () {
+    conditionType (value, previous) {
+      if (value === previous) return
       this.pagination.page = 1
-      this.requestList()
+      this.keyword = ''
+      this.scheduleRequestList()
     }
   },
 
@@ -246,6 +268,7 @@ export default {
     },
 
     requestList () {
+      const requestId = ++this.listRequestId
       this.loading = true
       const params = {
         page: this.pagination.page,
@@ -255,6 +278,7 @@ export default {
       }
       this.$axios.get(this.url, { params })
         .then((response) => {
+          if (requestId !== this.listRequestId) return
           const { items, pagination } = response.data
           this.items = Array.isArray(items) ? items : []
           this.pagination.page = pagination.currentPage
@@ -263,6 +287,7 @@ export default {
           this.loading = false
         })
         .catch((error) => {
+          if (requestId !== this.listRequestId) return
           this.loading = false
           if (error.response) {
             // 请求已发出，但服务器响应的状态码不在 2xx 范围内
@@ -273,6 +298,15 @@ export default {
             this.showErrNotif(error.message || error)
           }
         })
+    },
+
+    scheduleRequestList () {
+      if (this.requestScheduled) return
+      this.requestScheduled = true
+      this.$nextTick(() => {
+        this.requestScheduled = false
+        this.requestList()
+      })
     },
 
     onTableRequest ({ pagination }) {
