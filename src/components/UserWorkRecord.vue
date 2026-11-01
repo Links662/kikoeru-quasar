@@ -70,7 +70,7 @@
           behavior="menu"
           dropdown-icon="keyboard_arrow_down"
           aria-label="标记进度"
-          class="app-control-field user-work-record__progress-select text-grey-9"
+          class="app-control-field text-grey-9"
           :menu-offset="[0, 6]"
         >
           <template #selected>
@@ -90,6 +90,17 @@
           label="编辑评论"
           @click="showReviewDialog = true"
         />
+
+        <q-btn
+          dense
+          rounded
+          outline
+          no-caps
+          color="negative"
+          padding="4px 8px"
+          label="清除记录"
+          @click="deleteConfirm = true"
+        />
       </div>
 
       <WriteReview
@@ -97,9 +108,22 @@
         :workid="workId"
         :record="record"
         @saved="onNoteSaved"
-        @deleted="onRecordDeleted"
         @closed="showReviewDialog = false"
       />
+
+      <q-dialog v-model="deleteConfirm">
+        <q-card class="confirm-card">
+          <q-card-section>
+            <div class="text-h6">确定要清除我的记录吗？</div>
+            <div class="text-caption text-grey-7 q-mt-sm">这会同时删除评分、收听状态和短评。</div>
+          </q-card-section>
+
+          <q-card-actions align="right">
+            <q-btn flat label="取消" color="primary" v-close-popup />
+            <q-btn flat label="确认" color="negative" :loading="deleting" @click="deleteRecord" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </template>
   </div>
 </template>
@@ -145,7 +169,9 @@ export default {
   data () {
     return {
       progressOptions: PROGRESS_OPTIONS,
-      showReviewDialog: false
+      showReviewDialog: false,
+      deleteConfirm: false,
+      deleting: false
     }
   },
 
@@ -156,7 +182,7 @@ export default {
 
     progressLabel () {
       const option = this.progressOptions.find(item => item.value === this.record.progress)
-      return option ? option.label : '标记进度'
+      return option ? option.label : '标记'
     }
   },
 
@@ -213,9 +239,20 @@ export default {
       this.showReviewDialog = false
     },
 
-    onRecordDeleted () {
-      clearUserWorkRecord(this.workId)
-      this.showReviewDialog = false
+    async deleteRecord () {
+      if (this.deleting) return
+      this.deleting = true
+
+      try {
+        await this.recordService.remove(this.workId)
+        clearUserWorkRecord(this.workId)
+        this.deleteConfirm = false
+        this.showSuccNotif('记录已清除')
+      } catch (error) {
+        this.showErrNotif(getUserWorkRecordErrorMessage(error))
+      } finally {
+        this.deleting = false
+      }
     }
   }
 }
@@ -237,11 +274,6 @@ export default {
   text-align: right;
 }
 
-.user-work-record__progress-select {
-  width: 112px;
-  flex: 0 0 112px;
-}
-
 .user-work-record__progress {
   overflow: hidden;
   border: 1px solid $separator-color;
@@ -249,5 +281,9 @@ export default {
 
 .user-work-record__progress :deep(.q-btn:not(:last-child)) {
   border-right: 1px solid $separator-color;
+}
+
+.confirm-card {
+  width: min(320px, calc(100vw - 32px));
 }
 </style>
