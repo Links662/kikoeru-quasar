@@ -51,7 +51,7 @@
     </template>
 
     <template v-else>
-      <div class="row items-center q-gutter-x-xs">
+      <div class="row items-center q-gutter-x-sm">
         <q-select
           :model-value="record.progress"
           @update:model-value="updateProgress"

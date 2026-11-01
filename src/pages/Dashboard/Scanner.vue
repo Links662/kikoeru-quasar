@@ -12,6 +12,7 @@
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          unelevated
           color="teal"
           label="扫描本地存储位置"
           :disable="state === 'running' || !socketConnected"
@@ -22,6 +23,7 @@
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          unelevated
           color="indigo"
           label="扫描字幕"
           :disable="state === 'running' || !socketConnected"
@@ -32,6 +34,7 @@
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          unelevated
           color="primary"
           label="刷新作品信息"
           :disable="state === 'running' || !socketConnected"
@@ -42,6 +45,7 @@
       <div class="col-xs-6 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          unelevated
           color="brown"
           label="修复封面"
           :disable="state === 'running' || !socketConnected"
@@ -52,6 +56,7 @@
       <div class="col-xs-12 col-sm-4 row q-pa-sm">
         <q-btn
           class="col"
+          unelevated
           color="negative"
           label="终止扫描进程"
           :disable="state !== 'running' || !socketConnected"

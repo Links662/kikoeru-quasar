@@ -2,7 +2,6 @@
   <q-dialog
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    persistent
   >
     <q-card class="sleep-mode-card">
       <q-card-section class="row items-center no-wrap q-gutter-x-xs q-px-md q-pt-md q-pb-sm">
@@ -92,7 +91,7 @@
           v-if="timerMode === 'duration'"
           class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm"
         >
-          <div class="text-caption text-weight-medium app-text-secondary q-mb-sm">
+          <div class="text-caption text-weight-medium app-text-secondary">
             快捷时长（分钟）
           </div>
           <q-slider
@@ -101,23 +100,15 @@
             :max="quickDurations.length - 1"
             :step="1"
             snap
-            :label-value="selectedQuickDuration.label"
+            dense
+            :marker-labels="(index) => String(quickDurations[index]?.minutes ?? '')"
             color="primary"
-            track-size="40px"
+            track-size="30px"
             thumb-size="0px"
             aria-label="快捷暂停时长"
             :aria-valuetext="selectedQuickDuration.label"
             @update:model-value="selectQuickDuration"
           />
-          <div class="row justify-between text-caption app-text-secondary q-mt-xs" aria-hidden="true">
-            <span
-              v-for="(duration, index) in quickDurations"
-              :key="duration.minutes"
-              :class="{ 'sleep-mode-slider-label--disabled': index === 0 }"
-            >
-              {{ duration.minutes }}
-            </span>
-          </div>
         </div>
 
         <div v-else class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm">
@@ -127,9 +118,7 @@
           <q-input
             v-model="customTime"
             type="time"
-            label="结束时间"
             outlined
-            dense
             clearable
             step="60"
             color="primary"
@@ -177,7 +166,6 @@ export default {
         { minutes: 30, label: '30 分钟' },
         { minutes: 45, label: '45 分钟' },
         { minutes: 60, label: '60 分钟' },
-        { minutes: 120, label: '120 分钟' }
       ]
     }
   },
@@ -353,7 +341,4 @@ export default {
   background: color-mix(in srgb, var(--q-primary) 7%, transparent);
 }
 
-.sleep-mode-slider-label--disabled {
-  opacity: 0.35;
-}
 </style>

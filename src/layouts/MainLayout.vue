@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="app-page-bg" :style="layoutStyle">
-    <q-header ref="header" class="app-main-header">
+    <q-header ref="header" class="app-main-header shadow-1">
       <q-toolbar
         :class="{ 'nav-icons': !showNavLabel }"
         :style="navIconStyle"
@@ -81,16 +81,42 @@
       <AudioPlayer />
     </q-header>
 
-    <q-dialog v-model="confirm" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="power_settings_new" color="primary" text-color="white" />
-          <span class="q-ml-sm">是否退出登录？（若未开启用户验证，则操作无效）</span>
+    <q-dialog
+      v-model="confirm"
+      persistent
+      aria-labelledby="logout-dialog-title"
+      aria-describedby="logout-dialog-description"
+    >
+      <q-card class="logout-dialog">
+        <q-card-section class="q-pb-sm">
+          <div id="logout-dialog-title" class="text-h6">退出登录？</div>
+          <div id="logout-dialog-description" class="text-body2 app-text-secondary q-mt-sm">
+            退出后将停止播放，并清除本机的登录状态。
+          </div>
+          <div
+            v-if="userName"
+            class="logout-dialog__account row items-center no-wrap q-mt-md q-px-sm q-py-sm rounded-borders text-primary"
+          >
+            <q-icon name="person_outline" size="xs" />
+            <span class="q-ml-sm text-caption app-text-secondary">当前账号</span>
+            <span class="col q-ml-sm ellipsis text-body2 text-weight-medium app-text">{{ userName }}</span>
+          </div>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="取消" color="primary" v-close-popup />
-          <q-btn flat label="退出" color="primary" @click="logout()" v-close-popup />
+          <q-btn
+            flat
+            color="primary"
+            label="取消"
+            v-close-popup
+          />
+          <q-btn
+            flat
+            color="negative"
+            label="退出"
+            @click="logout()"
+            v-close-popup
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -367,9 +393,8 @@ export default {
           path: this.isLabelRoute ? this.$route.path : '/circles',
         },
         {
-          title: '隐私模式',
+          title: this.nsfwMode ? '模糊' : '展示',
           icon: this.nsfwMode ? 'blur_on' : 'blur_off',
-          active: this.nsfwMode,
           keepPanel: true,
           action: this.toggleNsfwMode
         },
@@ -388,13 +413,13 @@ export default {
           action: () => { this.showTimer = true }
         },
         {
-          title: '随机',
+          title: '随机播放',
           icon: 'shuffle',
           keepPanel: true,
           action: this.requestRandomWork
         },
         {
-          title: '控制台',
+          title: '控制',
           icon: 'tune',
           path: '/admin'
         },
@@ -704,6 +729,14 @@ export default {
 
 
 <style lang="scss" scoped>
+.logout-dialog {
+  width: min(360px, calc(100vw - 32px));
+}
+
+.logout-dialog__account {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
 // 顶部导航：固定一行，放不下的项由下拉菜单接管
 // 纯图标模式：40px 触控区，按钮之间不再额外留 margin。
 // 图标仍为 24px，因此图标边缘间距约 16px。

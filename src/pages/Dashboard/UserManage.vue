@@ -24,7 +24,7 @@
 
 
           <div class="row justify-end">
-            <q-btn :loading="loadingUpdateAdminPassword" type="submit" color="primary" label="修改" />
+            <q-btn unelevated :loading="loadingUpdateAdminPassword" type="submit" color="primary" label="修改" />
           </div>
         </div>
       </q-form>
@@ -57,7 +57,7 @@
           />
 
           <div class="row justify-end">
-            <q-btn :loading="loadingAddNewUser" type="submit" color="primary" label="添加" />
+            <q-btn unelevated :loading="loadingAddNewUser" type="submit" color="primary" label="添加" />
           </div>
         </div>
       </q-form>
@@ -97,7 +97,7 @@
       </div>
 
       <div class="row justify-end">
-        <q-btn :loading="loadingDeleteUsers" :disable="selected.length === 0" @click="confirm = true" color="primary" label="删除" />
+        <q-btn unelevated :loading="loadingDeleteUsers" :disable="selected.length === 0" @click="confirm = true" color="primary" label="删除" />
       </div>
     </q-card>
 

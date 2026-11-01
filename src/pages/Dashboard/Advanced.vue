@@ -419,7 +419,7 @@
     </q-card>
 
     <div class="q-ma-lg row justify-end">
-      <q-btn :loading="loading" label="保存" type="submit" color="primary" />
+      <q-btn unelevated :loading="loading" label="保存" type="submit" color="primary" />
     </div>
   </q-form>
 </template>

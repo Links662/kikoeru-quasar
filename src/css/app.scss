@@ -4,6 +4,7 @@
   color-scheme: light;
   --app-page-bg: #{$grey-3};
   --app-surface: white;
+  --app-dashboard-header-bg: #{$grey-14};
   --app-text: #{rgba(black, 0.87)};
   --app-text-secondary: #{rgba(black, 0.6)};
   --app-border: #{$separator-color};
@@ -26,6 +27,7 @@ body.body--dark {
   color-scheme: dark;
   --app-page-bg: #{$dark-page};
   --app-surface: #{$dark};
+  --app-dashboard-header-bg: var(--app-surface);
   --app-text: #{rgba(white, 0.87)};
   --app-text-secondary: #{rgba(white, 0.6)};
   --app-border: #{rgba(white, 0.12)};
@@ -42,6 +44,11 @@ body.body--dark {
 
 body.body--dark .app-main-header {
   background: var(--app-surface);
+}
+
+// 深色模式不使用 Quasar 的白色阴影，改用底部高亮线区分导航栏。
+body.body--dark .q-header.shadow-1 {
+  box-shadow: none;
   border-bottom: 1px solid var(--app-border);
 }
 
@@ -57,6 +64,10 @@ body.body--dark .q-menu {
 
 .app-surface {
   background: var(--app-surface);
+}
+
+.app-dashboard-header {
+  background: var(--app-dashboard-header-bg);
 }
 
 .app-text {

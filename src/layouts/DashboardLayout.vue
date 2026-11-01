@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="hhh LpR fFf">
-    <q-header class="bg-black shadow-1">
+  <q-layout view="hHh Lpr lFf">
+    <q-header class="app-dashboard-header shadow-1 text-white">
       <q-toolbar class="row no-wrap items-center">
         <!-- 屏幕变窄时先收掉「控制台」标志，再窄到手机尺寸才让导航缩成纯图标 -->
         <q-toolbar-title shrink class="gt-sm q-mr-md">控制台</q-toolbar-title>

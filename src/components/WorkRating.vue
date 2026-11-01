@@ -15,8 +15,22 @@
         aria-label="作品评分"
         @update:model-value="updateRating"
       />
+    </span>
 
-      <q-tooltip v-if="showRatingDistribution && sortedRatings.length" content-class="text-subtitle1">
+    <span class="text-weight-medium text-body1 text-red">{{ average }}</span>
+    <button
+      v-if="showRatingDistribution && sortedRatings.length"
+      type="button"
+      class="text-grey bg-transparent no-border q-pa-none cursor-pointer"
+      :aria-label="`查看 ${rateCount} 人评分分布`"
+    >
+      ({{ rateCount }})
+      <q-menu
+        anchor="bottom middle"
+        self="top middle"
+        :offset="[0, 4]"
+        class="bg-grey-9 text-white q-pa-sm"
+      >
         <div>DLsite 平均: {{ average }}</div>
         <div v-for="rate in sortedRatings" :key="rate.review_point" class="row items-center">
           <div class="col">{{ rate.review_point }}星</div>
@@ -29,11 +43,9 @@
           />
           <div class="col">({{ rate.count }})</div>
         </div>
-      </q-tooltip>
-    </span>
-
-    <span class="text-weight-medium text-body1 text-red">{{ average }}</span>
-    <span class="text-grey">({{ rateCount }})</span>
+      </q-menu>
+    </button>
+    <span v-else class="text-grey">({{ rateCount }})</span>
 
     <template v-if="showReviewCount">
       <span class="q-px-sm row items-center">
