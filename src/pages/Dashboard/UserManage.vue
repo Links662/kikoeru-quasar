@@ -89,7 +89,7 @@
         </template>
       </q-table>
 
-      <div class="text-caption text-grey-7 q-mt-sm">
+      <div class="text-caption app-text-secondary q-mt-sm">
         这里的开关代表账号状态：开着表示账号正常可用，关掉即禁用。
         禁用后该账号立刻无法登录（已登录的会话也会失效），评语 / 收藏 / 历史记录仍然保留。
         内置的 admin 账号不允许删除，要让它下线就关掉它的开关。
@@ -105,7 +105,7 @@
       <q-card>
         <q-card-section>
           <div class="text-h6">确认删除选中用户？</div>
-          <div class="text-caption text-grey-7">该账号的评语、收藏与历史记录会一并删除，不能恢复。</div>
+          <div class="text-caption app-text-secondary">该账号的评语、收藏与历史记录会一并删除，不能恢复。</div>
         </q-card-section>
 
         <q-card-actions align="right">

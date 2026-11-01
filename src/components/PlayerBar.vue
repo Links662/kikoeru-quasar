@@ -1,6 +1,6 @@
 <template>
   <q-slide-transition>
-    <div v-show="hasTrack && hide" class="bg-white text-black player-bar">
+    <div v-show="hasTrack && hide" class="app-surface app-text player-bar">
       <div v-show="showLyricStrip" class="player-bar-lyric row items-center justify-center">
         <span v-if="currentLyric" class="player-bar-lyric__text text-purple text-bold ellipsis">
           {{ currentLyric }}
@@ -96,7 +96,7 @@ $player-bar-btn: 60px;
 // 收起态播放条本体：上沿和页面之间也有一条分割线，
 // 所以歌词条上下各一条，把这一整块和页面分开
 .player-bar {
-  border-top: 1px solid $separator-color;
+  border-top: 1px solid var(--app-border);
 }
 
 // sam 保留原图比例：正方形封面正好铺满，其它比例用 contain 上下留白
@@ -110,12 +110,12 @@ $player-bar-btn: 60px;
   width: $player-bar-btn;
 }
 
-// 收起态歌词条：播放条里的一行。底色不另设，跟着播放条的 bg-white 走，
+// 收起态歌词条：播放条里的一行。底色不另设，跟着播放条的 app-surface 走，
 // 靠下面这条淡分割线和控件分开
 .player-bar-lyric {
   height: 30px;
   padding: 0 12px;
-  border-bottom: 1px solid $separator-color;
+  border-bottom: 1px solid var(--app-border);
 }
 
 .player-bar-lyric__text {

@@ -88,7 +88,7 @@
         v-model="tab"
         dense
         inline-label
-        class="text-grey"
+        class="app-text-secondary"
         active-color="white"
         active-bg-color="brown"
         indicator-color="yellow"

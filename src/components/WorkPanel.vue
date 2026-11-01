@@ -1,5 +1,5 @@
 <template>
-  <div class="column no-wrap fit bg-white relative-position">
+  <div class="column no-wrap fit app-surface relative-position">
     <!-- 右侧贴边把手：点一下收起面板；鼠标悬停 / 键盘聚焦时展宽并变主色 -->
     <button
       class="panel-grip absolute-right row items-center justify-end bg-transparent no-border no-padding non-selectable cursor-pointer"
@@ -118,7 +118,7 @@ export default {
     width: 6px;
     height: 96px;
     border-radius: 999px 0 0 999px;
-    background: rgba(0, 0, 0, .16);
+    background: var(--app-grip);
     transition: width .18s ease, background-color .18s ease;
   }
 
@@ -134,7 +134,7 @@ export default {
   &:hover &__bar,
   &:focus-visible &__bar {
     width: 12px;
-    background: $primary;
+    background: var(--app-primary);
   }
 
   &:hover .q-icon,
@@ -151,12 +151,12 @@ export default {
 @media (hover: none) {
   .panel-grip__bar {
     width: 6px;
-    background: rgba(0, 0, 0, .18);
+    background: var(--app-grip);
   }
 
   .panel-grip:active .panel-grip__bar {
     width: 12px;
-    background: $primary;
+    background: var(--app-primary);
   }
 
   .panel-grip:active .q-icon {

@@ -8,6 +8,7 @@ module.exports = function (/* ctx */) {
     // app boot file (/src/boot)
     // https://v2.quasar.dev/quasar-cli-webpack/boot-files
     boot: [
+      'theme',
       'axios',
       'player',
       'socket.io'

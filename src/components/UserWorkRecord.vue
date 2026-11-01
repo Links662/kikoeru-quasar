@@ -36,9 +36,7 @@
           spread
           no-caps
           toggle-color="primary"
-          color="white"
-          text-color="grey-9"
-          class="user-work-record__progress bg-white"
+          class="user-work-record__progress app-surface app-theme-control"
           :options="progressOptions"
         />
         <span
@@ -70,7 +68,7 @@
           behavior="menu"
           dropdown-icon="keyboard_arrow_down"
           aria-label="标记进度"
-          class="app-control-field text-grey-9"
+          class="app-control-field app-text"
           :menu-offset="[0, 6]"
         >
           <template #selected>
@@ -83,8 +81,6 @@
           unelevated
           rounded
           no-caps
-          color="white"
-          text-color="grey-9"
           class="app-control-button"
           padding="4px 8px"
           label="编辑评论"
@@ -115,7 +111,7 @@
         <q-card class="confirm-card">
           <q-card-section>
             <div class="text-h6">确定要清除我的记录吗？</div>
-            <div class="text-caption text-grey-7 q-mt-sm">这会同时删除评分、收听状态和短评。</div>
+            <div class="text-caption app-text-secondary q-mt-sm">这会同时删除评分、收听状态和短评。</div>
           </q-card-section>
 
           <q-card-actions align="right">
@@ -276,11 +272,11 @@ export default {
 
 .user-work-record__progress {
   overflow: hidden;
-  border: 1px solid $separator-color;
+  border: 1px solid var(--app-border);
 }
 
 .user-work-record__progress :deep(.q-btn:not(:last-child)) {
-  border-right: 1px solid $separator-color;
+  border-right: 1px solid var(--app-border);
 }
 
 .confirm-card {

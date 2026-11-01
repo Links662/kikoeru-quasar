@@ -1,5 +1,97 @@
 // app global css in SCSS form
 
+:root {
+  color-scheme: light;
+  --app-page-bg: #e0e0e0;
+  --app-surface: #fff;
+  --app-text: rgba(0, 0, 0, 0.87);
+  --app-text-secondary: rgba(0, 0, 0, 0.6);
+  --app-border: rgba(0, 0, 0, 0.12);
+  --app-shadow: rgba(0, 0, 0, 0.16);
+  --app-grip: rgba(0, 0, 0, 0.16);
+  --app-primary: #{$primary};
+  --app-browser-theme: #{$primary};
+  --app-chip-age-bg: #{$light-green-2};
+  --app-chip-age-text: #{$light-green-9};
+  --app-chip-subtitle-bg: #{$blue-1};
+  --app-chip-subtitle-text: #{$blue-9};
+  --app-chip-tag-bg: #{$blue-grey-1};
+  --app-chip-tag-text: #{$blue-grey-9};
+  --app-chip-voice-bg: #{$teal-1};
+  --app-chip-voice-text: #{$teal-9};
+  --app-chip-on-strong: #fff;
+}
+
+body.body--dark {
+  color-scheme: dark;
+  --app-page-bg: #121212;
+  --app-surface: #1e1e1e;
+  --app-text: rgba(255, 255, 255, 0.87);
+  --app-text-secondary: rgba(255, 255, 255, 0.6);
+  --app-border: rgba(255, 255, 255, 0.12);
+  --app-shadow: rgba(0, 0, 0, 0.6);
+  --app-grip: rgba(255, 255, 255, 0.65);
+  --app-browser-theme: #{$dark};
+  --app-chip-age-bg: #{$light-green-9};
+  --app-chip-subtitle-bg: #{$blue-9};
+  --app-chip-tag-bg: #{$blue-grey-9};
+  --app-chip-voice-bg: #{$teal-9};
+}
+
+body.body--dark .app-main-header {
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-page-bg {
+  background: var(--app-page-bg);
+}
+
+.app-surface {
+  background: var(--app-surface);
+}
+
+.app-text {
+  color: var(--app-text);
+}
+
+.app-text-secondary {
+  color: var(--app-text-secondary);
+}
+
+.app-theme-control {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.app-work-chip {
+  border: 0;
+}
+
+.app-work-chip--age {
+  background: var(--app-chip-age-bg);
+  color: var(--app-chip-age-text);
+}
+
+.app-work-chip--subtitle {
+  background: var(--app-chip-subtitle-bg);
+  color: var(--app-chip-subtitle-text);
+}
+
+.app-work-chip--tag {
+  background: var(--app-chip-tag-bg);
+  color: var(--app-chip-tag-text);
+}
+
+.app-work-chip--voice {
+  background: var(--app-chip-voice-bg);
+  color: var(--app-chip-voice-text);
+}
+
+body.body--dark .app-work-chip {
+  color: var(--app-chip-on-strong);
+}
+
 a {
   text-decoration:none;
 }
@@ -8,8 +100,10 @@ a {
 .app-control-button {
   height: $toolbar-control-height;
   min-height: $toolbar-control-height;
-  border: 1px solid $separator-color;
+  border: 1px solid var(--app-border);
   border-radius: $button-rounded-border-radius;
+  background: var(--app-surface);
+  color: var(--app-text);
 }
 
 .app-control-field {
@@ -19,7 +113,14 @@ a {
   }
 
   .q-field__control {
-    background: #fff;
+    background: var(--app-surface);
+  }
+
+  .q-field__native,
+  .q-field__input,
+  .q-field__prefix,
+  .q-field__suffix {
+    color: var(--app-text);
   }
 
   &.q-field--auto-height .q-field__control {
@@ -40,8 +141,10 @@ a {
   flex: 0 0 auto;
   height: $toolbar-control-height;
   overflow: hidden;
-  border: 1px solid $separator-color;
+  border: 1px solid var(--app-border);
   border-radius: $button-rounded-border-radius;
+  background: var(--app-surface);
+  color: var(--app-text);
 
   .q-btn {
     height: 100%;
@@ -49,7 +152,7 @@ a {
   }
 
   .q-btn:not(:last-child) {
-    border-right: 1px solid $separator-color;
+    border-right: 1px solid var(--app-border);
   }
 }
 

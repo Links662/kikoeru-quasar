@@ -1,5 +1,5 @@
 <template>
-  <q-item class="bg-white q-pa-xs">
+  <q-item class="app-surface q-pa-xs">
     <q-item-section avatar class="q-pr-xs">
       <router-link :to="`/work/${metadata.id}`">
         <q-img fit="contain" :src="coverUrl" :img-class="metadata.nsfw ? 'cover-mask' : ''" class="list-cover" />
@@ -8,7 +8,7 @@
 
     <q-item-section>
       <q-item-label lines="2" class="text">
-        <router-link :to="`/work/${metadata.id}`" class="text-black">
+        <router-link :to="`/work/${metadata.id}`" class="app-text">
           {{ metadata.title }}
         </router-link>
       </q-item-label>

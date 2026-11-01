@@ -5,14 +5,13 @@
     </div>
     <div class="row wrap justify-between items-center q-mb-sm">
       <div class="col-auto gt-xs">
-        <div class="app-control-group bg-white">
+        <div class="app-control-group">
           <q-btn-toggle
             v-model="progressFilter"
+            class="app-theme-control"
             unelevated
             spread
             toggle-color="primary"
-            color="white"
-            text-color="grey-9"
             :options="progressOptions"
           />
         </div>
@@ -33,7 +32,7 @@
           behavior="menu"
           dropdown-icon="keyboard_arrow_down"
           aria-label="进度筛选"
-          class="app-control-field progress-filter-select text-grey-9"
+          class="app-control-field progress-filter-select app-text"
           :menu-offset="[0, 6]"
         />
       </div>
@@ -47,7 +46,7 @@
     </div>
     <div>
       <div>
-        <div class="row justify-center text-grey" v-if="visibleWorks.length === 0">
+        <div class="row justify-center app-text-secondary" v-if="visibleWorks.length === 0">
           这里只显示已标记收听状态的作品。
         </div>
         <q-list bordered separator v-if="visibleWorks.length">

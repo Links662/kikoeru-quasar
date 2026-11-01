@@ -4,7 +4,7 @@
     clickable
     v-ripple
     :aria-label="playLabel"
-    class="app-cover-card recent-card bg-white non-selectable q-pa-none overflow-hidden"
+    class="app-cover-card recent-card app-surface non-selectable q-pa-none overflow-hidden"
     @click="onClickPlay()"
   >
     <q-img
@@ -148,7 +148,7 @@ export default {
 <style lang="scss" scoped>
   .recent-card {
     transition: transform 160ms ease-out, box-shadow 160ms ease-out;
-    border: 1px solid $separator-color;
+    border: 1px solid var(--app-border);
     box-shadow: none;
   }
 
@@ -160,7 +160,7 @@ export default {
     .recent-card:hover,
     .recent-card:focus-visible {
       transform: translateY(-2px);
-      box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+      box-shadow: 0 2px 4px -1px var(--app-shadow);
     }
   }
 

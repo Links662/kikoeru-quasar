@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="hHh Lpr lFf" class="bg-grey-3" :style="layoutStyle">
-    <q-header ref="header" class="shadow-1">
+  <q-layout view="hHh Lpr lFf" class="app-page-bg" :style="layoutStyle">
+    <q-header ref="header" class="app-main-header">
       <q-toolbar
         :class="{ 'nav-icons': !showNavLabel }"
         :style="navIconStyle"
@@ -104,7 +104,7 @@
       :width="panelWidth"
       bordered
       elevated
-      content-class="bg-white"
+      content-class="app-surface"
     >
       <WorkPanel
         v-if="workId !== null"
@@ -128,7 +128,7 @@
       <transition name="work-panel-slide">
         <div
           v-if="isMobilePanel && workId !== null"
-          class="work-panel-mobile fixed-top bg-white"
+          class="work-panel-mobile fixed-top app-surface"
         >
           <WorkPanel :key="workId" :workid="workId" @close="closePanel" />
         </div>
@@ -149,6 +149,7 @@ import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
 import { audioEngine } from '../services/AudioEngine'
 import { endSession } from '../services/session'
+import { cycleThemeMode, normalizeThemeMode } from '../services/theme'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
 // 5 个 14px 两字标签 + 更多约 382px，加工具栏内边距并预留“更多”的
@@ -333,6 +334,26 @@ export default {
       return ['/circles', '/tags', '/vas'].includes(this.$route.path)
     },
 
+    themeMode () {
+      return normalizeThemeMode(this.$q.dark.mode)
+    },
+
+    themeTitle () {
+      return {
+        auto: '跟随系统',
+        light: '浅色模式',
+        dark: '深色模式'
+      }[this.themeMode]
+    },
+
+    themeIcon () {
+      return {
+        auto: 'brightness_auto',
+        light: 'light_mode',
+        dark: 'dark_mode'
+      }[this.themeMode]
+    },
+
     // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
     navIconStyle () {
       return {
@@ -366,6 +387,12 @@ export default {
           active: this.nsfwMode,
           keepPanel: true,
           action: this.toggleNsfwMode
+        },
+        {
+          title: this.themeTitle,
+          icon: this.themeIcon,
+          keepPanel: true,
+          action: this.toggleThemeMode
         },
         {
           title: '随机',
@@ -643,6 +670,10 @@ export default {
       // 锁屏 / 通知栏的封面不在 CSS 管辖范围，要重新推一次媒体信息
       const engine = audioEngine()
       if (engine) engine.setMediaSession()
+    },
+
+    toggleThemeMode () {
+      cycleThemeMode(this.$q)
     },
 
     requestRandomWork () {

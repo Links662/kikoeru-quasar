@@ -133,7 +133,7 @@ export default {
 
 <style lang="scss" scoped>
 .dashboard-content :deep(.q-card) {
-  border: 1px solid $separator-color;
+  border: 1px solid var(--app-border);
   box-shadow: none;
 }
 </style>

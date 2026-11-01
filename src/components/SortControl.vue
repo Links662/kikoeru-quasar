@@ -13,7 +13,7 @@
       behavior="menu"
       aria-label="排序方式"
       dropdown-icon="keyboard_arrow_down"
-      class="app-control-field sort-select text-grey-9"
+      class="app-control-field sort-select app-text"
       :menu-offset="[0, 6]"
     />
 
@@ -21,8 +21,6 @@
       dense
       round
       unelevated
-      color="white"
-      text-color="grey-9"
       class="sort-direction-btn app-control-button q-ml-xs"
       aria-label="切换排序方向"
       :icon="direction ? 'arrow_downward' : 'arrow_upward'"

@@ -1,5 +1,5 @@
 <template>
-  <q-item class="row bg-white">
+  <q-item class="row app-surface">
     <q-item-section class="col-auto" top>
       <router-link :to="`/work/${metadata.id}`">
         <q-img
@@ -14,7 +14,7 @@
 
     <q-item-section class="q-gutter-y-xs column items-start" top>
       <q-item-label lines="2" class="text-body2">
-        <router-link :to="`/work/${metadata.id}`" class="col-auto text-black">
+        <router-link :to="`/work/${metadata.id}`" class="col-auto app-text">
           {{ metadata.title }}
         </router-link>
       </q-item-label>

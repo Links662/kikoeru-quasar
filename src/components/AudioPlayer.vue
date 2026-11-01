@@ -2,7 +2,7 @@
   <div>
     <transition name="player-slide">
       <q-card square v-show="hasTrack && !hide"
-        class="fixed-bottom-right bg-white text-black audio-player column no-wrap" @wheel.prevent @touchmove.prevent>
+        class="fixed-bottom-right app-surface app-text audio-player column no-wrap" @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart relative-position overflow-hidden col-shrink">
           <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
@@ -17,15 +17,16 @@
             </div>
           </transition>
 
-          <q-btn dense round size="md" color="white" text-color="dark" icon="keyboard_arrow_down"
+          <q-btn dense round size="md" icon="keyboard_arrow_down"
             aria-label="收起播放器" @click="toggleHide()"
-            class="absolute-top-left q-ma-sm" />
-          <q-btn dense round size="md" color="white" text-color="dark" icon="info_outline"
-            aria-label="打开作品详情" class="absolute-top-right q-ma-sm" @click="openWorkDetail()" />
+            class="app-theme-control absolute-top-left q-ma-sm" />
+          <q-btn dense round size="md" icon="info_outline" aria-label="打开作品详情"
+            class="app-theme-control absolute-top-right q-ma-sm"
+            @click="openWorkDetail()" />
         </div>
 
         <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
-        <div class="current-play-list bg-white relative-position col-auto overflow-hidden" v-show="queueOpen">
+        <div class="current-play-list app-surface relative-position col-auto overflow-hidden" v-show="queueOpen">
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
           <q-list class="queue-list overflow-hidden">
             <q-item v-for="row in pageTracks" :key="row.index"
@@ -703,14 +704,14 @@ $queue-block: $queue-body + $queue-pager;
   z-index: 1;
   height: $queue-block;
   // 和下面的播放控件（进度条起）用一条淡分割线隔开
-  border-bottom: 1px solid $separator-color;
+  border-bottom: 1px solid var(--app-border);
 }
 
 // 列表本体：只放一页的行，固定高度，不滚动
 .queue-list {
   height: $queue-body;
   // 和下面的分页条之间也隔一条
-  border-bottom: 1px solid $separator-color;
+  border-bottom: 1px solid var(--app-border);
 }
 
 // 行首箭头 / 行尾删除：尺寸全部自己定。

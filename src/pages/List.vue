@@ -46,7 +46,7 @@
     <q-table class="list-table" :rows="items" :columns="columns" row-key="id" flat bordered dense wrap-cells
       :loading="loading" :pagination="pagination" :rows-per-page-options="[]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
-      table-header-class="text-grey-9"
+      table-header-class="app-text"
       @request="onTableRequest"
       @row-click="openWorks">
       <!-- 分页放到底部正中（左右方向键也可翻页，见 handlePageKeyEvent） -->
@@ -58,7 +58,7 @@
       </template>
 
       <template v-slot:body-cell-index="props">
-        <q-td :props="props" class="text-grey-6">
+        <q-td :props="props" class="app-text-secondary">
           {{ (pagination.page - 1) * pageSize + props.rowIndex + 1 }}
         </q-td>
       </template>

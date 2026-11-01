@@ -4,7 +4,7 @@
     <div
       v-if="isNarrowScreen"
       ref="searchBar"
-      class="works-search-bar bg-grey-3 q-px-md q-py-sm"
+      class="works-search-bar app-page-bg q-px-md q-py-sm"
       :class="{ 'works-search-bar--shown': narrowSearchVisible }"
     >
       <SearchInput
@@ -81,15 +81,16 @@
 
         <template v-if="!isNarrowScreen">
           <!-- 作品筛选 -->
-          <div class="app-control-group bg-white">
+          <div class="app-control-group">
             <q-btn-group dense unelevated aria-label="作品筛选">
               <q-btn
                 dense
                 icon="no_adult_content"
                 aria-label="全年龄"
                 :aria-pressed="filters.allAges"
-                :color="filters.allAges ? 'primary' : 'white'"
-                :text-color="filters.allAges ? 'white' : 'grey-9'"
+                :color="filters.allAges ? 'primary' : undefined"
+                :text-color="filters.allAges ? 'white' : undefined"
+                :class="{ 'app-theme-control': !filters.allAges }"
                 @click="filters.allAges = !filters.allAges"
               >
               </q-btn>
@@ -98,8 +99,9 @@
                 icon="subtitles"
                 aria-label="中文字幕"
                 :aria-pressed="filters.subtitle"
-                :color="filters.subtitle ? 'primary' : 'white'"
-                :text-color="filters.subtitle ? 'white' : 'grey-9'"
+                :color="filters.subtitle ? 'primary' : undefined"
+                :text-color="filters.subtitle ? 'white' : undefined"
+                :class="{ 'app-theme-control': !filters.subtitle }"
                 @click="filters.subtitle = !filters.subtitle"
               >
               </q-btn>
@@ -108,29 +110,29 @@
 
           <!-- 切换显示模式 -->
           <div class="work-toolbar__display col-auto row items-center justify-end">
-            <div class="app-control-group bg-white">
-              <q-btn-toggle dense unelevated spread class="col-auto"
-                v-model="listMode" toggle-color="primary" color="white"
-                text-color="grey-9" :options="[
+            <div class="app-control-group">
+              <q-btn-toggle dense unelevated spread class="col-auto app-theme-control"
+                v-model="listMode" toggle-color="primary"
+                :options="[
                   { icon: 'apps', value: 'detail', attrs: { 'aria-label': '详细模式' } },
                   { icon: 'list', value: 'list', attrs: { 'aria-label': '列表模式' } }
                 ]" />
             </div>
             <!-- 列表模式：标签开关 -->
-            <div v-if="listMode === 'list'" class="app-control-group bg-white">
-              <q-btn-toggle dense unelevated spread class="col-auto"
-                v-model="showLabel" toggle-color="primary" color="white"
-                text-color="grey-9" :options="[
+            <div v-if="listMode === 'list'" class="app-control-group">
+              <q-btn-toggle dense unelevated spread class="col-auto app-theme-control"
+                v-model="showLabel" toggle-color="primary"
+                :options="[
                   { icon: 'label', value: true, attrs: { 'aria-label': '显示标签' } },
                   { icon: 'label_off', value: false, attrs: { 'aria-label': '隐藏标签' } }
                 ]" />
             </div>
 
             <!-- 详情模式：缩放开关 -->
-            <div v-if="listMode !== 'list'" class="app-control-group bg-white">
-              <q-btn-toggle dense unelevated spread class="col-auto"
-                v-model="detailMode" toggle-color="primary" color="white"
-                text-color="grey-9" :options="[
+            <div v-if="listMode !== 'list'" class="app-control-group">
+              <q-btn-toggle dense unelevated spread class="col-auto app-theme-control"
+                v-model="detailMode" toggle-color="primary"
+                :options="[
                   { icon: 'zoom_in', value: true, attrs: { 'aria-label': '放大封面' } },
                   { icon: 'zoom_out', value: false, attrs: { 'aria-label': '缩小封面' } }
                 ]" />
@@ -143,8 +145,6 @@
           dense
           unelevated
           no-caps
-          color="white"
-          text-color="grey-9"
           class="app-control-button q-ml-auto"
           aria-controls="work-settings-panel"
           :aria-expanded="settingsOpen"
@@ -200,8 +200,7 @@
                   dense
                   unelevated
                   toggle-color="primary"
-                  color="grey-2"
-                  text-color="grey-9"
+                  class="app-theme-control"
                   :options="[
                     { label: '详细', value: 'detail' },
                     { label: '列表', value: 'list' }
@@ -219,8 +218,7 @@
                   dense
                   unelevated
                   toggle-color="primary"
-                  color="grey-2"
-                  text-color="grey-9"
+                  class="app-theme-control"
                   :options="[
                     { label: '放大', value: true },
                     { label: '缩小', value: false }
@@ -238,8 +236,7 @@
                   dense
                   unelevated
                   toggle-color="primary"
-                  color="grey-2"
-                  text-color="grey-9"
+                  class="app-theme-control"
                   :options="[
                     { label: '显示', value: true },
                     { label: '隐藏', value: false }
@@ -263,7 +260,7 @@
 
       <div
         v-if="!works.length && hasActiveFilters"
-        class="works-empty text-center text-grey q-my-lg"
+        class="works-empty text-center app-text-secondary q-my-lg"
       >
         没有符合当前筛选条件的作品
         <div class="q-mt-sm">
@@ -946,7 +943,7 @@ export default {
   pointer-events: auto;
   margin-bottom: 8px;
   transform: none;
-  border-bottom: 1px solid $separator-color;
+  border-bottom: 1px solid var(--app-border);
 }
 
 </style>

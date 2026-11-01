@@ -8,7 +8,7 @@
     <div v-if="!thumbnailMode" class="q-px-sm q-py-xs">
       <div class="q-px-xs">
         <div class="text-h6 text-weight-regular ellipsis-2-lines">
-          <router-link :to="`/work/${metadata.id}`" class="text-black">
+          <router-link :to="`/work/${metadata.id}`" class="app-text">
             {{ metadata.title }}
           </router-link>
         </div>
@@ -44,10 +44,10 @@
       </div>
 
       <div class="q-mt-xs" v-if="showTagRow">
-        <q-chip v-if="!metadata.nsfw" size="md" color="light-green-2" text-color="light-green-9">
+        <q-chip v-if="!metadata.nsfw" size="md" class="app-work-chip app-work-chip--age">
           全年龄
         </q-chip>
-        <q-chip v-if="metadata.subtitle === true" size="md" color="blue-1" text-color="blue-9">
+        <q-chip v-if="metadata.subtitle === true" size="md" class="app-work-chip app-work-chip--subtitle">
           中文字幕
         </q-chip>
         <router-link
@@ -56,7 +56,7 @@
           :key="tag.id"
           @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
         >
-          <q-chip size="md" color="blue-grey-1" text-color="blue-grey-9">
+          <q-chip size="md" class="app-work-chip app-work-chip--tag">
             {{ tag.name }}
           </q-chip>
         </router-link>
@@ -69,7 +69,7 @@
           :key="va.id"
           @click="handleWorkConditionClick($event, $route, 'va', va.id)"
         >
-          <q-chip size="md" color="teal-1" text-color="teal-9">
+          <q-chip size="md" class="app-work-chip app-work-chip--voice">
             {{ va.name }}
           </q-chip>
         </router-link>
@@ -131,7 +131,7 @@ export default {
   .work-card:hover,
   .work-card:focus-within {
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 2px 4px -1px var(--app-shadow);
   }
 }
 </style>
