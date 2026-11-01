@@ -5,21 +5,10 @@
     persistent
   >
     <q-card class="sleep-mode-card">
-      <q-card-section class="sleep-mode-header row items-center no-wrap q-px-md q-pt-md q-pb-sm">
-        <q-btn
-          v-if="customMode"
-          flat
-          round
-          dense
-          icon="arrow_back"
-          aria-label="返回快捷设置"
-          @click="customMode = false"
-        />
-        <div class="col q-ml-sm">
-          <div class="text-h6">{{ customMode ? '自定义结束时间' : '播放定时' }}</div>
-          <div class="text-caption text-grey-6">
-            {{ customMode ? '选择自动暂停播放的时间' : '到时自动暂停播放' }}
-          </div>
+      <q-card-section class="row items-center no-wrap q-gutter-x-xs q-px-md q-pt-md q-pb-sm">
+        <div class="col">
+          <div class="text-h6">播放定时</div>
+          <div class="text-caption text-grey-6">到时自动暂停播放</div>
         </div>
         <q-btn
           flat
@@ -31,92 +20,135 @@
         />
       </q-card-section>
 
-      <template v-if="!customMode">
-        <q-card-section class="q-px-md q-pt-none">
-          <div v-if="sleepMode" class="sleep-mode-status q-mb-md">
-            <q-icon name="schedule" size="20px" />
-            <div>
-              <div class="text-weight-medium">已开启</div>
-              <div class="text-caption">将在 {{ sleepTime }} 自动暂停播放</div>
+      <q-card-section class="q-px-md q-pt-none">
+        <div
+          v-if="sleepMode"
+          class="sleep-mode-status row items-center q-gutter-x-sm q-py-sm q-px-md rounded-borders q-mb-sm"
+        >
+          <q-icon name="schedule" size="20px" />
+          <div class="col">
+            <div class="text-weight-medium">已开启 · {{ sleepTime }}</div>
+            <div class="text-caption">
+              <template v-if="activeTimeInfo">
+                {{ activeTimeInfo.dayLabel }}，约 {{ activeTimeInfo.delayLabel }}后
+              </template>
+              <template v-else>定时已开启</template>
             </div>
           </div>
-
-          <div class="text-body2 text-weight-medium q-mb-sm">多久后暂停播放？</div>
-          <div class="sleep-mode-presets q-mb-sm">
-            <q-btn
-              v-for="duration in quickDurations"
-              :key="duration.minutes"
-              outline
-              no-caps
-              color="primary"
-              class="sleep-mode-preset"
-              :label="duration.label"
-              @click="setSleepAfter(duration.minutes)"
-            />
-          </div>
-
           <q-btn
             flat
-            no-caps
-            align="left"
+            round
+            dense
             color="primary"
-            icon="schedule"
-            label="自定义结束时间"
-            class="full-width sleep-mode-custom"
-            @click="openCustomTime"
-          />
-        </q-card-section>
-
-        <q-card-actions v-if="sleepMode" class="q-px-md q-pb-md">
-          <q-space />
-          <q-btn
-            flat
-            no-caps
-            color="negative"
-            label="关闭定时"
+            icon="close"
+            aria-label="关闭定时"
             @click="clearSleepTimer"
           />
-        </q-card-actions>
-      </template>
+        </div>
 
-      <template v-else>
-        <q-card-section class="q-px-md q-pt-none">
+        <div class="q-py-xs q-px-xs text-primary q-mb-md">
+          <div class="text-subtitle1 text-weight-medium">
+            <template v-if="timerMode === 'custom' && customTimeInfo">
+              {{ customTimeInfo.dayLabel }} {{ customTime }} 自动暂停
+            </template>
+            <template v-else-if="timerMode === 'custom'">
+              请选择结束时间
+            </template>
+            <template v-else-if="selectedQuickDuration.minutes === 0">
+              请选择有效时长
+            </template>
+            <template v-else>
+              {{ selectedQuickDuration.minutes }} 分钟后自动暂停
+            </template>
+          </div>
+          <div class="q-mt-xs text-caption app-text-secondary">
+            <template v-if="timerMode === 'custom' && customTimeInfo">
+              约 {{ customTimeInfo.delayLabel }}后
+            </template>
+            <template v-else-if="timerMode === 'custom'">
+              选择时间后即可开始计时
+            </template>
+            <template v-else-if="selectedQuickDuration.minutes === 0">
+              0 分钟无法开始计时
+            </template>
+            <template v-else>
+              开始计时后生效
+            </template>
+          </div>
+        </div>
+
+        <q-btn-toggle
+          v-model="timerMode"
+          :options="timerModeOptions"
+          dense
+          unelevated
+          spread
+          no-caps
+          toggle-color="primary"
+          class="full-width rounded-borders app-theme-control q-mb-md"
+        />
+
+        <div
+          v-if="timerMode === 'duration'"
+          class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm"
+        >
+          <div class="text-caption text-weight-medium app-text-secondary q-mb-sm">
+            快捷时长（分钟）
+          </div>
+          <q-slider
+            :model-value="quickDurationIndex"
+            :min="0"
+            :max="quickDurations.length - 1"
+            :step="1"
+            snap
+            :label-value="selectedQuickDuration.label"
+            color="primary"
+            track-size="40px"
+            thumb-size="0px"
+            aria-label="快捷暂停时长"
+            :aria-valuetext="selectedQuickDuration.label"
+            @update:model-value="selectQuickDuration"
+          />
+          <div class="row justify-between text-caption app-text-secondary q-mt-xs" aria-hidden="true">
+            <span
+              v-for="(duration, index) in quickDurations"
+              :key="duration.minutes"
+              :class="{ 'sleep-mode-slider-label--disabled': index === 0 }"
+            >
+              {{ duration.minutes }}
+            </span>
+          </div>
+        </div>
+
+        <div v-else class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm">
+          <div class="text-caption text-weight-medium app-text-secondary q-mb-sm">
+            指定结束时间
+          </div>
           <q-input
-            v-model="time"
+            v-model="customTime"
             type="time"
             label="结束时间"
             outlined
             dense
+            clearable
             step="60"
+            color="primary"
+            class="full-width"
             aria-label="选择自动暂停播放的结束时间"
           />
+        </div>
+      </q-card-section>
 
-          <div class="sleep-mode-time-preview q-mt-md">
-            <q-icon name="schedule" size="20px" />
-            <div>
-              <div v-if="customTimeInfo" class="text-body2">
-                {{ customTimeInfo.dayLabel }} {{ time }} 自动暂停
-              </div>
-              <div v-else class="text-body2">请选择一个有效的结束时间</div>
-              <div v-if="customTimeInfo" class="text-caption">
-                约 {{ customTimeInfo.delayLabel }}后
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right" class="q-px-md q-pb-md">
-          <q-btn flat no-caps label="返回" @click="customMode = false" />
-          <q-btn
-            unelevated
-            no-caps
-            color="primary"
-            :label="customTimeInfo ? `设为 ${time}` : '请选择时间'"
-            :disable="!customTimeInfo"
-            @click="setSleepTimer()"
-          />
-        </q-card-actions>
-      </template>
+      <q-card-actions align="right" class="q-px-md q-pb-md">
+        <q-btn
+          flat
+          no-caps
+          color="primary"
+          :label="sleepMode ? '更新定时' : '开始计时'"
+          :disable="!canStartTimer"
+          @click="startTimer"
+        />
+      </q-card-actions>
     </q-card>
   </q-dialog>
 </template>
@@ -132,13 +164,20 @@ export default {
 
   data () {
     return {
-      time: '00:00',
-      customMode: false,
+      customTime: '',
+      timerMode: 'duration',
+      timerModeOptions: [
+        { label: '快捷设置', value: 'duration' },
+        { label: '指定时间', value: 'custom' }
+      ],
+      quickDurationIndex: 1,
       quickDurations: [
+        { minutes: 0, label: '0 分钟' },
         { minutes: 15, label: '15 分钟' },
         { minutes: 30, label: '30 分钟' },
+        { minutes: 45, label: '45 分钟' },
         { minutes: 60, label: '60 分钟' },
-        { minutes: 90, label: '90 分钟' }
+        { minutes: 120, label: '120 分钟' }
       ]
     }
   },
@@ -149,8 +188,63 @@ export default {
       'sleepMode'
     ]),
 
+    selectedQuickDuration () {
+      return this.quickDurations[this.quickDurationIndex] || this.quickDurations[1]
+    },
+
+    activeTimeInfo () {
+      return this.getTimeInfo(this.sleepTime)
+    },
+
     customTimeInfo () {
-      const matched = /^(\d{1,2}):(\d{1,2})$/.exec(this.time)
+      return this.getTimeInfo(this.customTime)
+    },
+
+    canStartTimer () {
+      return this.timerMode === 'custom'
+        ? Boolean(this.customTimeInfo)
+        : this.selectedQuickDuration.minutes > 0
+    }
+  },
+
+  mounted () {
+    try {
+      if (this.$q.sessionStorage.getItem('sleepMode')) {
+        this.SET_SLEEP_TIMER(this.$q.sessionStorage.getItem('sleepTime'))
+      }
+    } catch {
+      console.log('Web Storage API error')
+    }
+  },
+
+  watch: {
+    modelValue (visible) {
+      if (!visible) return
+
+      this.customTime = ''
+      this.timerMode = 'duration'
+    }
+  },
+
+  methods: {
+    ...mapMutations('AudioPlayer', [
+      'SET_SLEEP_TIMER',
+      'CLEAR_SLEEP_MODE'
+    ]),
+
+    getTimeAfter (minutes) {
+      const target = new Date(Date.now() + minutes * 60 * 1000)
+      return this.formatTime(target)
+    },
+
+    formatTime (date) {
+      const hours = date.getHours().toString().padStart(2, '0')
+      const minutes = date.getMinutes().toString().padStart(2, '0')
+      return `${hours}:${minutes}`
+    },
+
+    getTimeInfo (time) {
+      const matched = /^(\d{1,2}):(\d{1,2})$/.exec(time)
       if (matched === null) return null
 
       const hours = Number(matched[1])
@@ -182,59 +276,30 @@ export default {
         dayLabel: isTomorrow ? '明天' : '今天',
         delayLabel
       }
-    }
-  },
-
-  mounted () {
-    try {
-      if (this.$q.sessionStorage.getItem('sleepMode')) {
-        this.SET_SLEEP_TIMER(this.$q.sessionStorage.getItem('sleepTime'))
-      }
-    } catch {
-      console.log('Web Storage API error')
-    }
-  },
-
-  watch: {
-    modelValue (visible) {
-      if (!visible) return
-
-      this.customMode = false
-      this.time = this.sleepMode
-        ? this.sleepTime
-        : this.getTimeAfter(30)
-    }
-  },
-
-  methods: {
-    ...mapMutations('AudioPlayer', [
-      'SET_SLEEP_TIMER',
-      'CLEAR_SLEEP_MODE'
-    ]),
-
-    getTimeAfter (minutes) {
-      const target = new Date(Date.now() + minutes * 60 * 1000)
-      return this.formatTime(target)
     },
 
-    formatTime (date) {
-      const hours = date.getHours().toString().padStart(2, '0')
-      const minutes = date.getMinutes().toString().padStart(2, '0')
-      return `${hours}:${minutes}`
+    selectQuickDuration (index) {
+      this.quickDurationIndex = Number(index)
+    },
+
+    startTimer () {
+      if (!this.canStartTimer) return
+
+      if (this.timerMode === 'custom') {
+        if (this.customTimeInfo) {
+          this.setSleepTimer(this.customTime)
+        }
+        return
+      }
+
+      this.setSleepAfter(this.selectedQuickDuration.minutes)
     },
 
     setSleepAfter (minutes) {
       this.setSleepTimer(this.getTimeAfter(minutes))
     },
 
-    openCustomTime () {
-      this.time = this.sleepMode
-        ? this.sleepTime
-        : this.getTimeAfter(30)
-      this.customMode = true
-    },
-
-    setSleepTimer (time = this.time) {
+    setSleepTimer (time) {
       this.SET_SLEEP_TIMER(time)
       try {
         this.$q.sessionStorage.set('sleepTime', time)
@@ -277,35 +342,18 @@ export default {
 <style scoped>
 .sleep-mode-card {
   width: min(92vw, 380px);
-  max-width: 380px;
 }
 
-.sleep-mode-header {
-  gap: 4px;
-}
-
-.sleep-mode-status,
-.sleep-mode-time-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
+.sleep-mode-status {
   color: var(--q-primary);
   background: color-mix(in srgb, var(--q-primary) 10%, transparent);
 }
 
-.sleep-mode-presets {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+.sleep-mode-panel {
+  background: color-mix(in srgb, var(--q-primary) 7%, transparent);
 }
 
-.sleep-mode-preset {
-  min-height: 42px;
-}
-
-.sleep-mode-custom {
-  justify-content: flex-start;
+.sleep-mode-slider-label--disabled {
+  opacity: 0.35;
 }
 </style>

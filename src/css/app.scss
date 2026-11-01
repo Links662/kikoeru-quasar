@@ -2,13 +2,13 @@
 
 :root {
   color-scheme: light;
-  --app-page-bg: #e0e0e0;
-  --app-surface: #fff;
-  --app-text: rgba(0, 0, 0, 0.87);
-  --app-text-secondary: rgba(0, 0, 0, 0.6);
-  --app-border: rgba(0, 0, 0, 0.12);
-  --app-shadow: rgba(0, 0, 0, 0.16);
-  --app-grip: rgba(0, 0, 0, 0.16);
+  --app-page-bg: #{$grey-3};
+  --app-surface: white;
+  --app-text: #{rgba(black, 0.87)};
+  --app-text-secondary: #{rgba(black, 0.6)};
+  --app-border: #{$separator-color};
+  --app-shadow: #{rgba(black, 0.16)};
+  --app-grip: #{rgba(black, 0.16)};
   --app-primary: #{$primary};
   --app-browser-theme: #{$primary};
   --app-chip-age-bg: #{$light-green-2};
@@ -19,25 +19,25 @@
   --app-chip-tag-text: #{$blue-grey-9};
   --app-chip-voice-bg: #{$teal-1};
   --app-chip-voice-text: #{$teal-9};
-  --app-chip-on-strong: #fff;
+  --app-chip-on-strong: white;
 }
 
 body.body--dark {
   color-scheme: dark;
-  --app-page-bg: #121212;
-  --app-surface: #1e1e1e;
-  --app-text: rgba(255, 255, 255, 0.87);
-  --app-text-secondary: rgba(255, 255, 255, 0.6);
-  --app-border: rgba(255, 255, 255, 0.12);
-  --app-shadow: rgba(0, 0, 0, 0.6);
-  --app-grip: rgba(255, 255, 255, 0.65);
+  --app-page-bg: #{$dark-page};
+  --app-surface: #{$dark};
+  --app-text: #{rgba(white, 0.87)};
+  --app-text-secondary: #{rgba(white, 0.6)};
+  --app-border: #{rgba(white, 0.12)};
+  --app-shadow: #{rgba(black, 0.6)};
+  --app-grip: #{rgba(white, 0.65)};
   --app-browser-theme: #{$dark};
   --app-chip-age-bg: #{$light-green-9};
   --app-chip-subtitle-bg: #{$blue-9};
   --app-chip-tag-bg: #{$blue-grey-9};
   --app-chip-voice-bg: #{$teal-9};
-  --app-overlay-shadow: rgba(0, 0, 0, 0.58);
-  --app-overlay-border: rgba(255, 255, 255, 0.08);
+  --app-overlay-shadow: #{rgba(black, 0.58)};
+  --app-overlay-border: #{rgba(white, 0.08)};
 }
 
 body.body--dark .app-main-header {
@@ -166,7 +166,7 @@ a {
 
 // 顶部导航按钮的选中态
 .q-btn.nav-active {
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(white, 0.24);
 }
 
 .cover-meta-badge {
