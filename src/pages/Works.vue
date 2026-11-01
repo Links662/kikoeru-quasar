@@ -430,6 +430,10 @@ export default {
     if (localStorage.getItem("detailMode") != null) {
       this.detailMode = (localStorage.detailMode === 'true');
     }
+  },
+
+  activated () {
+    // keep-alive 停用期间不会触发 beforeUnmount，全局监听必须随激活状态启停。
     window.addEventListener('keydown', this.handlePageKeyEvent);
     window.addEventListener('touchstart', this.handleSearchPullStart, { passive: true });
     window.addEventListener('touchmove', this.handleSearchPullMove, { passive: true });
@@ -437,20 +441,16 @@ export default {
     // 点搜索条以外的任何地方都收起（capture：别的地方 stopPropagation 也拦不住）
     document.addEventListener('touchstart', this.handleOutsideSearchTap, { passive: true, capture: true });
     document.addEventListener('mousedown', this.handleOutsideSearchTap, true);
-  },
-
-  // keep-alive 复活时也要处理一次：从别的页面按 / 跳过来走的是这条路径
-  activated () {
+    // keep-alive 复活时也要处理一次：从别的页面按 / 跳过来走的是这条路径
     this.focusSearchIfRequested()
   },
 
+  deactivated () {
+    this.removeGlobalListeners()
+  },
+
   beforeUnmount() {
-    window.removeEventListener('keydown', this.handlePageKeyEvent);
-    window.removeEventListener('touchstart', this.handleSearchPullStart);
-    window.removeEventListener('touchmove', this.handleSearchPullMove);
-    window.removeEventListener('touchend', this.handleSearchPullEnd);
-    document.removeEventListener('touchstart', this.handleOutsideSearchTap, true);
-    document.removeEventListener('mousedown', this.handleOutsideSearchTap, true);
+    this.removeGlobalListeners()
   },
 
   computed: {
@@ -620,6 +620,14 @@ export default {
   },
 
   methods: {
+    removeGlobalListeners() {
+      window.removeEventListener('keydown', this.handlePageKeyEvent);
+      window.removeEventListener('touchstart', this.handleSearchPullStart);
+      window.removeEventListener('touchmove', this.handleSearchPullMove);
+      window.removeEventListener('touchend', this.handleSearchPullEnd);
+      document.removeEventListener('touchstart', this.handleOutsideSearchTap, true);
+      document.removeEventListener('mousedown', this.handleOutsideSearchTap, true);
+    },
     // 输入框内容写回地址栏（replace：边输入边跳转时不铺满历史记录）
     syncKeywordToRoute (value) {
       const keyword = (value || '').trim()

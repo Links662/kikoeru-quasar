@@ -156,6 +156,14 @@ export default {
     this.requestWorksQueue()
   },
 
+  mounted() {
+    window.addEventListener('keydown', this.handlePageKeyEvent)
+  },
+
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handlePageKeyEvent)
+  },
+
   watch: {
     sortBy(newSortOptionSetting) {
       localStorage.sortByFavourites = JSON.stringify(newSortOptionSetting);
@@ -168,6 +176,27 @@ export default {
   },
 
   methods: {
+    handlePageKeyEvent (e) {
+      if (e.repeat) return
+      if (this.$q.screen.lt.md && this.$store.state.WorkPanel.workId !== null) return
+      const now = Date.now()
+      if (this._lastKeyTime && (now - this._lastKeyTime < 300)) {
+        return
+      }
+      this._lastKeyTime = now
+      const activeEl = document.activeElement && document.activeElement.tagName
+        ? document.activeElement.tagName.toLowerCase()
+        : ''
+
+      if (['input', 'textarea'].includes(activeEl)) return
+
+      if (e.key === 'ArrowLeft' && this.pagination.currentPage > 1) {
+        this.changePage(this.pagination.currentPage - 1)
+      } else if (e.key === 'ArrowRight' && this.pagination.currentPage < this.pagination.totalPages) {
+        this.changePage(this.pagination.currentPage + 1)
+      }
+    },
+
     switchSortMode() {
       this.sortBy = {
         ...this.sortBy,
