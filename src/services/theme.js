@@ -33,7 +33,3 @@ export function setThemeMode ($q, mode) {
 
   updateThemeColor()
 }
-
-export function toggleThemeMode ($q) {
-  setThemeMode($q, $q.dark.isActive === true ? 'light' : 'dark')
-}

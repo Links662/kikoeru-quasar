@@ -8,7 +8,7 @@
       </div>
 
       <div class="row">
-        <q-item clickable v-ripple @click="toggleHide()" class="col non-selectable q-py-none q-px-xs">
+        <q-item clickable v-ripple @click="$store.commit('AudioPlayer/TOGGLE_HIDE')" class="col non-selectable q-py-none q-px-xs">
           <q-item-section avatar>
             <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders player-bar-cover" />
           </q-item-section>
@@ -20,11 +20,11 @@
         </q-item>
 
         <q-btn flat size="lg" icon="skip_previous" aria-label="上一首"
-          @click="previousTrack()" class="col-auto gt-sm player-bar-btn"/>
+          @click="$store.commit('AudioPlayer/PREVIOUS_TRACK')" class="col-auto gt-sm player-bar-btn"/>
         <q-btn flat size="lg" :icon="playingIcon" :aria-label="playing ? '暂停' : '播放'"
-          @click="togglePlaying()" class="col-auto player-bar-btn" />
+          @click="$store.commit('AudioPlayer/TOGGLE_PLAYING')" class="col-auto player-bar-btn" />
         <q-btn flat size="lg" icon="skip_next" aria-label="下一首"
-          @click="nextTrack()" class="col-auto gt-sm player-bar-btn"/>
+          @click="$store.commit('AudioPlayer/NEXT_TRACK')" class="col-auto gt-sm player-bar-btn"/>
       </div>
     </div>
   </q-slide-transition>
@@ -67,24 +67,6 @@ export default {
       'hasLyric'
     ])
   },
-
-  methods: {
-    toggleHide () {
-      this.$store.commit('AudioPlayer/TOGGLE_HIDE')
-    },
-
-    togglePlaying () {
-      this.$store.commit('AudioPlayer/TOGGLE_PLAYING')
-    },
-
-    nextTrack () {
-      this.$store.commit('AudioPlayer/NEXT_TRACK')
-    },
-
-    previousTrack () {
-      this.$store.commit('AudioPlayer/PREVIOUS_TRACK')
-    },
-  }
 }
 </script>
 

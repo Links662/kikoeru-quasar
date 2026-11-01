@@ -55,7 +55,7 @@
           color="negative"
           label="终止扫描进程"
           :disable="state !== 'running' || !socketConnected"
-          @click="killScanProceess()"
+          @click="$socket.emit('KILL_SCAN_PROCESS')"
         />
       </div>
     </div>
@@ -284,10 +284,6 @@ export default {
       this.resetScanState()
       this.state = 'running'
       this.$socket.emit('PERFORM_COVER_REPAIR')
-    },
-
-    killScanProceess () {
-      this.$socket.emit('KILL_SCAN_PROCESS')
     },
 
     resetScanState () {

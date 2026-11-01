@@ -142,8 +142,9 @@
         <!-- HTML5 volume in iOS is read-only -->
         <div class="row items-center justify-center q-mx-sm volume-row" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
-          <q-slider v-model="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
-            :step="0.01" thumb-size="12px" color="primary" aria-label="音量" />
+          <q-slider :model-value="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
+            :step="0.01" thumb-size="12px" color="primary" aria-label="音量"
+            @update:model-value="setVolume" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
       </q-card>
@@ -282,15 +283,6 @@ export default {
       return buildCoverUrl(id, token, 'sam')
     },
 
-    volume: {
-      get() {
-        return this.$store.state.AudioPlayer.volume
-      },
-      set(val) {
-        this.setVolume(val)
-      }
-    },
-
     queue() {
       return this.$store.state.AudioPlayer.queue
     },
@@ -346,6 +338,7 @@ export default {
     ...mapState('AudioPlayer', [
       'playing',
       'hide',
+      'volume',
       'currentTime',
       'duration',
       'queueIndex',

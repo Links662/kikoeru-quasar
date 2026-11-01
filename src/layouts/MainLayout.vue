@@ -102,7 +102,7 @@
       v-if="!isMobilePanel"
       side="left"
       :model-value="workId !== null"
-      @update:model-value="onPanelInput"
+      @update:model-value="$event === false && closePanel()"
       :width="panelWidth"
       bordered
       elevated
@@ -151,10 +151,7 @@ import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
 import { audioEngine } from '../services/AudioEngine'
 import { endSession } from '../services/session'
-import {
-  setThemeMode,
-  toggleThemeMode
-} from '../services/theme'
+import { setThemeMode } from '../services/theme'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
 // 5 个 14px 两字标签 + 更多约 382px，加工具栏内边距并预留“更多”的
@@ -340,18 +337,6 @@ export default {
       return ['/circles', '/tags', '/vas'].includes(this.$route.path)
     },
 
-    themeIsDark () {
-      return this.$q.dark.isActive === true
-    },
-
-    themeTitle () {
-      return this.themeIsDark ? '深色模式' : '浅色模式'
-    },
-
-    themeIcon () {
-      return this.themeIsDark ? 'dark_mode' : 'light_mode'
-    },
-
     // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
     navIconStyle () {
       return {
@@ -363,6 +348,8 @@ export default {
     // 业务功能（找作品、听作品）在前，技术入口（控制台、登出）在后。
     // 带 path 的走路由，选中态交给 vue-router；带 action 的是动作项。
     navItems () {
+      const isDark = this.$q.dark.isActive === true
+
       return [
         {
           title: '音声',
@@ -387,11 +374,11 @@ export default {
           action: this.toggleNsfwMode
         },
         {
-          title: this.themeTitle,
-          icon: this.themeIcon,
+          title: isDark ? '深色模式' : '浅色模式',
+          icon: isDark ? 'dark_mode' : 'light_mode',
           holdAction: this.activateThemeAutoMode,
           keepPanel: true,
-          action: this.toggleThemeMode
+          action: () => setThemeMode(this.$q, this.$q.dark.isActive === true ? 'light' : 'dark')
         },
         {
           title: '播放定时',
@@ -404,7 +391,7 @@ export default {
           title: '随机',
           icon: 'shuffle',
           keepPanel: true,
-          action: this.randomPlay
+          action: this.requestRandomWork
         },
         {
           title: '控制台',
@@ -563,10 +550,6 @@ export default {
       this.closeWorkPanel();
     },
 
-    onPanelInput (value) {
-      value === false && this.closePanel();
-    },
-
     handlePanelKeyEvent (event) {
       if (event.key !== 'Escape' || this.workId === null) return;
 
@@ -661,8 +644,33 @@ export default {
       this.showSuccNotif('已进入跟随系统模式')
     },
 
-    randomPlay() {
-      this.requestRandomWork();
+    requestRandomWork () {
+      const params = {
+        order: 'betterRandom'
+      }
+      this.$axios.get('/api/works', { params })
+        .then((response) => {
+          const works = response.data.works
+
+          if (works.length === 0) {
+            this.showErrNotif('列表中无作品，请增加后再使用此功能')
+            return
+          }
+
+          // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
+          // 所以这里要吞掉被取消的导航抛出的 promise
+          this.$router.push(`/work/${works[0].id}`).catch(() => {})
+        })
+        .catch((error) => {
+          if (error.response) {
+            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+            if (error.response.status !== 401) {
+              this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
+            }
+          } else {
+            this.showErrNotif(error.message || error)
+          }
+        })
     },
 
     // NSFW 模式：本地偏好，逻辑全在 CSS（body.nsfw-mode .cover-mask），
@@ -684,39 +692,6 @@ export default {
       // 锁屏 / 通知栏的封面不在 CSS 管辖范围，要重新推一次媒体信息
       const engine = audioEngine()
       if (engine) engine.setMediaSession()
-    },
-
-    toggleThemeMode () {
-      toggleThemeMode(this.$q)
-    },
-
-    requestRandomWork () {
-      const params = {
-        order: 'betterRandom',
-      }
-      this.$axios.get('/api/works', { params })
-        .then((response) => {
-          const works = response.data.works
-
-          if (works.length === 0) {
-            this.showErrNotif("列表中无作品，请增加后再使用此功能")
-            return
-          }
-
-          // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
-          // 所以这里要吞掉被取消的导航抛出的 promise
-          this.$router.push(`/work/${works[0].id}`).catch(() => {})
-        })
-        .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            if (error.response.status !== 401) {
-              this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-            }
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-        })
     },
 
     logout () {
