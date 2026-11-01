@@ -36,11 +36,19 @@ body.body--dark {
   --app-chip-subtitle-bg: #{$blue-9};
   --app-chip-tag-bg: #{$blue-grey-9};
   --app-chip-voice-bg: #{$teal-9};
+  --app-overlay-shadow: rgba(0, 0, 0, 0.58);
+  --app-overlay-border: rgba(255, 255, 255, 0.08);
 }
 
 body.body--dark .app-main-header {
   background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
+}
+
+body.body--dark .q-dialog .q-card,
+body.body--dark .q-menu {
+  box-shadow: 0 8px 28px var(--app-overlay-shadow);
+  border: 1px solid var(--app-overlay-border);
 }
 
 .app-page-bg {
