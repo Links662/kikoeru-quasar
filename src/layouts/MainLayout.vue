@@ -30,6 +30,7 @@
             exact
             active-class="nav-active"
             @click="onNavClick(item)"
+            v-touch-hold:550.mouse="item.holdAction"
           />
 
           <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense rounded class="nav-btn nav-more col-auto q-mr-xs text-white"
@@ -45,6 +46,7 @@
                   :to="item.path"
                   active-class="text-primary text-weight-medium"
                   @click="onNavClick(item)"
+                  v-touch-hold:550.mouse="item.holdAction"
                 >
                   <q-item-section avatar>
                     <q-icon :name="item.icon" />
@@ -149,7 +151,10 @@ import WorkPanel from 'components/WorkPanel'
 import NotifyMixin from '../mixins/Notification.js'
 import { audioEngine } from '../services/AudioEngine'
 import { endSession } from '../services/session'
-import { cycleThemeMode, normalizeThemeMode } from '../services/theme'
+import {
+  setThemeMode,
+  toggleThemeMode
+} from '../services/theme'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
 // 5 个 14px 两字标签 + 更多约 382px，加工具栏内边距并预留“更多”的
@@ -317,7 +322,8 @@ export default {
     }),
 
     ...mapState('AudioPlayer', {
-      playerHide: 'hide'
+      playerHide: 'hide',
+      sleepMode: 'sleepMode'
     }),
 
     ...mapGetters('AudioPlayer', [
@@ -334,24 +340,16 @@ export default {
       return ['/circles', '/tags', '/vas'].includes(this.$route.path)
     },
 
-    themeMode () {
-      return normalizeThemeMode(this.$q.dark.mode)
+    themeIsDark () {
+      return this.$q.dark.isActive === true
     },
 
     themeTitle () {
-      return {
-        auto: '跟随系统',
-        light: '浅色模式',
-        dark: '深色模式'
-      }[this.themeMode]
+      return this.themeIsDark ? '深色模式' : '浅色模式'
     },
 
     themeIcon () {
-      return {
-        auto: 'brightness_auto',
-        light: 'light_mode',
-        dark: 'dark_mode'
-      }[this.themeMode]
+      return this.themeIsDark ? 'dark_mode' : 'light_mode'
     },
 
     // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
@@ -391,8 +389,16 @@ export default {
         {
           title: this.themeTitle,
           icon: this.themeIcon,
+          holdAction: this.activateThemeAutoMode,
           keepPanel: true,
           action: this.toggleThemeMode
+        },
+        {
+          title: '播放定时',
+          icon: 'schedule',
+          active: this.sleepMode,
+          keepPanel: true,
+          action: () => { this.showTimer = true }
         },
         {
           title: '随机',
@@ -647,6 +653,14 @@ export default {
       item.action && item.action()
     },
 
+    activateThemeAutoMode () {
+      if (this.$q.dark.mode === 'auto') return
+
+      this.collapsePlayer()
+      setThemeMode(this.$q, 'auto')
+      this.showSuccNotif('已进入跟随系统模式')
+    },
+
     randomPlay() {
       this.requestRandomWork();
     },
@@ -673,7 +687,7 @@ export default {
     },
 
     toggleThemeMode () {
-      cycleThemeMode(this.$q)
+      toggleThemeMode(this.$q)
     },
 
     requestRandomWork () {

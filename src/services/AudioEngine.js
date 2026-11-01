@@ -474,7 +474,7 @@ export default class AudioEngine {
       this.clearPersistedSleepTimer()
 
       if (this.notify.success) {
-        this.notify.success('睡眠定时已到，已暂停播放')
+        this.notify.success('已到设定时间，播放已暂停')
       }
     }, delay)
   }

@@ -8,11 +8,6 @@ export function normalizeThemeMode (mode) {
   return THEME_MODES.includes(mode) ? mode : 'auto'
 }
 
-export function nextThemeMode (mode) {
-  const current = normalizeThemeMode(mode)
-  return THEME_MODES[(THEME_MODES.indexOf(current) + 1) % THEME_MODES.length]
-}
-
 export function updateThemeColor () {
   const meta = document.querySelector('meta[name="theme-color"]')
   if (!meta) return
@@ -39,6 +34,6 @@ export function setThemeMode ($q, mode) {
   updateThemeColor()
 }
 
-export function cycleThemeMode ($q) {
-  setThemeMode($q, nextThemeMode($q.dark.mode))
+export function toggleThemeMode ($q) {
+  setThemeMode($q, $q.dark.isActive === true ? 'light' : 'dark')
 }
