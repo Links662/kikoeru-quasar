@@ -393,8 +393,8 @@ export default {
           path: this.isLabelRoute ? this.$route.path : '/circles',
         },
         {
-          title: this.nsfwMode ? '模糊' : '展示',
-          icon: this.nsfwMode ? 'blur_on' : 'blur_off',
+          title: this.nsfwMode ? '隐藏' : '展示',
+          icon: this.nsfwMode ? 'hide_image' : 'image',
           keepPanel: true,
           action: this.toggleNsfwMode
         },
@@ -406,20 +406,20 @@ export default {
           action: () => setThemeMode(this.$q, this.$q.dark.isActive === true ? 'light' : 'dark')
         },
         {
-          title: '播放定时',
+          title: '定时',
           icon: 'schedule',
           active: this.sleepMode,
           keepPanel: true,
           action: () => { this.showTimer = true }
         },
         {
-          title: '随机播放',
+          title: '随机浏览',
           icon: 'shuffle',
           keepPanel: true,
           action: this.requestRandomWork
         },
         {
-          title: '控制',
+          title: '控制台',
           icon: 'tune',
           path: '/admin'
         },
@@ -427,7 +427,7 @@ export default {
         // 登出只在开启用户验证时才有，固定排最后
         ...(this.authEnabled === true
           ? [{
-              title: '登出',
+              title: '退出',
               icon: 'logout',
               action: () => { this.confirm = true }
             }]

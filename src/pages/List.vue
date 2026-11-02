@@ -132,8 +132,8 @@ import SearchInput from 'components/SearchInput'
 
 const labelTabs = [
   { type: 'circle', label: '社团', icon: 'group', path: '/circles' },
-  { type: 'tag', label: '标签', icon: 'label', path: '/tags' },
-  { type: 'va', label: '声优', icon: 'mic', path: '/vas' }
+  { type: 'va', label: '声优', icon: 'mic', path: '/vas' },
+  { type: 'tag', label: '标签', icon: 'label', path: '/tags' }
 ]
 
 export default {
