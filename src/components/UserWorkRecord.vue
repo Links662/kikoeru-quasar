@@ -9,7 +9,7 @@
           :model-value="record.rating"
           @update:model-value="updateRating"
           size="sm"
-          color="grey-6"
+          color="app-text-secondary"
           color-selected="amber"
           color-half="amber"
           icon="star_border"
@@ -23,7 +23,7 @@
 
       <div class="user-work-record__review text-body2 full-width">
         <pre v-if="record.reviewText" class="q-ma-none">{{ record.reviewText }}</pre>
-        <pre v-else class="q-ma-none text-grey">暂无评论</pre>
+        <pre v-else class="q-ma-none app-text-secondary">暂无评论</pre>
       </div>
 
       <div class="user-work-record__actions row wrap items-center full-width">
@@ -41,7 +41,7 @@
         />
         <span
           v-if="record.updatedAt"
-          class="user-work-record__timestamp text-caption text-grey text-no-wrap"
+          class="user-work-record__timestamp text-caption app-text-secondary text-no-wrap"
           :aria-label="`标记时间：${record.updatedAt}`"
         >
           <q-icon name="schedule" size="xs" class="q-mr-xs" />

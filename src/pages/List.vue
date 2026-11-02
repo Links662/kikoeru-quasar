@@ -94,7 +94,7 @@
             round
             dense
             :icon="props.row.favourite ? 'star' : 'star_border'"
-            :color="props.row.favourite ? 'amber' : 'grey-6'"
+            :color="props.row.favourite ? 'amber' : 'app-text-secondary'"
             :aria-label="props.row.favourite ? '取消收藏' : '收藏'"
             @click.stop.prevent="toggleFavourite(props.row)"
           />

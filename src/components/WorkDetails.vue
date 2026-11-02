@@ -11,7 +11,7 @@
         <div class="q-mt-xs text-subtitle1 text-weight-regular">
           <router-link
             :to="workConditionLink($route, 'circle', metadata.circle.id)"
-            class="text-grey"
+            class="app-text-secondary"
             @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
           >
             {{ metadata.circle.name }}
@@ -30,7 +30,7 @@
 
       <div v-if="metadata.price != null" class="row no-wrap items-baseline text-no-wrap q-px-xs q-mt-sm">
         <span class="text-body1 text-weight-medium text-red">{{ metadata.price }} 日元</span>
-        <span class="q-ml-sm text-body2 text-grey">({{ metadata.dl_count }})</span>
+        <span class="q-ml-sm text-body2 app-text-secondary">({{ metadata.dl_count }})</span>
         <a
           v-if="dlsiteUrl"
           class="q-ml-sm text-body2 text-no-wrap text-blue"

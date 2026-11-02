@@ -17,7 +17,7 @@
         <div class="row q-gutter-x-sm q-gutter-y-xs">
           <router-link
             :to="workConditionLink($route, 'circle', metadata.circle.id)"
-            class="col-auto text-grey"
+            class="col-auto app-text-secondary"
             @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
           >
             {{ metadata.circle.name }}
@@ -43,7 +43,7 @@
             v-for="(tag, index) in metadata.tags"
             :to="workConditionLink($route, 'tag', tag.id)"
             :key=index
-            class="col-auto text-grey"
+            class="col-auto app-text-secondary"
             @click="handleWorkConditionClick($event, $route, 'tag', tag.id)"
           >
             {{ tag.name }}

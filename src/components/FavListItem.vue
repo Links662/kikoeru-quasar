@@ -22,14 +22,14 @@
       <div class="row q-gutter-x-sm col-auto">
         <router-link
           :to="workConditionLink($route, 'circle', metadata.circle.id)"
-          class="col-auto text-grey"
+          class="col-auto app-text-secondary"
           @click="handleWorkConditionClick($event, $route, 'circle', metadata.circle.id)"
         >
           {{ metadata.circle.name }}
         </router-link>
 
         <span class="col-auto">/</span>
-        <span class="col-auto text-grey">{{ metadata.release }}</span>
+        <span class="col-auto app-text-secondary">{{ metadata.release }}</span>
         <span class="col-auto">/</span>
 
         <router-link

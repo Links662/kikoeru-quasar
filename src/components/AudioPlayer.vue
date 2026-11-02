@@ -35,10 +35,10 @@
               <!-- 上/下箭头：点一下把这条曲目挪一位（拖动已取消，鼠标和触摸都走这里） -->
               <q-item-section side class="queue-arrows">
                 <q-btn flat icon="arrow_upward" aria-label="上移"
-                  :color="queueIndex === row.index ? 'white' : 'dark'"
+                  :color="queueIndex === row.index ? 'white' : 'app-text-secondary'"
                   :disable="row.index === 0" @click.stop="moveTrack(row.index, -1)" />
                 <q-btn flat icon="arrow_downward" aria-label="下移"
-                  :color="queueIndex === row.index ? 'white' : 'dark'"
+                  :color="queueIndex === row.index ? 'white' : 'app-text-secondary'"
                   :disable="row.index === queue.length - 1" @click.stop="moveTrack(row.index, 1)" />
               </q-item-section>
 
@@ -70,7 +70,7 @@
           <div class="queue-pager row items-center justify-center">
             <q-pagination :model-value="page + 1" :max="pageCount"
               :max-pages="5" :boundary-numbers="false" direction-links ellipses padding="0"
-              color="grey-8" active-color="teal" active-text-color="white" active-design="unelevated"
+              color="app-text-secondary" active-color="teal" active-text-color="white" active-design="unelevated"
               @update:model-value="goPage($event - 1)" />
           </div>
         </div>

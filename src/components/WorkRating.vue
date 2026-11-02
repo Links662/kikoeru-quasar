@@ -4,7 +4,7 @@
       <q-rating
         :model-value="displayRating"
         :size="size"
-        color="grey-6"
+        color="app-text-secondary"
         color-selected="amber"
         color-half="amber"
         icon="star_border"
@@ -21,7 +21,7 @@
     <button
       v-if="showRatingDistribution && sortedRatings.length"
       type="button"
-      class="text-grey bg-transparent no-border q-pa-none cursor-pointer"
+      class="app-text-secondary bg-transparent no-border q-pa-none cursor-pointer"
       :aria-label="`查看 ${rateCount} 人评分分布`"
     >
       ({{ rateCount }})
@@ -45,7 +45,7 @@
         </div>
       </q-menu>
     </button>
-    <span v-else class="text-grey">({{ rateCount }})</span>
+    <span v-else class="app-text-secondary">({{ rateCount }})</span>
 
     <template v-if="showRank && rankEntries.length">
       <button
@@ -55,7 +55,7 @@
       >
         <span class="row items-center q-pl-xs ">
           <q-icon name="emoji_events" size="xs" color="amber-8" />
-          <span class="q-ml-xs text-grey">({{ rankEntries.length }})</span>
+          <span class="q-ml-xs app-text-secondary">({{ rankEntries.length }})</span>
         </span>
         <q-menu
           anchor="bottom middle"
@@ -77,7 +77,7 @@
     <template v-if="showReviewCount">
       <span class="q-pl-xs row items-center">
         <q-icon name="forum" size="xs" />
-        <span class="q-ml-xs text-grey">({{ reviewCount }})</span>
+        <span class="q-ml-xs app-text-secondary">({{ reviewCount }})</span>
       </span>
     </template>
   </div>

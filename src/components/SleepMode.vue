@@ -7,7 +7,7 @@
       <q-card-section class="row items-center no-wrap q-gutter-x-xs q-px-md q-pt-md q-pb-sm">
         <div class="col">
           <div class="text-h6">播放定时</div>
-          <div class="text-caption text-grey-6">到时自动暂停播放</div>
+          <div class="text-caption app-text-secondary">到时自动暂停播放</div>
         </div>
         <q-btn
           flat

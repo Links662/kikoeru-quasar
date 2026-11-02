@@ -6,7 +6,7 @@
   --app-surface: white;
   --app-dashboard-header-bg: #{$grey-14};
   --app-text: #{rgba(black, 0.87)};
-  --app-text-secondary: #{rgba(black, 0.6)};
+  --app-text-secondary: #{$grey-6};
   --app-border: #{$separator-color};
   --app-shadow: #{rgba(black, 0.16)};
   --app-grip: #{rgba(black, 0.16)};
@@ -29,7 +29,7 @@ body.body--dark {
   --app-surface: #{$dark};
   --app-dashboard-header-bg: var(--app-surface);
   --app-text: #{rgba(white, 0.87)};
-  --app-text-secondary: #{rgba(white, 0.6)};
+  --app-text-secondary: #{rgba(white, 0.65)};
   --app-border: #{rgba(white, 0.12)};
   --app-shadow: #{rgba(black, 0.6)};
   --app-grip: #{rgba(white, 0.65)};
@@ -74,7 +74,8 @@ body.body--dark .q-menu {
   color: var(--app-text);
 }
 
-.app-text-secondary {
+.app-text-secondary,
+.text-app-text-secondary {
   color: var(--app-text-secondary);
 }
 
