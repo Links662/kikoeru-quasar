@@ -393,9 +393,10 @@ export default {
           path: this.isLabelRoute ? this.$route.path : '/circles',
         },
         {
-          title: this.nsfwMode ? '隐藏' : '展示',
+          title: '隐私模式',
           icon: this.nsfwMode ? 'hide_image' : 'image',
           keepPanel: true,
+          active: this.nsfwMode,
           action: this.toggleNsfwMode
         },
         {
@@ -406,17 +407,11 @@ export default {
           action: () => setThemeMode(this.$q, this.$q.dark.isActive === true ? 'light' : 'dark')
         },
         {
-          title: '定时',
+          title: '播放定时',
           icon: 'schedule',
           active: this.sleepMode,
           keepPanel: true,
           action: () => { this.showTimer = true }
-        },
-        {
-          title: '随机浏览',
-          icon: 'shuffle',
-          keepPanel: true,
-          action: this.requestRandomWork
         },
         {
           title: '控制台',
@@ -667,35 +662,6 @@ export default {
       this.collapsePlayer()
       setThemeMode(this.$q, 'auto')
       this.showSuccNotif('已进入跟随系统模式')
-    },
-
-    requestRandomWork () {
-      const params = {
-        order: 'betterRandom'
-      }
-      this.$axios.get('/api/works', { params })
-        .then((response) => {
-          const works = response.data.works
-
-          if (works.length === 0) {
-            this.showErrNotif('列表中无作品，请增加后再使用此功能')
-            return
-          }
-
-          // 跳到 /work/:id 会被路由守卫截获并改成打开详情面板，
-          // 所以这里要吞掉被取消的导航抛出的 promise
-          this.$router.push(`/work/${works[0].id}`).catch(() => {})
-        })
-        .catch((error) => {
-          if (error.response) {
-            // 请求已发出，但服务器响应的状态码不在 2xx 范围内
-            if (error.response.status !== 401) {
-              this.showErrNotif(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
-            }
-          } else {
-            this.showErrNotif(error.message || error)
-          }
-        })
     },
 
     // NSFW 模式：本地偏好，逻辑全在 CSS（body.nsfw-mode .cover-mask），

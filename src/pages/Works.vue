@@ -22,11 +22,21 @@
     <RecentList />
 
     <div class="row no-wrap items-center justify-between q-my-sm">
-      <div class="works-title col text-h5 text-weight-regular">
-        {{ pageTitle }}
+      <div class="works-title col row no-wrap items-center text-h5 text-weight-regular">
+        <span>{{ pageTitle }}</span>
         <span v-show="pagination.totalCount">
           ({{ pagination.totalCount }})
         </span>
+        <q-btn
+          dense
+          flat
+          round
+          size="md"
+          icon="shuffle"
+          class="q-ml-xs"
+          @click="requestRandomWork"
+        >
+        </q-btn>
       </div>
 
       <!-- 宽屏：搜索框与标题同行靠右 -->
@@ -765,13 +775,9 @@ export default {
         sort: this.sortOption.sort,
         page: this.pagination.currentPage,
         pageSize: this.pagination.pageSize, // 后端分页，每页多少条
-        seed: this.seed
+        seed: this.seed,
+        ...this.getWorkFilterParams()
       };
-
-      if (this.filters.allAges === true) params.nsfw = false
-      if (this.filters.subtitle === true) params.subtitle = true
-
-      Object.assign(params, getWorkConditionParams(this.workConditions))
 
       return this.$axios.get('/api/works', { params })
         .then((response) => {
@@ -803,6 +809,33 @@ export default {
       } else {
         this.showErrNotif(error.message || error);
       }
+    },
+    getWorkFilterParams () {
+      const params = getWorkConditionParams(this.workConditions)
+      if (this.filters.allAges === true) params.nsfw = false
+      if (this.filters.subtitle === true) params.subtitle = true
+      return params
+    },
+    requestRandomWork () {
+      const params = {
+        order: 'betterRandom',
+        ...this.getWorkFilterParams()
+      }
+      this.$axios.get('/api/works', { params })
+        .then((response) => {
+          const works = response.data.works
+
+          if (works.length === 0) {
+            this.showErrNotif('当前筛选结果中无作品')
+            return
+          }
+
+          // 路由器会把 /work/:id 转成详情面板，这里吞掉导航被取消时的 rejection。
+          this.$router.push(`/work/${works[0].id}`).catch(() => {})
+        })
+        .catch((error) => {
+          this.handleRequestError(error)
+        })
     },
     refreshPageTitle () {
       this.pageTitle = hasWorkConditions(this.workConditions) ? '筛选作品' : '全部作品'
@@ -885,6 +918,7 @@ export default {
 // 标题：允许被压窄（auto 的最小宽度会把搜索框顶下去）；真遇到断不开的长词，
 // 宁可词内断行，也别让整行往右溢出
 .works-title {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
