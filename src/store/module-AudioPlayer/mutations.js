@@ -53,6 +53,15 @@ const mutations = {
 
   // 换整个队列：队列里所有曲目都属于 work，作品级字段只记这一份
   SET_QUEUE(state, { work, tracks, index }) {
+    const workChanged = state.queueWork === null || state.queueWork.id !== work.id
+
+    // 有字幕的作品默认展开歌词；同一作品内切歌时保留用户手动收起的选择。
+    if (workChanged) {
+      const hasSubtitle = work.subtitle === true
+      state.lyricsWanted = hasSubtitle
+      state.lyricsOpen = hasSubtitle
+    }
+
     state.queueWork = {
       id: work.id,
       album: work.title || '',

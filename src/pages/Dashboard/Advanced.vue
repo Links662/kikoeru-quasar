@@ -182,85 +182,6 @@
 
     <q-card class="q-ma-md">
       <q-toolbar>
-        <q-toolbar-title>文件夹扫描相关设置</q-toolbar-title>
-      </q-toolbar>
-
-      <q-list>
-        <q-item>
-          <q-item-section>
-            <q-item-label>最大递归扫描深度</q-item-label>
-            <q-item-label caption>默认 2</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.scannerMaxRecursionDepth"
-              aria-label="最大递归扫描深度"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>扫描时跳过清理失效作品</q-item-label>
-            <q-item-label caption>是否跳过清理已不存在的作品（不推荐，默认不跳过）</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-toggle v-model="config.skipCleanup" dense aria-label="扫描时跳过清理失效作品" />
-          </q-item-section>
-        </q-item>
-
-        <q-item>
-          <q-item-section>
-            <q-item-label>封面升级间隔（天）</q-item-label>
-            <q-item-label caption>
-              本地由大图生成的缩略图，隔多少天尝试换成 DLsite 原图；0 表示每次扫描都试。默认 7
-            </q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.coverUpgradeIntervalDays"
-              aria-label="封面升级间隔"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-
-        <q-item>
-          <q-item-section>
-            <q-item-label>参与升级的缩略图</q-item-label>
-            <q-item-label caption>
-              sam 是原图的等比缩略图（本地生成会丢掉原图上下部分，降级最明显）；
-              240x240 与 DLsite 的差异只是多一次压缩
-            </q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-select
-              v-model="config.coverUpgradeTypes"
-              aria-label="参与升级的缩略图"
-              :options="coverUpgradeOptions"
-              multiple
-              use-chips
-              dense
-              options-dense
-              behavior="menu"
-              dropdown-icon="keyboard_arrow_down"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-      </q-list>
-    </q-card>
-
-    <q-card class="q-ma-md">
-      <q-toolbar>
         <q-toolbar-title>Web 服务器相关设置</q-toolbar-title>
         <div class="q-pr-xs">更改此设置需要重启程序</div>
       </q-toolbar>
@@ -436,8 +357,6 @@ export default {
     return {
       config: {},
       loading: false,
-      // 封面升级只针对这两张缩略图（main 是原图，没有升级一说）
-      coverUpgradeOptions: ['sam', '240x240'],
       rewindSeekTime: '5',
       forwardSeekTime: '30'
     }

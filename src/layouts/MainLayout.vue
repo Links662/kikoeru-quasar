@@ -330,11 +330,10 @@ export default {
           primary: true
         },
         {
-          title: '隐私模式',
+          title: this.nsfwMode ? '隐藏封面' : '显示封面',
           icon: this.nsfwMode ? 'hide_image' : 'image',
           showInXs: true,
           keepPanel: true,
-          active: this.nsfwMode,
           action: this.toggleNsfwMode
         },
         {

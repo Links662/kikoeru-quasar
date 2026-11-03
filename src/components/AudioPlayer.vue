@@ -630,10 +630,10 @@ export default {
 }
 
 // 歌词：压在封面下沿的一条，高度跟着内容走。
-// 底色比收起态那条实一点：它压在各种封面上，要保证紫字看得清
+// 使用和收起态播放条相同的实色表面，避免封面颜色影响歌词辨识度。
 .lyrics-view {
   padding: 3px 12px;
-  background-color: rgba($grey-4, $alpha: 0.7);
+  background-color: var(--app-surface);
 }
 
 .lyrics-view__line {

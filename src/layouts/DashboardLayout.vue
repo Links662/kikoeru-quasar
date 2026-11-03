@@ -3,17 +3,18 @@
     <q-header class="app-dashboard-header shadow-1 text-white">
       <q-toolbar class="row no-wrap items-center">
         <!-- 屏幕变窄时先收掉「控制台」标志，再窄到手机尺寸才让导航缩成纯图标 -->
-        <q-toolbar-title shrink class="gt-sm q-mr-md">控制台</q-toolbar-title>
+        <q-toolbar-title shrink class="gt-xs q-mr-xs">控制台</q-toolbar-title>
 
-        <div class="col nav-scroll row no-wrap items-center overflow-auto overflow-hidden-y hide-scrollbar">
+        <div class="col nav-scroll row no-wrap items-center overflow-hidden">
           <q-btn
             v-for="(link, index) in links"
             :key="index"
             flat
             dense
-            class="nav-btn col-auto q-mr-xs text-white"
+            class="nav-btn col-auto q-mr-xs q-px-xs text-white"
             :icon="link.icon"
-            :label="showNavLabel ? link.title : undefined"
+            :label="showNavLinkLabel(link) ? link.title : undefined"
+            :aria-label="showNavLinkLabel(link) ? undefined : link.title"
             :to="link.path"
             exact
             active-class="nav-active"
@@ -40,41 +41,46 @@ export default {
   data () {
     return {
       links: [
+
         {
-          title: '存储位置',
-          icon: 'folder',
-          path: '/admin'
-        },
-        {
-          title: '作品扫描',
+          title: '扫描',
           icon: 'youtube_searched_for',
-          path: '/admin/scanner'
+          path: '/admin/scanner',
+          primary: true
         },
         {
-          title: '用户管理',
+          title: '用户',
           icon: 'person',
-          path: '/admin/usermanage'
+          path: '/admin/usermanage',
+          primary: true
         },
         {
-          title: '高级设置',
+          title: '存储',
+          icon: 'folder',
+          path: '/admin',
+          primary: true
+        },
+        {
+          title: '高级',
           icon: 'settings',
-          path: '/admin/advanced'
+          path: '/admin/advanced',
+          primary: true
         },
         
         {
-          title: '回到主页',
+          title: '主页',
           icon: 'home',
-          path: '/'
+          path: '/',
+          primary: true
         }
       ]
     }
   },
 
   computed: {
-    // 顶部导航是否显示文字：等「控制台」标志先收掉之后，
-    // 再窄（低于 sm，手机尺寸）才把导航缩成纯图标
-    showNavLabel () {
-      return this.$q.screen.gt.xs
+    // 主入口在 xs 以上显示文字；次级入口只在 md 以上恢复文字。
+    showNavLinkLabel () {
+      return (link) => link.primary === true || this.$q.screen.gt.xs
     }
   },
 
