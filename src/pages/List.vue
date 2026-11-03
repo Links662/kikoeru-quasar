@@ -18,8 +18,8 @@
       align="left"
       no-caps
       inline-label
-      active-color="primary"
-      indicator-color="primary"
+      active-color="app-accent"
+      indicator-color="app-accent"
       class="q-mb-sm"
       aria-label="分类类型"
     >
@@ -59,7 +59,7 @@
       <!-- 分页放到底部正中（左右方向键也可翻页，见 handlePageKeyEvent） -->
       <template v-slot:bottom>
         <div class="row items-center justify-center full-width">
-          <q-pagination :model-value="pagination.page" :max="pagesNumber" direction-links color="primary" input
+          <q-pagination :model-value="pagination.page" :max="pagesNumber" direction-links color="app-accent" input
             @update:model-value="changePage" />
         </div>
       </template>
@@ -103,7 +103,7 @@
 
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link class="text-primary" :to="worksLink(props.row)" :title="props.row.name" @click.stop>
+          <router-link class="text-app-accent" :to="worksLink(props.row)" :title="props.row.name" @click.stop>
             {{ props.row.name }}
           </router-link>
         </q-td>
@@ -115,7 +115,7 @@
           <div class="row q-gutter-xs">
             <router-link v-for="id in props.row.recentWorks" :key="id" :to="`/work/${id}`"
               :title="`打开 ${rjLabel(id)}`" @click.stop>
-              <q-badge rounded outline color="primary">{{ rjLabel(id) }}</q-badge>
+              <q-badge rounded outline color="app-accent">{{ rjLabel(id) }}</q-badge>
             </router-link>
           </div>
         </q-td>

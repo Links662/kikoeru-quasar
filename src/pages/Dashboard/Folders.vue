@@ -52,7 +52,7 @@
             </q-item-section>
 
             <q-item-section avatar>
-              <q-btn flat round color="negative" icon="delete" aria-label="删除文件夹"
+              <q-btn flat round color="app-danger" icon="delete" aria-label="删除文件夹"
                 @click="removeFromRootFolders(index)" />
             </q-item-section>
           </q-item>

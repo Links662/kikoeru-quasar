@@ -38,14 +38,14 @@
             flat
             round
             dense
-            color="primary"
+            color="app-accent"
             icon="close"
             aria-label="关闭定时"
             @click="clearSleepTimer"
           />
         </div>
 
-        <div class="q-py-xs q-px-xs text-primary q-mb-md">
+        <div class="q-py-xs q-px-xs text-app-accent q-mb-md">
           <div class="text-subtitle1 text-weight-medium">
             <template v-if="timerMode === 'custom' && customTimeInfo">
               {{ customTimeInfo.dayLabel }} {{ customTime }} 自动暂停
@@ -102,7 +102,7 @@
             snap
             dense
             :marker-labels="(index) => String(quickDurations[index]?.minutes ?? '')"
-            color="primary"
+            color="app-accent"
             track-size="30px"
             thumb-size="0px"
             aria-label="快捷暂停时长"
@@ -121,7 +121,7 @@
             outlined
             clearable
             step="60"
-            color="primary"
+            color="app-accent"
             class="full-width"
             aria-label="选择自动暂停播放的结束时间"
           />
@@ -132,7 +132,7 @@
         <q-btn
           flat
           no-caps
-          color="primary"
+          color="app-accent"
           :label="sleepMode ? '更新定时' : '开始计时'"
           :disable="!canStartTimer"
           @click="startTimer"
@@ -333,12 +333,12 @@ export default {
 }
 
 .sleep-mode-status {
-  color: var(--q-primary);
-  background: color-mix(in srgb, var(--q-primary) 10%, transparent);
+  color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-accent) 10%, transparent);
 }
 
 .sleep-mode-panel {
-  background: color-mix(in srgb, var(--q-primary) 7%, transparent);
+  background: color-mix(in srgb, var(--app-accent) 7%, transparent);
 }
 
 </style>

@@ -29,7 +29,7 @@
       </div>
 
       <div v-if="metadata.price != null" class="row no-wrap items-baseline text-no-wrap q-px-xs q-mt-sm">
-        <span class="text-body1 text-weight-medium text-red">{{ metadata.price }} 日元</span>
+        <span class="text-body1 text-weight-medium text-app-highlight-red">{{ metadata.price }} 日元</span>
         <span class="q-ml-sm text-body2 app-text-secondary">({{ metadata.dl_count }})</span>
         <a
           v-if="dlsiteUrl"

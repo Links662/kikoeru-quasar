@@ -29,7 +29,7 @@
             v-for="(va, index) in metadata.vas"
             :to="workConditionLink($route, 'va', va.id)"
             :key=index
-            class="col-auto text-primary"
+            class="col-auto text-app-accent"
             @click="handleWorkConditionClick($event, $route, 'va', va.id)"
           >
             {{ va.name }}

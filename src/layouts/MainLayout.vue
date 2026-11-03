@@ -8,8 +8,6 @@
           </router-link>
         </q-toolbar-title>
 
-        <!-- 导航：xs 屏保留三个主入口和两个右对齐小图标，其余功能收进“更多”菜单；
-             更宽时非 primary 项靠右排列，大于 md 后恢复文字 -->
         <div ref="navRow" class="nav-scroll col row no-wrap items-center overflow-hidden">
           <q-btn
             v-for="(item, index) in navDisplayItems"
@@ -42,7 +40,7 @@
                   v-ripple
                   exact
                   :to="item.path"
-                  active-class="text-primary text-weight-medium"
+                  active-class="text-app-accent text-weight-medium"
                   @click="onNavClick(item, $event)"
                   v-touch-hold:550.mouse="item.holdAction"
                 >
@@ -79,7 +77,7 @@
           </div>
           <div
             v-if="userName"
-            class="logout-dialog__account row items-center no-wrap q-mt-md q-px-sm q-py-sm rounded-borders text-primary"
+            class="logout-dialog__account row items-center no-wrap q-mt-md q-px-sm q-py-sm rounded-borders text-app-accent"
           >
             <q-icon name="person_outline" size="xs" />
             <span class="q-ml-sm text-caption app-text-secondary">当前账号</span>
@@ -90,13 +88,13 @@
         <q-card-actions align="right">
           <q-btn
             flat
-            color="primary"
+            color="app-accent"
             label="取消"
             v-close-popup
           />
           <q-btn
             flat
-            color="negative"
+            color="app-danger"
             label="退出"
             @click="logout()"
             v-close-popup
@@ -332,6 +330,7 @@ export default {
         {
           title: this.nsfwMode ? '隐藏封面' : '显示封面',
           icon: this.nsfwMode ? 'hide_image' : 'image',
+          active: this.nsfwMode,
           showInXs: true,
           keepPanel: true,
           action: this.toggleNsfwMode
@@ -340,6 +339,7 @@ export default {
           title: isDark ? '深色模式' : '浅色模式',
           icon: isDark ? 'dark_mode' : 'light_mode',
           showInXs: true,
+          active: this.$q.dark.mode === 'auto',
           holdAction: this.activateThemeAutoMode,
           keepPanel: true,
           action: () => setThemeMode(this.$q, this.$q.dark.isActive === true ? 'light' : 'dark')
@@ -387,7 +387,7 @@ export default {
     },
 
     showNavItemLabel () {
-      return (item) => item.primary === true || this.$q.screen.gt.md
+      return (item) => item.primary === true
     },
 
     // 播放器卡片是否正在展开显示

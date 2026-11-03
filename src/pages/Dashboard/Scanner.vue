@@ -57,7 +57,8 @@
         <q-btn
           class="col"
           unelevated
-          color="negative"
+          color="app-danger-fill"
+          text-color="app-danger-contrast"
           label="终止扫描进程"
           :disable="state !== 'running' || !socketConnected"
           @click="$socket.emit('KILL_SCAN_PROCESS')"
@@ -69,9 +70,9 @@
       <q-expansion-item expand-separator>
         <template v-slot:header>
           <q-item-section avatar>
-            <q-spinner-gears v-if="state === 'running'" color="primary" size="2em" />
+            <q-spinner-gears v-if="state === 'running'" color="app-accent" size="2em" />
             <q-icon v-else-if="state === 'finished'" name="done" color="positive" size="2em" />
-            <q-icon v-else-if="state === 'error'" name="error" color="red" size="2em" />
+            <q-icon v-else-if="state === 'error'" name="error" color="app-danger" size="2em" />
           </q-item-section>
 
           <q-item-section>
@@ -82,7 +83,7 @@
         
         <q-scroll-area class="log-scroll bg-dark text-white q-pa-md">
           <div v-for="(log, index) in allLogs" :key="index" >
-            <span :class="log.level === 'error' ? 'text-red' : ''">➜ {{log.message}}</span>
+            <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
           </div>
         </q-scroll-area>
       </q-expansion-item>
@@ -104,7 +105,8 @@
           <q-badge v-show="tasks.length > 0" color="primary" floating>{{tasks.length}}</q-badge>
         </q-tab>
         <q-tab name="failedTasks" icon="error_outline" label="处理失败">
-          <q-badge v-show="failedTasks.length > 0" color="red" floating>{{failedTasks.length}}</q-badge>
+          <q-badge v-show="failedTasks.length > 0" color="app-danger-fill"
+            text-color="app-danger-contrast" floating>{{failedTasks.length}}</q-badge>
         </q-tab>
       </q-tabs>
 
@@ -122,7 +124,7 @@
               <q-expansion-item expand-separator :key="index">
                 <template v-slot:header>
                   <q-item-section avatar>
-                    <q-spinner-hourglass color="primary" size="2em" />
+                    <q-spinner-hourglass color="app-accent" size="2em" />
                   </q-item-section>
 
                   <q-item-section>
@@ -134,7 +136,7 @@
                 <q-card>
                   <q-card-section class="bg-dark text-white">
                     <div v-for="(log, index) in item.logs" :key="index">
-                      <span :class="log.level === 'error' ? 'text-red' : ''">➜ {{log.message}}</span>
+                      <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -155,19 +157,19 @@
                 expand-separator
                 :key="index"
                 expand-icon-class="text-white"
-                header-class="bg-negative"
+                header-class="bg-app-danger-fill"
               >
                 <template v-slot:header>
                   <q-item-section avatar>
-                    <q-icon name="error" color="white" size="2em" />
+                    <q-icon name="error" color="app-danger-contrast" size="2em" />
                   </q-item-section>
 
                   <q-item-section>
-                    <q-item-label class="text-white ellipsis" >
+                    <q-item-label class="text-app-danger-contrast ellipsis" >
                       {{item.logs[item.logs.length - 1].message}}
                     </q-item-label>
 
-                    <q-item-label caption class="text-white">
+                    <q-item-label caption class="text-app-danger-contrast">
                       {{ rjLabel(item.workId) }}
                     </q-item-label>
                   </q-item-section>
@@ -176,7 +178,7 @@
                 <q-card>
                   <q-card-section class="bg-dark text-white">
                     <div v-for="(log, index) in item.logs" :key="index">
-                      <span :class="log.level === 'error' ? 'text-red' : ''">➜ {{log.message}}</span>
+                      <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
                     </div>
                   </q-card-section>
                 </q-card>

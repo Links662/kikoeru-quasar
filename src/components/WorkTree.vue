@@ -205,7 +205,7 @@ export default {
 }
 
 .work-tree-icon--audio {
-  color: var(--app-media-accent);
+  color: var(--app-accent);
 }
 
 .work-tree-item--active .work-tree-icon {

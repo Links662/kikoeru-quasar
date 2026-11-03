@@ -134,7 +134,7 @@ export default {
   &:hover &__bar,
   &:focus-visible &__bar {
     width: 12px;
-    background: var(--app-primary);
+    background: var(--app-accent);
   }
 
   &:hover .q-icon,
@@ -156,7 +156,7 @@ export default {
 
   .panel-grip:active .panel-grip__bar {
     width: 12px;
-    background: var(--app-primary);
+    background: var(--app-accent);
   }
 
   .panel-grip:active .q-icon {

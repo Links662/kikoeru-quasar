@@ -61,7 +61,7 @@
           option-label="label"
           option-value="value"
           options-dense
-          options-selected-class="text-primary"
+          options-selected-class="text-app-accent"
           dense
           outlined
           rounded
@@ -92,7 +92,7 @@
           rounded
           outline
           no-caps
-          color="negative"
+          color="app-danger"
           padding="4px 8px"
           label="清除记录"
           @click="deleteConfirm = true"
@@ -115,8 +115,8 @@
           </q-card-section>
 
           <q-card-actions align="right">
-            <q-btn flat label="取消" color="primary" v-close-popup />
-            <q-btn flat label="确认" color="negative" :loading="deleting" @click="deleteRecord" />
+            <q-btn flat label="取消" color="app-accent" v-close-popup />
+            <q-btn flat label="确认" color="app-danger" :loading="deleting" @click="deleteRecord" />
           </q-card-actions>
         </q-card>
       </q-dialog>

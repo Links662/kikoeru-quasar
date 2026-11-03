@@ -25,7 +25,7 @@
           option-label="label"
           option-value="value"
           options-dense
-          options-selected-class="text-primary"
+          options-selected-class="text-app-accent"
           dense
           outlined
           rounded
@@ -58,7 +58,7 @@
             :model-value="pagination.currentPage"
             :max="pagination.totalPages"
             direction-links
-            color="primary"
+            color="app-accent"
             input
             @update:model-value="changePage"
           />

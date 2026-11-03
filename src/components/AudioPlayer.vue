@@ -70,7 +70,7 @@
               :max-pages="1" :boundary-numbers="false" :ellipses="false" direction-links
               icon-prev="chevron_left" icon-next="chevron_right"
               size="md" padding="xs" color="app-text-secondary"
-              active-color="app-media-accent" active-design="flat"
+              active-color="app-accent" active-design="flat"
               @update:model-value="goPage($event - 1)" />
           </div>
         </div>
@@ -88,7 +88,7 @@
             :label-value="formatSeconds(seekValue)"
             label
             thumb-size="12px"
-            color="app-media-accent"
+            color="app-accent"
             aria-label="播放进度"
             @update:model-value="onSeekInput"
             @change="onSeekChange"
@@ -113,7 +113,7 @@
         <div class="row justify-around control-row">
           <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
           <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
-            :color="isPressing('queue') ? 'negative' : (queueOpen ? 'app-media-accent' : undefined)"
+            :color="isPressing('queue') ? 'app-danger' : (queueOpen ? 'app-accent' : undefined)"
             aria-label="展开播放列表；长按清空"
             @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
             @mouseleave="cancelPress" @contextmenu.prevent
@@ -134,7 +134,7 @@
             @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
           <!-- 歌词开关：没有歌词文件时置灰不可点。和播放列表互不影响，两者可同时开着 -->
           <q-btn flat dense size="md" icon="lyrics" :disable="!hasLyric"
-            :color="lyricsOpen ? 'app-media-accent' : undefined" @click="toggleLyrics()"
+            :color="lyricsOpen ? 'app-accent' : undefined" @click="toggleLyrics()"
             class="col-auto non-selectable control-btn" aria-label="歌词" />
         </div>
 
@@ -143,7 +143,7 @@
         <div class="row items-center justify-center q-mx-sm volume-row" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
           <q-slider :model-value="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
-            :step="0.01" thumb-size="12px" color="app-media-accent" aria-label="音量"
+            :step="0.01" thumb-size="12px" color="app-accent" aria-label="音量"
             @update:model-value="setVolume" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
@@ -776,11 +776,10 @@ $queue-block: $queue-body + $queue-pager;
 }
 
 .queue-item .queue-remove .q-btn {
-  color: var(--negative);
+  color: var(--app-danger);
 }
 
-.queue-item--active .queue-arrows .q-btn,
-.queue-item--active .queue-remove .q-btn {
+.queue-item--active .queue-arrows .q-btn {
   color: var(--app-selection-text);
 }
 

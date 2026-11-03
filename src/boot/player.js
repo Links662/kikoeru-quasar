@@ -25,7 +25,7 @@ export default ({ store }) => {
       error (message) {
         Notify.create({
           message: getRequestErrorMessage(message),
-          color: 'negative',
+          color: 'app-danger-fill',
           icon: 'error'
         })
       }

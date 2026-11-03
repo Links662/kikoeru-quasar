@@ -17,7 +17,7 @@
           />
         </q-card-section>
 
-        <q-card-actions align="right" class="text-primary">
+        <q-card-actions align="right" class="text-app-accent">
           <q-btn flat label="取消" @click="showReviewDialog = false" />
           <q-btn flat label="保存" :loading="saving" @click="submitNote" />
         </q-card-actions>

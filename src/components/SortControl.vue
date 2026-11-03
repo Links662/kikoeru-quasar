@@ -6,7 +6,7 @@
       :options="options"
       option-label="label"
       options-dense
-      options-selected-class="text-primary"
+      options-selected-class="text-app-accent"
       dense
       outlined
       rounded

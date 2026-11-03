@@ -109,8 +109,8 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="取消" color="primary" v-close-popup />
-          <q-btn flat label="确认" color="primary" @click="deleteUsers()" v-close-popup />
+          <q-btn flat label="取消" color="app-accent" v-close-popup />
+          <q-btn flat label="确认" color="app-accent" @click="deleteUsers()" v-close-popup />
         </q-card-actions>
       </q-card>
     </q-dialog>

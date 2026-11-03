@@ -70,7 +70,7 @@
           flat
           dense
           no-caps
-          color="primary"
+          color="app-accent"
           icon="filter_alt_off"
           label="清除条件"
           @click="clearConditions"
@@ -274,12 +274,12 @@
       >
         没有符合当前筛选条件的作品
         <div class="q-mt-sm">
-          <q-btn flat dense no-caps color="primary" label="清除筛选" @click="clearFilters" />
+          <q-btn flat dense no-caps color="app-accent" label="清除筛选" @click="clearFilters" />
         </div>
       </div>
       <!-- 分页控件 -->
       <div class="row justify-center q-my-sm">
-        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="primary"
+        <q-pagination v-model="pagination.currentPage" :max="pagination.totalPages" direction-links color="app-accent"
           input />
       </div>
     </div>

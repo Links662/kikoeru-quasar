@@ -8,11 +8,17 @@
   --app-text: #{rgba(black, 0.87)};
   --app-text-secondary: #{$grey-6};
   --app-border: #{$separator-color};
+  --app-control-border: #{rgba(black, 0.24)};
   --app-shadow: #{rgba(black, 0.16)};
   --app-grip: #{rgba(black, 0.16)};
   --app-primary: #{$primary};
-  --app-media-accent: #{$primary};
-  --app-media-accent-contrast: white;
+  --app-accent: #{$primary};
+  --app-accent-contrast: white;
+  --app-danger: #{$negative};
+  --app-danger-fill: #{$negative};
+  --app-danger-contrast: white;
+  --app-highlight-red: #{$red};
+  --app-on-dark-danger: #{$red};
   --app-lyric-text: #{$purple-8};
   --app-selection-bg: #{$blue-1};
   --app-selection-text: #{$blue-9};
@@ -41,8 +47,11 @@ body.body--dark {
   --app-text: #{rgba(white, 0.87)};
   --app-text-secondary: #{rgba(white, 0.65)};
   --app-border: #{rgba(white, 0.12)};
-  --app-media-accent: #{$blue-3};
-  --app-media-accent-contrast: #{$dark-page};
+  --app-control-border: #{rgba(white, 0.6)};
+  --app-accent: #{$blue-3};
+  --app-accent-contrast: #{$dark-page};
+  --app-danger: #{$red-11};
+  --app-danger-fill: #{$red-11};
   --app-lyric-text: #{$purple-3};
   --app-selection-bg: #{rgba($blue-5, 0.18)};
   --app-selection-text: #{$blue-1};
@@ -99,16 +108,36 @@ body.body--dark .q-menu {
   color: var(--app-text-secondary);
 }
 
-.text-app-media-accent {
-  color: var(--app-media-accent) !important;
+.text-app-accent {
+  color: var(--app-accent) !important;
 }
 
-.text-app-media-accent-contrast {
-  color: var(--app-media-accent-contrast) !important;
+.text-app-accent-contrast {
+  color: var(--app-accent-contrast) !important;
 }
 
-.bg-app-media-accent {
-  background: var(--app-media-accent) !important;
+.bg-app-accent {
+  background: var(--app-accent) !important;
+}
+
+.text-app-danger {
+  color: var(--app-danger) !important;
+}
+
+.text-app-danger-contrast {
+  color: var(--app-danger-contrast) !important;
+}
+
+.bg-app-danger-fill {
+  background: var(--app-danger-fill) !important;
+}
+
+.text-app-highlight-red {
+  color: var(--app-highlight-red) !important;
+}
+
+.text-app-on-dark-danger {
+  color: var(--app-on-dark-danger) !important;
 }
 
 .app-lyric-text {
@@ -156,7 +185,7 @@ a {
 .app-control-button {
   height: $toolbar-control-height;
   min-height: $toolbar-control-height;
-  border: 1px solid var(--app-border);
+  border: 1px solid var(--app-control-border);
   border-radius: $button-rounded-border-radius;
   background: var(--app-surface);
   color: var(--app-text);

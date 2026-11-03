@@ -23,7 +23,7 @@ export default {
     showErrNotif (message) {
       this.$q.notify({
         message: getRequestErrorMessage(message),
-        color: 'negative',
+        color: 'app-danger-fill',
         icon: 'error',
         timeout: 0
       })

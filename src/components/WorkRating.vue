@@ -17,7 +17,7 @@
       />
     </span>
 
-    <span class="text-weight-medium text-body1 text-red">{{ average }}</span>
+    <span class="text-weight-medium text-body1 text-app-highlight-red">{{ average }}</span>
     <button
       v-if="showRatingDistribution && sortedRatings.length"
       type="button"
