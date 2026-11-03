@@ -27,7 +27,7 @@
             :to="item.path"
             exact
             active-class="nav-active"
-            @click="onNavClick(item)"
+            @click="onNavClick(item, $event)"
             v-touch-hold:550.mouse="item.holdAction"
           />
 
@@ -43,7 +43,7 @@
                   exact
                   :to="item.path"
                   active-class="text-primary text-weight-medium"
-                  @click="onNavClick(item)"
+                  @click="onNavClick(item, $event)"
                   v-touch-hold:550.mouse="item.holdAction"
                 >
                   <q-item-section avatar>
@@ -539,22 +539,25 @@ export default {
         })
     },
 
-    // 详情面板打开时点导航栏上的按钮，等价于点“返回”：先收起面板再执行跳转 / 动作
-    onNavClick (item) {
-      // 导航优先占据前景：展开的播放器先收回底部播放条，避免挡住下一次浏览
-      this.collapsePlayer()
+    // 详情面板打开时点普通导航按钮，等价于点“返回”：先收起面板再执行跳转 / 动作
+    onNavClick (item, event) {
+      // 阻止冒泡到 toolbar，避免 keepPanel 操作被工具栏的收起播放器逻辑误伤
+      event && event.stopPropagation()
 
-      // keepPanel 的动作（随心听）会自己换掉当前详情，收起再展开只会闪一下
-      if (item.keepPanel !== true) {
-        this.closePanel()
+      if (item.keepPanel === true) {
+        item.action && item.action()
+        return
       }
+
+      // 普通导航优先占据前景：展开的播放器先收回底部播放条，再关闭详情面板
+      this.collapsePlayer()
+      this.closePanel()
       item.action && item.action()
     },
 
     activateThemeAutoMode () {
       if (this.$q.dark.mode === 'auto') return
 
-      this.collapsePlayer()
       setThemeMode(this.$q, 'auto')
       this.showSuccNotif('已进入跟随系统模式')
     },

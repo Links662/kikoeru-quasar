@@ -11,6 +11,16 @@
   --app-shadow: #{rgba(black, 0.16)};
   --app-grip: #{rgba(black, 0.16)};
   --app-primary: #{$primary};
+  --app-media-accent: #{$primary};
+  --app-media-accent-contrast: white;
+  --app-lyric-text: #{$purple-8};
+  --app-selection-bg: #{$blue-1};
+  --app-selection-text: #{$blue-9};
+  --app-selection-accent: #{$primary};
+  --app-file-folder: #{$orange-9};
+  --app-file-text: #{$blue-grey-8};
+  --app-file-image: #{$deep-orange-8};
+  --app-file-other: #{$blue-grey-8};
   --app-browser-theme: #{$primary};
   --app-chip-age-bg: #{$light-green-2};
   --app-chip-age-text: #{$light-green-9};
@@ -31,6 +41,16 @@ body.body--dark {
   --app-text: #{rgba(white, 0.87)};
   --app-text-secondary: #{rgba(white, 0.65)};
   --app-border: #{rgba(white, 0.12)};
+  --app-media-accent: #{$blue-3};
+  --app-media-accent-contrast: #{$dark-page};
+  --app-lyric-text: #{$purple-3};
+  --app-selection-bg: #{rgba($blue-5, 0.18)};
+  --app-selection-text: #{$blue-1};
+  --app-selection-accent: #{$blue-3};
+  --app-file-folder: #{$amber-3};
+  --app-file-text: #{$blue-grey-3};
+  --app-file-image: #{$deep-orange-3};
+  --app-file-other: #{$blue-grey-3};
   --app-shadow: #{rgba(black, 0.6)};
   --app-grip: #{rgba(white, 0.65)};
   --app-browser-theme: #{$dark};
@@ -77,6 +97,22 @@ body.body--dark .q-menu {
 .app-text-secondary,
 .text-app-text-secondary {
   color: var(--app-text-secondary);
+}
+
+.text-app-media-accent {
+  color: var(--app-media-accent) !important;
+}
+
+.text-app-media-accent-contrast {
+  color: var(--app-media-accent-contrast) !important;
+}
+
+.bg-app-media-accent {
+  background: var(--app-media-accent) !important;
+}
+
+.app-lyric-text {
+  color: var(--app-lyric-text);
 }
 
 .app-theme-control {

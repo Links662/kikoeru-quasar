@@ -11,7 +11,7 @@
                播放列表展开时它就在列表上方，两块可以同时开着 -->
           <transition name="lyrics-pop">
             <div v-if="lyricsOpen" class="lyrics-view absolute-bottom row items-center justify-center overflow-hidden">
-              <div class="lyrics-view__line text-center text-h6 text-bold text-purple ellipsis-2-lines">
+              <div class="lyrics-view__line app-lyric-text text-center text-h6 text-bold ellipsis-2-lines">
                 {{ currentLyric }}
               </div>
             </div>
@@ -30,15 +30,13 @@
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
           <q-list class="queue-list overflow-hidden">
             <q-item v-for="row in pageTracks" :key="row.index"
-              :active="queueIndex === row.index" active-class="text-white bg-teal"
+              :active="queueIndex === row.index" active-class="queue-item--active"
               class="queue-item non-selectable q-py-none q-px-sm">
               <!-- 上/下箭头：点一下把这条曲目挪一位（拖动已取消，鼠标和触摸都走这里） -->
               <q-item-section side class="queue-arrows">
                 <q-btn flat icon="arrow_upward" aria-label="上移"
-                  :color="queueIndex === row.index ? 'white' : 'app-text-secondary'"
                   :disable="row.index === 0" @click.stop="moveTrack(row.index, -1)" />
                 <q-btn flat icon="arrow_downward" aria-label="下移"
-                  :color="queueIndex === row.index ? 'white' : 'app-text-secondary'"
                   :disable="row.index === queue.length - 1" @click.stop="moveTrack(row.index, 1)" />
               </q-item-section>
 
@@ -62,15 +60,17 @@
 
               <q-item-section side class="queue-remove">
                 <q-btn flat round icon="clear" aria-label="从播放列表移除"
-                  :color="queueIndex === row.index ? 'white' : 'red'" @click.stop="removeFromQueue(row.index)" />
+                  @click.stop="removeFromQueue(row.index)" />
               </q-item-section>
             </q-item>
           </q-list>
 
           <div class="queue-pager row items-center justify-center">
             <q-pagination :model-value="page + 1" :max="pageCount"
-              :max-pages="5" :boundary-numbers="false" direction-links ellipses padding="0"
-              color="app-text-secondary" active-color="teal" active-text-color="white" active-design="unelevated"
+              :max-pages="1" :boundary-numbers="false" :ellipses="false" direction-links
+              icon-prev="chevron_left" icon-next="chevron_right"
+              size="md" padding="xs" color="app-text-secondary"
+              active-color="app-media-accent" active-design="flat"
               @update:model-value="goPage($event - 1)" />
           </div>
         </div>
@@ -88,7 +88,7 @@
             :label-value="formatSeconds(seekValue)"
             label
             thumb-size="12px"
-            color="primary"
+            color="app-media-accent"
             aria-label="播放进度"
             @update:model-value="onSeekInput"
             @change="onSeekChange"
@@ -113,7 +113,7 @@
         <div class="row justify-around control-row">
           <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
           <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
-            :color="isPressing('queue') ? 'negative' : (queueOpen ? 'primary' : undefined)"
+            :color="isPressing('queue') ? 'negative' : (queueOpen ? 'app-media-accent' : undefined)"
             aria-label="展开播放列表；长按清空"
             @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
             @mouseleave="cancelPress" @contextmenu.prevent
@@ -134,7 +134,7 @@
             @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
           <!-- 歌词开关：没有歌词文件时置灰不可点。和播放列表互不影响，两者可同时开着 -->
           <q-btn flat dense size="md" icon="lyrics" :disable="!hasLyric"
-            :color="lyricsOpen ? 'primary' : undefined" @click="toggleLyrics()"
+            :color="lyricsOpen ? 'app-media-accent' : undefined" @click="toggleLyrics()"
             class="col-auto non-selectable control-btn" aria-label="歌词" />
         </div>
 
@@ -143,7 +143,7 @@
         <div class="row items-center justify-center q-mx-sm volume-row" v-if="!$q.platform.is.ios">
           <q-icon name="volume_down" size="sm" class="col-auto" />
           <q-slider :model-value="volume" class="col q-mx-sm volume-slider" :min="0" :max="1"
-            :step="0.01" thumb-size="12px" color="primary" aria-label="音量"
+            :step="0.01" thumb-size="12px" color="app-media-accent" aria-label="音量"
             @update:model-value="setVolume" />
           <q-icon name="volume_up" size="sm" class="col-auto" />
         </div>
@@ -634,6 +634,9 @@ export default {
 .lyrics-view {
   padding: 3px 12px;
   background-color: var(--app-surface);
+  // 和封面、下方进度区各留一条分割线，保持与收起态歌词条一致
+  border-top: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .lyrics-view__line {
@@ -683,12 +686,10 @@ $volume-slider-width: 200px;
 }
 
 // 行高沿用 Quasar q-item 的 min-height；一页固定 4 行，另加一条分页条。
-// 分页条高度按 QPagination 里按钮的 min-height（2.572em × 14px ≈ 36px）给，
-// 否则原生控件会被裁掉
 $queue-row: 48px;
 $queue-cover: 40px; // 行内封面：和收起态播放条同款，卡在 48px 行高里
 $queue-page-rows: 4;
-$queue-pager: 36px;
+$queue-pager: 32px;
 $queue-body: $queue-row * $queue-page-rows;
 $queue-block: $queue-body + $queue-pager;
 
@@ -763,8 +764,27 @@ $queue-block: $queue-body + $queue-pager;
   }
 }
 
-// 分页条：只有原生分页控件，居中一行。
-// 注意不要在这里给 .q-btn 定死宽高，QPagination 的按钮是 2.572em 高的
+// 当前曲目使用主题蓝的浅色选中面，避免深色模式里出现突兀的高饱和色块
+.queue-item--active {
+  background-color: var(--app-selection-bg);
+  color: var(--app-selection-text);
+  box-shadow: inset 3px 0 0 var(--app-selection-accent);
+}
+
+.queue-item .queue-arrows .q-btn {
+  color: var(--app-text-secondary);
+}
+
+.queue-item .queue-remove .q-btn {
+  color: var(--negative);
+}
+
+.queue-item--active .queue-arrows .q-btn,
+.queue-item--active .queue-remove .q-btn {
+  color: var(--app-selection-text);
+}
+
+// 分页条：QPagination 只保留方向键和当前页，居中一行。
 .queue-pager {
   height: $queue-pager;
 }

@@ -2,7 +2,7 @@
   <q-slide-transition>
     <div v-show="hasTrack && hide" class="app-surface app-text player-bar">
       <div v-show="showLyricStrip" class="player-bar-lyric row items-center justify-center">
-        <span v-if="currentLyric" class="player-bar-lyric__text text-purple text-bold ellipsis">
+        <span v-if="currentLyric" class="player-bar-lyric__text app-lyric-text text-bold ellipsis">
           {{ currentLyric }}
         </span>
       </div>

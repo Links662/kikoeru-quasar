@@ -19,21 +19,23 @@
           v-for="(item, index) in fatherFolder"
           :key="index"
           :active="item.type === 'audio' && currentTrack.hash === item.hash"
-          active-class="text-white bg-teal"
+          active-class="work-tree-item--active"
           @click="onClickItem(item)"
-          class="non-selectable"
+          class="work-tree-item non-selectable"
         >
           <q-item-section avatar>
-            <q-icon size="md" v-if="item.type === 'folder'" color="amber" name="folder" />
-            <q-icon size="md" v-else-if="item.type === 'text'" color="info" name="description" />
-            <q-icon size="md" v-else-if="item.type === 'image'" color="orange" name="photo" />
-            <q-icon size="md" v-else-if="item.type === 'other'" color="info" name="description" />
-            <q-icon v-else size="md" color="primary" :name="playIcon(item.hash)" />
+            <q-icon size="md" v-if="item.type === 'folder'" class="work-tree-icon work-tree-icon--folder" name="folder" />
+            <q-icon size="md" v-else-if="item.type === 'text'" class="work-tree-icon work-tree-icon--text" name="description" />
+            <q-icon size="md" v-else-if="item.type === 'image'" class="work-tree-icon work-tree-icon--image" name="photo" />
+            <q-icon size="md" v-else-if="item.type === 'other'" class="work-tree-icon work-tree-icon--other" name="description" />
+            <q-icon v-else size="md" class="work-tree-icon work-tree-icon--audio" :name="playIcon(item.hash)" />
           </q-item-section>
 
           <q-item-section>
             <q-item-label lines="2">{{ item.title }}</q-item-label>
-            <q-item-label v-if="item.children" caption lines="1">{{ `${item.children.length} 项目` }}</q-item-label>
+            <q-item-label v-if="item.children" caption lines="1" class="work-tree-count">
+              {{ `${item.children.length} 项目` }}
+            </q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -181,3 +183,42 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.work-tree-item--active {
+  background-color: var(--app-selection-bg);
+  color: var(--app-selection-text);
+  box-shadow: inset 3px 0 0 var(--app-selection-accent);
+}
+
+.work-tree-icon--folder {
+  color: var(--app-file-folder);
+}
+
+.work-tree-icon--text,
+.work-tree-icon--other {
+  color: var(--app-file-text);
+}
+
+.work-tree-icon--image {
+  color: var(--app-file-image);
+}
+
+.work-tree-icon--audio {
+  color: var(--app-media-accent);
+}
+
+.work-tree-item--active .work-tree-icon {
+  color: var(--app-selection-text);
+}
+
+.work-tree-count {
+  color: var(--app-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.work-tree-item--active .work-tree-count {
+  color: inherit;
+  opacity: 0.72;
+}
+</style>
