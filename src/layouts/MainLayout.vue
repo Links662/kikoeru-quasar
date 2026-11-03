@@ -1,31 +1,29 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="app-page-bg" :style="layoutStyle">
     <q-header ref="header" class="app-main-header shadow-1">
-      <q-toolbar
-        :class="{ 'nav-icons': !showNavLabel }"
-        :style="navIconStyle"
-        @click="collapsePlayer"
-      >
-        <!-- 屏幕变窄时先收掉 Kikoeru 标志（只在宽屏显示），
-             再窄到 5 个文字项放不下时才让导航缩成纯图标 -->
-        <q-toolbar-title shrink class="gt-sm q-mr-md">
+      <q-toolbar @click="collapsePlayer">
+        <q-toolbar-title shrink class="gt-xs q-mr-xs">
           <router-link :to="'/'" class="text-white text-weight-bold">
             Kikoeru
           </router-link>
         </q-toolbar-title>
 
-        <!-- 导航：固定一行，一行放不下的项收进末尾的下拉菜单 -->
+        <!-- 导航：xs 屏保留三个主入口和两个右对齐小图标，其余功能收进“更多”菜单；
+             更宽时非 primary 项靠右排列，大于 md 后恢复文字 -->
         <div ref="navRow" class="nav-scroll col row no-wrap items-center overflow-hidden">
           <q-btn
-            v-for="(item, index) in shownNavItems"
+            v-for="(item, index) in navDisplayItems"
             :key="'nav' + index"
             flat
             dense
-            class="nav-btn col-auto q-mr-xs text-white"
-            :class="{ 'nav-active': item.active === true }"
+            class="nav-btn col-auto q-mr-xs q-px-xs text-white"
+            :class="{
+              'nav-active': item.active === true,
+              'q-ml-auto': isFirstSecondaryNavItem(index)
+            }"
             :icon="item.icon"
-            :label="showNavLabel ? item.title : undefined"
-            :aria-label="showNavLabel ? undefined : item.title"
+            :label="showNavItemLabel(item) ? item.title : undefined"
+            :aria-label="showNavItemLabel(item) ? undefined : item.title"
             :to="item.path"
             exact
             active-class="nav-active"
@@ -33,12 +31,12 @@
             v-touch-hold:550.mouse="item.holdAction"
           />
 
-          <q-btn v-if="hiddenNavItems.length" ref="navMore" flat dense rounded class="nav-btn nav-more col-auto q-mr-xs text-white"
+          <q-btn v-if="navOverflowItems.length" ref="navMore" flat dense rounded class="nav-btn nav-more col-auto q-ml-none q-mr-none q-px-xs text-white"
             icon="keyboard_arrow_down" aria-label="更多">
             <q-menu anchor="bottom right" self="top right" :offset="[0, 4]">
               <q-list dense class="nav-more-list">
                 <q-item
-                  v-for="(item, index) in hiddenNavItems"
+                  v-for="(item, index) in navOverflowItems"
                   :key="'more' + index"
                   clickable
                   v-ripple
@@ -59,20 +57,6 @@
               </q-list>
             </q-menu>
           </q-btn>
-        </div>
-
-        <!-- 只用来量按钮宽度的隐藏行 -->
-        <div ref="navMeasure" class="nav-measure absolute-top-left invisible row no-wrap items-center" aria-hidden="true">
-          <q-btn
-            v-for="(item, index) in navItems"
-            :key="'measure' + index"
-            flat
-            dense
-            class="nav-btn col-auto q-mr-xs text-white"
-            :icon="item.icon"
-            :label="showNavLabel ? item.title : undefined"
-            tabindex="-1"
-          />
         </div>
 
         <!-- 搜索不放在顶栏：媒体库页面内有搜索框，其他页面用 / 或 Ctrl+K 跳过去 -->
@@ -180,18 +164,6 @@ import { endSession } from '../services/session'
 import { setThemeMode } from '../services/theme'
 import { mapGetters, mapMutations, mapState } from 'vuex'
 
-// 5 个 14px 两字标签 + 更多约 382px，加工具栏内边距并预留“更多”的
-// 测量余量后取 420px。它只决定文字/纯图标的最小边界，具体显示几项
-// 仍交给 measureNav 按实际宽度计算。
-const NAV_LABELS_MIN_VIEWPORT_WIDTH = 420
-
-// 纯图标模式的按钮触控区；CSS 通过 --nav-icon-size 使用同一个值。
-const NAV_ICON_BUTTON_SIZE = 40
-
-// 文字模式下“更多”按钮的保守占位宽度。实际 dense round 按钮约 34px，
-// 加 3px 右边距约 37px，这里多留一点余量，避免主行被塞满。
-const NAV_LABEL_MORE_RESERVE = 46
-
 export default {
   name: 'MainLayout',
 
@@ -211,26 +183,12 @@ export default {
       headerHeight: 0,
       footerHeight: 0,
       chromeObserver: null,
-      navRowObserver: null,
-      navMeasureTimer: null,
-      navVisibleCount: null, // null 表示所有导航项都放得下
       nsfwMode: false, // 封面打码模式，存 localStorage（每台设备各自记）
       sharedConfig: {}
     }
   },
 
   watch: {
-    // 导航项或按钮文字显隐变化后重新量一次
-    navItems () {
-      this.scheduleMeasureNav()
-    },
-
-    showNavLabel () {
-      // 跨越文字/图标边界后，等这一次 DOM 更新完成就重新量，
-      // 避免先按旧数量渲染出一瞬间溢出的按钮
-      this.$nextTick(this.measureNav)
-    },
-
     sharedConfig (config) {
       this.SET_REWIND_SEEK_TIME(config.rewindSeekTime);
       this.SET_FORWARD_SEEK_TIME(config.forwardSeekTime);
@@ -312,15 +270,6 @@ export default {
       });
     }
 
-    // 导航栏宽度变化（窗口缩放、标题显隐、搜索展开）时重算能放下几个
-    this.$nextTick(this.measureNav);
-    if (typeof ResizeObserver !== 'undefined' && this.$refs.navRow) {
-      this.navRowObserver = new ResizeObserver(this.scheduleMeasureNav);
-      this.navRowObserver.observe(this.$refs.navRow);
-    }
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(this.scheduleMeasureNav);
-    }
   },
 
   beforeUnmount () {
@@ -328,8 +277,6 @@ export default {
     window.removeEventListener('keydown', this.handlePanelKeyEvent);
     window.removeEventListener('keydown', this.handleSearchShortcut);
     this.chromeObserver && this.chromeObserver.disconnect();
-    this.navRowObserver && this.navRowObserver.disconnect();
-    clearTimeout(this.navMeasureTimer);
     this.toggleBodyScrollLock(false);
   },
 
@@ -353,21 +300,8 @@ export default {
       'hasTrack'
     ]),
 
-    // 顶部导航是否显示文字：只要还能放下 5 个文字项就保留文字，
-    // 再窄才整体转为纯图标；更宽时由 measureNav 逐步放出更多项。
-    showNavLabel () {
-      return this.$q.screen.width >= NAV_LABELS_MIN_VIEWPORT_WIDTH
-    },
-
     isLabelRoute () {
       return ['/circles', '/tags', '/vas'].includes(this.$route.path)
-    },
-
-    // 文字和图标两行共用同一个尺寸变量，避免各自绑定一份
-    navIconStyle () {
-      return {
-        '--nav-icon-size': `${NAV_ICON_BUTTON_SIZE}px`
-      }
     },
 
     // 顶部导航的全部条目，写在一处，顺序就是显示顺序：
@@ -380,21 +314,25 @@ export default {
         {
           title: '音声',
           icon: 'widgets',
-          path: '/works'
+          path: '/works',
+          primary: true
         },
         {
           title: '进度',
           icon: 'bookmarks',
-          path: '/progress'
+          path: '/progress',
+          primary: true
         },
         {
           title: '分类',
           icon: 'category',
           path: this.isLabelRoute ? this.$route.path : '/circles',
+          primary: true
         },
         {
           title: '隐私模式',
           icon: this.nsfwMode ? 'hide_image' : 'image',
+          showInXs: true,
           keepPanel: true,
           active: this.nsfwMode,
           action: this.toggleNsfwMode
@@ -402,6 +340,7 @@ export default {
         {
           title: isDark ? '深色模式' : '浅色模式',
           icon: isDark ? 'dark_mode' : 'light_mode',
+          showInXs: true,
           holdAction: this.activateThemeAutoMode,
           keepPanel: true,
           action: () => setThemeMode(this.$q, this.$q.dark.isActive === true ? 'light' : 'dark')
@@ -409,6 +348,7 @@ export default {
         {
           title: '播放定时',
           icon: 'schedule',
+          showInXs: true,
           active: this.sleepMode,
           keepPanel: true,
           action: () => { this.showTimer = true }
@@ -416,13 +356,13 @@ export default {
         {
           title: '控制台',
           icon: 'tune',
-          path: '/admin'
+          path: '/admin',
         },
 
         // 登出只在开启用户验证时才有，固定排最后
         ...(this.authEnabled === true
           ? [{
-              title: '退出',
+              title: '退出登录',
               icon: 'logout',
               action: () => { this.confirm = true }
             }]
@@ -430,16 +370,25 @@ export default {
       ]
     },
 
-    shownNavItems () {
-      return this.navVisibleCount === null
-        ? this.navItems
-        : this.navItems.slice(0, this.navVisibleCount)
+    // xs 屏进入“更多”，更宽时展示全部导航项。
+    navInMore () {
+      return this.$q.screen.gt.xs !== true
     },
 
-    hiddenNavItems () {
-      return this.navVisibleCount === null
-        ? []
-        : this.navItems.slice(this.navVisibleCount)
+    navDisplayItems () {
+      if (this.navInMore !== true) return this.navItems
+
+      return this.navItems.filter((item) => item.primary === true || item.showInXs === true)
+    },
+
+    navOverflowItems () {
+      return this.navInMore
+        ? this.navItems.filter((item) => item.primary !== true && item.showInXs !== true)
+        : []
+    },
+
+    showNavItemLabel () {
+      return (item) => item.primary === true || this.$q.screen.gt.md
     },
 
     // 播放器卡片是否正在展开显示
@@ -477,71 +426,18 @@ export default {
       closeWorkPanel: 'CLOSE'
     }),
 
+    isFirstSecondaryNavItem (index) {
+      const current = this.navDisplayItems[index]
+      const previous = this.navDisplayItems[index - 1]
+
+      return current && current.primary !== true && previous && previous.primary === true
+    },
+
     measureChrome () {
       const header = this.$refs.header && this.$refs.header.$el;
       const footer = this.$refs.footer && this.$refs.footer.$el;
       this.headerHeight = header ? header.offsetHeight : 0;
       this.footerHeight = footer ? footer.offsetHeight : 0;
-    },
-
-    scheduleMeasureNav () {
-      clearTimeout(this.navMeasureTimer)
-      this.navMeasureTimer = setTimeout(() => {
-        this.$nextTick(this.measureNav)
-      }, 50)
-    },
-
-    // 量出这一行能放下几个导航项，剩下的交给下拉菜单
-    measureNav () {
-      const nav = this.$refs.navRow
-      const measure = this.$refs.navMeasure
-      if (!nav || !measure) return
-
-      // 导航被临时隐藏（小屏展开搜索）时不重算，保持原样
-      const available = nav.clientWidth
-      if (available === 0) return
-
-      const buttons = measure.children
-      if (buttons.length === 0) return
-
-      // 直接累加按钮自身宽度 + 间距，不能用绝对坐标（隐藏行和导航行起点不同）
-      const widths = []
-      for (let i = 0; i < buttons.length; i++) {
-        const el = buttons[i]
-        const marginRight = parseFloat(getComputedStyle(el).marginRight) || 0
-        widths.push(el.getBoundingClientRect().width + marginRight)
-      }
-
-      let fit = buttons.length
-      let overflowed = false
-      let used = 0
-
-      for (let i = 0; i < buttons.length; i++) {
-        used += widths[i]
-        if (used > available) {
-          fit = i
-          overflowed = true
-          break
-        }
-      }
-
-      if (overflowed === true) {
-        // 末尾还要放一个下拉按钮，按剩下给它的宽度再算一次
-        const moreWidth = this.showNavLabel ? NAV_LABEL_MORE_RESERVE : NAV_ICON_BUTTON_SIZE
-        used = 0
-        for (let i = 0; i < buttons.length; i++) {
-          used += widths[i]
-          if (used + moreWidth > available) {
-            fit = i
-            break
-          }
-        }
-      }
-
-      const next = fit >= buttons.length ? null : fit
-      if (next !== this.navVisibleCount) {
-        this.navVisibleCount = next
-      }
     },
 
     // 面板打开期间锁住页面滚动，避免滚动"漏"到底下看不到的列表上
@@ -702,21 +598,6 @@ export default {
 .logout-dialog__account {
   background: color-mix(in srgb, currentColor 8%, transparent);
 }
-
-// 顶部导航：固定一行，放不下的项由下拉菜单接管
-// 纯图标模式：40px 触控区，按钮之间不再额外留 margin。
-// 图标仍为 24px，因此图标边缘间距约 16px。
-  .nav-icons .nav-btn {
-    width: var(--nav-icon-size, 40px);
-    height: var(--nav-icon-size, 40px);
-    margin-right: 0 !important;
-  }
-
-// “更多”始终贴住导航行右端，剩余空间留在它与最后一个可见项之间
-  .nav-more {
-    margin-left: auto;
-    margin-right: 0 !important;
-  }
 
 // “更多”下拉菜单：紧凑排布，去掉图标与文字之间的多余留白
   .nav-more-list {
