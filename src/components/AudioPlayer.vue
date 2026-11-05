@@ -40,20 +40,22 @@
                   :disable="row.index === queue.length - 1" @click.stop="moveTrack(row.index, 1)" />
               </q-item-section>
 
-              <q-item-section
-                role="button"
-                tabindex="0"
-                :aria-label="`播放 ${row.track.title}`"
-                class="queue-select"
-                @click="onClickTrack(row.index)"
-                @keydown.enter.prevent="onClickTrack(row.index)"
-                @keydown.space.prevent="onClickTrack(row.index)"
-              >
+              <q-item-section>
                 <div class="row no-wrap items-center full-width q-gutter-x-sm">
                   <q-img fit="contain" :src="thumbCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
 
                   <q-item-label lines="2" class="queue-item__title col">
-                    {{ shortTitle(row.track.title) }}
+                    <span
+                      role="button"
+                      tabindex="0"
+                      :aria-label="`播放 ${row.track.title}`"
+                      class="queue-item__title-link"
+                      @click.stop="onClickTrack(row.index)"
+                      @keydown.enter.prevent="onClickTrack(row.index)"
+                      @keydown.space.prevent="onClickTrack(row.index)"
+                    >
+                      {{ shortTitle(row.track.title) }}
+                    </span>
                   </q-item-label>
                 </div>
               </q-item-section>
@@ -727,6 +729,10 @@ $queue-block: $queue-body + $queue-pager;
   .queue-item__title {
     font-size: 13px;
     line-height: 1.35;
+  }
+
+  .queue-item__title-link {
+    cursor: pointer;
   }
 
   .queue-arrows,

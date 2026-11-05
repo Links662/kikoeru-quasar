@@ -4,10 +4,9 @@
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <q-card class="sleep-mode-card">
-      <q-card-section class="row items-center no-wrap q-gutter-x-xs q-px-md q-pt-md q-pb-sm">
+      <q-card-section class="row items-center no-wrap q-px-md q-pt-md q-pb-none">
         <div class="col">
           <div class="text-h6">播放定时</div>
-          <div class="text-caption app-text-secondary">到时自动暂停播放</div>
         </div>
         <q-btn
           flat
@@ -19,12 +18,12 @@
         />
       </q-card-section>
 
-      <q-card-section class="q-px-md q-pt-none">
+      <q-card-section class="q-px-md q-pt-sm q-pb-none">
         <div
           v-if="sleepMode"
-          class="sleep-mode-status row items-center q-gutter-x-sm q-py-sm q-px-md rounded-borders q-mb-sm"
+          class="sleep-mode-status row items-center q-py-sm q-px-md rounded-borders q-mb-sm"
         >
-          <q-icon name="schedule" size="20px" />
+          <q-icon name="schedule" size="20px" class="q-mr-sm" />
           <div class="col">
             <div class="text-weight-medium">已开启 · {{ sleepTime }}</div>
             <div class="text-caption">
@@ -45,7 +44,7 @@
           />
         </div>
 
-        <div class="q-py-xs q-px-xs text-app-accent q-mb-md">
+        <div class="text-app-accent q-mb-sm">
           <div class="text-subtitle1 text-weight-medium">
             <template v-if="timerMode === 'custom' && customTimeInfo">
               {{ customTimeInfo.dayLabel }} {{ customTime }} 自动暂停
@@ -60,7 +59,7 @@
               {{ selectedQuickDuration.minutes }} 分钟后自动暂停
             </template>
           </div>
-          <div class="q-mt-xs text-caption app-text-secondary">
+          <div class="q-mt-none text-caption app-text-secondary">
             <template v-if="timerMode === 'custom' && customTimeInfo">
               约 {{ customTimeInfo.delayLabel }}后
             </template>
@@ -89,7 +88,7 @@
 
         <div
           v-if="timerMode === 'duration'"
-          class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm"
+          class="sleep-mode-panel q-pa-md rounded-borders"
         >
           <div class="text-caption text-weight-medium app-text-secondary">
             快捷时长（分钟）
@@ -102,8 +101,9 @@
             snap
             dense
             :marker-labels="(index) => String(quickDurations[index]?.minutes ?? '')"
+            marker-labels-class="app-text-secondary"
             color="app-accent"
-            track-size="30px"
+            track-size="28px"
             thumb-size="0px"
             aria-label="快捷暂停时长"
             :aria-valuetext="selectedQuickDuration.label"
@@ -111,7 +111,7 @@
           />
         </div>
 
-        <div v-else class="sleep-mode-panel q-pa-md rounded-borders q-mb-sm">
+        <div v-else class="sleep-mode-panel q-pa-md rounded-borders">
           <div class="text-caption text-weight-medium app-text-secondary q-mb-sm">
             指定结束时间
           </div>
@@ -128,7 +128,7 @@
         </div>
       </q-card-section>
 
-      <q-card-actions align="right" class="q-px-md q-pb-md">
+      <q-card-actions align="right" class="q-px-md q-pt-sm q-pb-sm">
         <q-btn
           flat
           no-caps

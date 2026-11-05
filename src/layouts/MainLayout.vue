@@ -65,7 +65,6 @@
 
     <q-dialog
       v-model="confirm"
-      persistent
       aria-labelledby="logout-dialog-title"
       aria-describedby="logout-dialog-description"
     >
