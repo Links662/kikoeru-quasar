@@ -52,7 +52,7 @@
                 <div class="row no-wrap items-center full-width q-gutter-x-sm">
                   <q-img fit="contain" :src="thumbCoverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" class="rounded-borders queue-item__cover" />
 
-                  <q-item-label lines="2" :title="row.track.title" class="queue-item__title col">
+                  <q-item-label lines="2" class="queue-item__title col">
                     {{ shortTitle(row.track.title) }}
                   </q-item-label>
                 </div>
@@ -77,7 +77,7 @@
 
         <!-- 进度条：数据来自 store，播放引擎已不依赖本组件存在 -->
         <div class="row items-center q-mx-sm q-my-sm">
-          <div class="col-auto">{{ formatSeconds(currentTime) }}</div>
+          <div class="col-auto">{{ formatSeconds(seekValue) }}</div>
           <q-slider
             class="col q-mx-sm"
             :model-value="seekValue"
@@ -85,11 +85,10 @@
             :max="sliderMax"
             :step="1"
             :disable="!hasTrack"
-            :label-value="formatSeconds(seekValue)"
-            label
             thumb-size="12px"
             color="app-accent"
             aria-label="播放进度"
+            :aria-valuetext="formatSeconds(seekValue)"
             @update:model-value="onSeekInput"
             @change="onSeekChange"
           />
@@ -552,7 +551,7 @@ export default {
     },
 
     // 列表里显示的标题：去掉音频扩展名。它是文件管理信息，占着宽度，
-    // 还容易把断行点挤到很难看的位置；完整文件名留在 title 属性里
+    // 还容易把断行点挤到很难看的位置。完整文件名仍保留在行的 aria-label 中。
     shortTitle(title) {
       return String(title || '').replace(/\.(mp3|wav|flac|m4a|aac|ogg|opus|wma)$/i, '')
     },

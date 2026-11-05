@@ -44,11 +44,10 @@
     </div>
 
     <q-table class="list-table" :rows="items" :columns="columns" row-key="id" flat bordered dense wrap-cells
-      :loading="loading" :pagination="pagination" :rows-per-page-options="[]"
+      :loading="loading" v-model:pagination="pagination" binary-state-sort :rows-per-page-options="[]"
       :visible-columns="visibleColumns" :no-data-label="keyword ? '没有匹配的结果' : '暂时没有数据'"
       table-header-class="app-text"
-      @request="onTableRequest"
-      @row-click="openWorks">
+      @request="onTableRequest">
       <template v-slot:no-data="{ message }">
         <template v-if="!requestPending">
           <q-icon class="q-table__bottom-nodata-icon" name="warning" />
@@ -72,18 +71,8 @@
 
       <!-- 排序箭头放在文字后面 -->
       <template v-slot:header-cell-count="props">
-        <q-th
-          :props="props"
-          class="sortable"
-          role="button"
-          tabindex="0"
-          aria-label="按作品数排序"
-          @click="props.sort('count')"
-          @keydown.enter.prevent="props.sort('count')"
-          @keydown.space.prevent="props.sort('count')"
-        >
+        <q-th :props="props" aria-label="按作品数排序">
           <span>作品数</span>
-          <q-icon name="arrow_upward" size="xs" class="q-table__sort-icon q-table__sort-icon--left" />
         </q-th>
       </template>
 
@@ -103,7 +92,7 @@
 
       <template v-slot:body-cell-name="props">
         <q-td :props="props">
-          <router-link class="text-app-accent" :to="worksLink(props.row)" :title="props.row.name" @click.stop>
+          <router-link class="text-app-accent" :to="worksLink(props.row)" @click.stop>
             {{ props.row.name }}
           </router-link>
         </q-td>
@@ -113,8 +102,7 @@
       <template v-slot:body-cell-recent="props">
         <q-td :props="props">
           <div class="row q-gutter-xs">
-            <router-link v-for="id in props.row.recentWorks" :key="id" :to="`/work/${id}`"
-              :title="`打开 ${rjLabel(id)}`" @click.stop>
+            <router-link v-for="id in props.row.recentWorks" :key="id" :to="`/work/${id}`" @click.stop>
               <q-badge rounded outline color="app-accent">{{ rjLabel(id) }}</q-badge>
             </router-link>
           </div>
@@ -268,13 +256,9 @@ export default {
       return formatRJLabel(id)
     },
 
-    // 表格行与名称链接共用，保留可中键新开标签页的链接
+    // 名称链接保留可中键新开标签页的能力
     worksLink (item) {
       return workConditionLink(this.$route, this.conditionType, item.id)
-    },
-
-    openWorks (evt, row) {
-      this.$router.push(this.worksLink(row))
     },
 
     requestList () {
