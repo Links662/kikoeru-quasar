@@ -198,6 +198,11 @@ export default class AudioEngine {
     this.flushPreviousHistory()
     this.lastHistoryFile = { hash: this.currentTrack.hash, title: this.currentTrack.title }
 
+    // 媒体元素 load() 后 currentTime/duration 会重置，但不会立即补发 timeupdate。
+    // 这里同步清掉 store，避免进度条继续显示上一首的进度，直到新音频开始播放才归零。
+    this.commit('SET_CURRENT_TIME', 0)
+    this.commit('SET_DURATION', 0)
+
     this.desiredSource = url
     // 新源就绪前不允许自动播放
     this.readySource = ''
