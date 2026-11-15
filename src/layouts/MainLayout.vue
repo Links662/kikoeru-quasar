@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh Lpr lFf" class="app-page-bg" :style="layoutStyle">
     <q-header ref="header" class="app-main-header shadow-1">
-      <q-toolbar @click="collapsePlayer">
+      <q-toolbar>
         <q-toolbar-title shrink class="gt-xs q-mr-xs">
           <router-link :to="'/'" class="text-white text-weight-bold">
             Kikoeru
@@ -25,7 +25,7 @@
             :to="item.path"
             exact
             active-class="nav-active"
-            @click="onNavClick(item, $event)"
+            @click="onNavClick(item)"
             v-touch-hold:550.mouse="item.holdAction"
           />
 
@@ -41,7 +41,7 @@
                   exact
                   :to="item.path"
                   active-class="text-app-accent text-weight-medium"
-                  @click="onNavClick(item, $event)"
+                  @click="onNavClick(item)"
                   v-touch-hold:550.mouse="item.holdAction"
                 >
                   <q-item-section avatar>
@@ -219,10 +219,6 @@ export default {
       }
     },
 
-    // 面板打开期间发生真实跳转（点标签/社团/顶部导航等）时关闭面板
-    $route () {
-      this.closePanel()
-    }
   },
 
   created () {
@@ -538,19 +534,8 @@ export default {
         })
     },
 
-    // 详情面板打开时点普通导航按钮，等价于点“返回”：先收起面板再执行跳转 / 动作
-    onNavClick (item, event) {
-      // 阻止冒泡到 toolbar，避免 keepPanel 操作被工具栏的收起播放器逻辑误伤
-      event && event.stopPropagation()
-
-      if (item.keepPanel === true) {
-        item.action && item.action()
-        return
-      }
-
-      // 普通导航优先占据前景：展开的播放器先收回底部播放条，再关闭详情面板
-      this.collapsePlayer()
-      this.closePanel()
+    // 路由项由 Vue Router 处理；这里只执行主题、定时器等无路由的导航动作
+    onNavClick (item) {
       item.action && item.action()
     },
 
