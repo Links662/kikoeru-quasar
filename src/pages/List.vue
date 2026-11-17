@@ -77,7 +77,7 @@
       </template>
 
       <template v-slot:body-cell-favourite="props">
-        <q-td :props="props" class="text-center">
+        <q-td :props="props">
           <q-btn
             flat
             round

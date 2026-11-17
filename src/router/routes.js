@@ -18,6 +18,10 @@ const routes = [
     children: [
       {
         path: '',
+        redirect: '/admin/scanner'
+      },
+      {
+        path: 'folders',
         component: Folders
       },
       {
@@ -40,9 +44,7 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: {
-          name: 'works'
-        }
+        redirect: '/works'
       },
       {
         path: 'works',

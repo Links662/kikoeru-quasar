@@ -41,13 +41,6 @@ export default {
   data () {
     return {
       links: [
-
-        {
-          title: '扫描',
-          icon: 'youtube_searched_for',
-          path: '/admin/scanner',
-          primary: true
-        },
         {
           title: '用户',
           icon: 'person',
@@ -55,9 +48,15 @@ export default {
           primary: true
         },
         {
+          title: '扫描',
+          icon: 'youtube_searched_for',
+          path: '/admin/scanner',
+          primary: true
+        },
+        {
           title: '存储',
           icon: 'folder',
-          path: '/admin',
+          path: '/admin/folders',
           primary: true
         },
         {
