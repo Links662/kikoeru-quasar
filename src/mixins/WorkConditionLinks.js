@@ -1,4 +1,5 @@
 import { getWorkConditionLinkResult } from '../utils/workQuery'
+import { NOTIFICATION_TIMEOUTS } from '../utils/notificationTimeouts'
 
 export default {
   methods: {
@@ -16,7 +17,7 @@ export default {
         message: result.message,
         color: 'warning',
         icon: 'warning',
-        timeout: 4000
+        timeout: NOTIFICATION_TIMEOUTS.warn
       })
     }
   }

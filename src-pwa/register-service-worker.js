@@ -1,5 +1,6 @@
 import { register } from 'register-service-worker'
 import { Notify } from 'quasar'
+import { NOTIFICATION_TIMEOUTS } from '../src/utils/notificationTimeouts'
 
 // Quasar writes the generated worker to the root public path. Keep this path
 // literal because browsers cannot read SERVICE_WORKER_FILE from process.env.
@@ -39,7 +40,7 @@ if (process.env.DEV !== true) {
           }
         ],
         multiLine: false,
-        timeout: 10000
+        timeout: NOTIFICATION_TIMEOUTS.success
       })
     },
 

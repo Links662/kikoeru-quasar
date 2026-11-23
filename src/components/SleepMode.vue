@@ -144,6 +144,7 @@
 
 <script>
 import { mapState, mapMutations } from 'vuex'
+import { NOTIFICATION_TIMEOUTS } from '../utils/notificationTimeouts'
 
 export default {
   name: 'SleepMode',
@@ -320,7 +321,7 @@ export default {
         message,
         color: 'primary',
         icon: 'schedule',
-        timeout: 5000
+        timeout: NOTIFICATION_TIMEOUTS.success
       })
     }
   }

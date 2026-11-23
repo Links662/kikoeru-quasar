@@ -1,4 +1,5 @@
 import { getRequestErrorMessage, localizeMessage } from '../utils/localizedMessage'
+import { NOTIFICATION_TIMEOUTS } from '../utils/notificationTimeouts'
 
 export default {
   methods: {
@@ -7,7 +8,7 @@ export default {
         message: localizeMessage(message, '操作成功'),
         color: 'positive',
         icon: 'done',
-        timeout: 2000
+        timeout: NOTIFICATION_TIMEOUTS.success
       })
     },
 
@@ -16,7 +17,7 @@ export default {
         message: localizeMessage(message, '请注意操作结果'),
         color: 'warning',
         icon: 'warning',
-        timeout: 5000
+        timeout: NOTIFICATION_TIMEOUTS.warn
       })
     },
 
@@ -25,7 +26,7 @@ export default {
         message: getRequestErrorMessage(message),
         color: 'app-danger-fill',
         icon: 'error',
-        timeout: 0
+        timeout: NOTIFICATION_TIMEOUTS.error
       })
     }
   }
