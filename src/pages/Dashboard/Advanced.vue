@@ -2,6 +2,65 @@
   <q-form @submit="onSubmit">
     <q-card class="q-ma-md">
       <q-toolbar>
+        <q-toolbar-title>内容与分页</q-toolbar-title>
+      </q-toolbar>
+
+      <q-list>
+        <q-item>
+          <q-item-section>
+            <q-item-label>作品列表每页数量</q-item-label>
+            <q-item-label caption>默认 12</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.pageSize"
+              aria-label="作品列表每页数量"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>分类列表每页数量</q-item-label>
+            <q-item-label caption>默认 50</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.listPageSize"
+              aria-label="分类列表每页数量"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>最近播放显示数量</q-item-label>
+            <q-item-label caption>默认 20</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.recentCount"
+              aria-label="最近播放显示数量"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-card>
+
+    <q-card class="q-ma-md">
+      <q-toolbar>
         <q-toolbar-title>播放器设置</q-toolbar-title>
       </q-toolbar>
 
@@ -182,6 +241,31 @@
 
     <q-card class="q-ma-md">
       <q-toolbar>
+        <q-toolbar-title>认证与会话</q-toolbar-title>
+      </q-toolbar>
+
+      <q-list>
+        <q-item>
+          <q-item-section>
+            <q-item-label>token 过期时间</q-item-label>
+            <q-item-label caption>默认 2592000 秒</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.expiresIn"
+              aria-label="token 过期时间"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+      </q-list>
+    </q-card>
+
+    <q-card class="q-ma-md">
+      <q-toolbar>
         <q-toolbar-title>Web 服务器相关设置</q-toolbar-title>
         <div class="q-pr-xs">更改此设置需要重启程序</div>
       </q-toolbar>
@@ -249,72 +333,6 @@
               dense
               color="app-accent"
               aria-label="屏蔽远程连接"
-            />
-          </q-item-section>
-        </q-item>
-
-        <q-item>
-          <q-item-section>
-            <q-item-label>token 过期时间</q-item-label>
-            <q-item-label caption>默认 2592000 秒</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.expiresIn"
-              aria-label="token 过期时间"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-
-        <q-item>
-          <q-item-section>
-            <q-item-label>每页显示的音声数量</q-item-label>
-            <q-item-label caption>默认 12</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.pageSize"
-              aria-label="每页显示的音声数量"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>列表每页显示数量</q-item-label>
-            <q-item-label caption>默认 50</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.listPageSize"
-              aria-label="列表每页显示数量"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
-            />
-          </q-item-section>
-        </q-item>
-        <q-item>
-          <q-item-section>
-            <q-item-label>历史记录显示数量</q-item-label>
-            <q-item-label caption>默认 20</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <q-input
-              v-model.number="config.recentCount"
-              aria-label="历史记录显示数量"
-              type="number"
-              input-class="text-right"
-              class="admin-field"
             />
           </q-item-section>
         </q-item>
