@@ -502,7 +502,8 @@ export default {
       if (this.loading) return
       this.loading = true
       try {
-        await this.saveConfig(this.config)
+        const response = await this.saveConfig(this.config)
+        this.config = response.data.config || this.config
         this.showSuccNotif('设置已保存')
       } catch (error) {
         this.showRequestError(error, '保存设置失败')
@@ -595,8 +596,8 @@ export default {
 
       this.savingFolder = true
       try {
-        await this.saveConfig(nextConfig)
-        this.config = nextConfig
+        const response = await this.saveConfig(nextConfig)
+        this.config = response.data.config || nextConfig
         this.folderDialog = false
         const action = isEditing ? '更新' : '添加'
         this.showSuccNotif(`已${action}存储目录 ${folder.name}`)
@@ -619,8 +620,8 @@ export default {
 
       this.deletingFolder = folder.name
       try {
-        await this.saveConfig(nextConfig)
-        this.config = nextConfig
+        const response = await this.saveConfig(nextConfig)
+        this.config = response.data.config || nextConfig
         this.showSuccNotif(`已删除存储目录 ${folder.name}`)
       } catch (error) {
         this.showRequestError(error, '删除存储目录失败')
