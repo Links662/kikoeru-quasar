@@ -1,8 +1,6 @@
 # This Dockerfile builds SPA and PWA artifacts and starts an Nginx if you run it in standalone mode
 # The Nginx is supposed to serve the following static assets:
 # /var/www for SPA and PWA
-# /storage at example.com/media/stream and example.com/media/download (if offload is enabled)
-# /covers for cover images (if offload is enabled)
 # Nginx should also be configured to reverse proxy to the backend at /api
 # Please refer to docs/nginx for examples
 
@@ -36,8 +34,5 @@ EXPOSE 80
 # If you are using Let's Encrypt
 VOLUME [ "/etc/letsencrypt" ]
 EXPOSE 443
-
-# Mount offload paths for media files and covers
-VOLUME [ "/storage", "/covers" ]
 
 # Note: ENTRYPOINT and CMD is provided by the nginx base image
