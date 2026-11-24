@@ -82,6 +82,7 @@
           unelevated
           spread
           no-caps
+          no-wrap
           toggle-color="primary"
           class="full-width rounded-borders app-theme-control q-mb-md"
         />

@@ -16,7 +16,7 @@
           no-caps
           color="app-accent"
           icon="create_new_folder"
-          :label="isNarrowScreen ? undefined : '新增目录'"
+          label="新增目录"
           aria-label="新增存储目录"
           @click="openFolderDialog"
         />
@@ -24,12 +24,11 @@
     </div>
 
     <q-table
-      class="list-table storage-table"
+      class="list-table admin-data-table"
       :rows="config.rootFolders"
       :columns="columns"
       row-key="name"
       :loading="tableLoading"
-      :rows-per-page-options="[0]"
       :visible-columns="visibleColumns"
       binary-state-sort
       hide-pagination
@@ -127,19 +126,19 @@
         </q-toolbar>
 
         <q-list>
-          <q-item class="other-directory-item">
-            <q-item-section class="other-directory-title">
+          <q-item class="other-directory-item column items-stretch">
+            <q-item-section>
               <div class="row no-wrap items-center">
                 <q-icon color="amber" name="image" size="20px" class="q-mr-sm" />
                 <q-item-label class="text-subtitle1 text-weight-medium">封面目录</q-item-label>
               </div>
             </q-item-section>
-            <q-item-section class="other-directory-description">
+            <q-item-section>
               <div class="text-body2 app-text-secondary">
                 用于保存作品封面及缩略图；勾选默认时使用程序所在位置下的 covers 目录。
               </div>
             </q-item-section>
-            <q-item-section class="other-directory-path">
+            <q-item-section>
               <div class="row no-wrap items-center">
                 <q-input
                   v-model.trim="config.coverFolderDir"
@@ -164,19 +163,19 @@
 
           <q-separator />
 
-          <q-item class="other-directory-item">
-            <q-item-section class="other-directory-title">
+          <q-item class="other-directory-item column items-stretch">
+            <q-item-section>
               <div class="row no-wrap items-center">
                 <q-icon color="amber" name="storage" size="20px" class="q-mr-sm" />
                 <q-item-label class="text-subtitle1 text-weight-medium">数据库目录</q-item-label>
               </div>
             </q-item-section>
-            <q-item-section class="other-directory-description">
+            <q-item-section>
               <div class="text-body2 app-text-secondary">
                 用于保存作品数据库；勾选默认时使用程序所在位置下的 sqlite 目录。修改后需要重启程序。
               </div>
             </q-item-section>
-            <q-item-section class="other-directory-path">
+            <q-item-section>
               <div class="row no-wrap items-center">
                 <q-input
                   v-model.trim="config.databaseFolderDir"
@@ -638,28 +637,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.admin-field {
-  max-width: 6.25rem;
-}
-
-.storage-table :deep(.q-table) {
-  table-layout: fixed;
-}
-
-.storage-table :deep(.q-table thead th) {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.storage-table :deep(.q-table thead tr),
-.storage-table :deep(.q-table tbody td) {
-  height: 40px;
-}
-
-.storage-table :deep(.q-table tbody td) {
-  font-size: 15px;
-}
-
 .storage-path {
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -675,13 +652,7 @@ export default {
   row-gap: 0.5rem;
 }
 
-.other-directory-path {
-  min-width: 0;
-}
-
-@media (max-width: $breakpoint-xs-max) {
-  .storage-table :deep(.q-table) {
-    table-layout: auto;
-  }
+.other-directory-item {
+  row-gap: 0.5rem;
 }
 </style>

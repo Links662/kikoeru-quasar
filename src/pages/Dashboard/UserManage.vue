@@ -16,7 +16,7 @@
           no-caps
           color="app-accent"
           icon="person_add"
-          :label="isNarrowScreen ? undefined : '新增用户'"
+          label="新增用户"
           aria-label="新增用户"
           @click="openCreateDialog"
         />
@@ -24,7 +24,7 @@
     </div>
 
     <q-table
-      class="list-table user-table"
+      class="list-table admin-data-table"
       :rows="users"
       :columns="columns"
       row-key="name"
@@ -588,31 +588,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.user-table :deep(.q-table) {
-  table-layout: fixed;
-}
-
-.user-table :deep(.q-table thead th) {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.user-table :deep(.q-table thead tr),
-.user-table :deep(.q-table tbody td) {
-  height: 40px;
-}
-
-.user-table :deep(.q-table tbody td) {
-  font-size: 15px;
-}
-
 .user-heading {
   overflow-wrap: anywhere;
-}
-
-@media (max-width: $breakpoint-xs-max) {
-  .user-table :deep(.q-table) {
-    table-layout: auto;
-  }
 }
 </style>

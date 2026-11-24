@@ -35,6 +35,7 @@
           rounded
           spread
           no-caps
+          no-wrap
           toggle-color="primary"
           class="user-work-record__progress app-surface app-theme-control"
           :options="progressOptions"

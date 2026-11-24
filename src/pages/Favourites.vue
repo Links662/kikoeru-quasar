@@ -11,6 +11,7 @@
             class="app-theme-control"
             unelevated
             spread
+            no-wrap
             toggle-color="primary"
             :options="progressOptions"
           />

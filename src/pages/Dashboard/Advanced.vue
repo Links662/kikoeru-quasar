@@ -6,50 +6,33 @@
       </q-toolbar>
 
       <q-list>
-        <q-item class="setting-choice-item">
+        <q-item>
           <q-item-section>
             <q-item-label>后退按钮跳跃秒数</q-item-label>
             <q-item-label caption>播放时后退按钮跳跃秒数</q-item-label>
           </q-item-section>
 
-          <q-item-section side class="setting-choice-control">
-            <div class="app-control-group seek-time-toggle">
-              <q-btn-toggle
-                v-model="rewindSeekTime"
-                :options="seekTimeOptions"
-                class="app-theme-control full-width"
-                dense
-                unelevated
-                spread
-                no-caps
-                toggle-color="app-accent"
-                toggle-text-color="app-accent-contrast"
-                aria-label="后退按钮跳跃秒数"
-              />
+          <q-item-section side>
+            <div class="q-gutter-sm">
+              <!-- val 用字符串：本页 UI 状态（data 与 requestConfig）都是字符串，提交时才 parseInt -->
+              <q-radio dense v-model="rewindSeekTime" val="5" label="5 秒" />
+              <q-radio dense v-model="rewindSeekTime" val="10" label="10 秒" />
+              <q-radio dense v-model="rewindSeekTime" val="30" label="30 秒" />
             </div>
           </q-item-section>
         </q-item>
 
-        <q-item class="setting-choice-item">
+        <q-item>
           <q-item-section>
             <q-item-label>前进按钮跳跃秒数</q-item-label>
             <q-item-label caption>播放时前进按钮跳跃秒数</q-item-label>
           </q-item-section>
 
-          <q-item-section side class="setting-choice-control">
-            <div class="app-control-group seek-time-toggle">
-              <q-btn-toggle
-                v-model="forwardSeekTime"
-                :options="seekTimeOptions"
-                class="app-theme-control full-width"
-                dense
-                unelevated
-                spread
-                no-caps
-                toggle-color="app-accent"
-                toggle-text-color="app-accent-contrast"
-                aria-label="前进按钮跳跃秒数"
-              />
+          <q-item-section side>
+            <div class="q-gutter-sm">
+              <q-radio dense v-model="forwardSeekTime" val="5" label="5 秒" />
+              <q-radio dense v-model="forwardSeekTime" val="10" label="10 秒" />
+              <q-radio dense v-model="forwardSeekTime" val="30" label="30 秒" />
             </div>
           </q-item-section>
         </q-item>
@@ -62,26 +45,17 @@
       </q-toolbar>
 
       <q-list>
-        <q-item class="setting-choice-item">
+        <q-item>
           <q-item-section>
             <q-item-label>标签语言</q-item-label>
             <q-item-label caption>从 DLSite 爬取的标签元数据的语言</q-item-label>
           </q-item-section>
 
-          <q-item-section side class="setting-choice-control">
-            <div class="app-control-group tag-language-toggle">
-              <q-btn-toggle
-                v-model="config.tagLanguage"
-                :options="tagLanguageOptions"
-                class="app-theme-control full-width"
-                dense
-                unelevated
-                spread
-                no-caps
-                toggle-color="app-accent"
-                toggle-text-color="app-accent-contrast"
-                aria-label="标签语言"
-              />
+          <q-item-section side>
+            <div class="q-gutter-sm">
+              <q-radio dense v-model="config.tagLanguage" val="zh-CN" label="简" />
+              <q-radio dense v-model="config.tagLanguage" val="zh-TW" label="繁" />
+              <q-radio dense v-model="config.tagLanguage" val="ja-JP" label="日" />
             </div>
           </q-item-section>
         </q-item>
@@ -355,18 +329,6 @@
 <script>
 import NotifyMixin from '../../mixins/Notification.js'
 
-const SEEK_TIME_OPTIONS = [
-  { label: '5 秒', value: '5' },
-  { label: '10 秒', value: '10' },
-  { label: '30 秒', value: '30' }
-]
-
-const TAG_LANGUAGE_OPTIONS = [
-  { label: '简体中文', value: 'zh-CN' },
-  { label: '繁體中文', value: 'zh-TW' },
-  { label: '日本語', value: 'ja-JP' }
-]
-
 export default {
   name: 'Advanced',
 
@@ -377,9 +339,7 @@ export default {
       config: {},
       loading: false,
       rewindSeekTime: '5',
-      forwardSeekTime: '30',
-      seekTimeOptions: SEEK_TIME_OPTIONS,
-      tagLanguageOptions: TAG_LANGUAGE_OPTIONS
+      forwardSeekTime: '30'
     }
   },
 
@@ -432,35 +392,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-// 控制台里成组的短输入框：Quasar 没有宽度工具类，宽度统一收在这里（6.25rem = 100px）
-.admin-field {
-  max-width: 6.25rem;
-}
-
-.seek-time-toggle {
-  --app-control-item-min-width: 4rem;
-}
-
-.tag-language-toggle {
-  --app-control-item-min-width: 4.5rem;
-}
-
-@media (max-width: $breakpoint-xs-max) {
-  .setting-choice-item {
-    flex-wrap: wrap;
-  }
-
-  .setting-choice-control {
-    width: 100%;
-    margin-top: 0.25rem;
-    margin-left: 0;
-    align-items: stretch;
-  }
-
-  .setting-choice-control .app-control-group {
-    width: 100%;
-  }
-}
-</style>

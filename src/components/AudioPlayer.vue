@@ -785,13 +785,12 @@ export default {
   overflow-wrap: anywhere;
 }
 
-// 播放控件区：一排按钮（含播放键）与音量条的高度、宽度都固定，
-// 封面收缩让出空间时按钮不会跟着跳动
+// 播放控件区：一排按钮（含播放键）的高度和宽度固定，
+// 音量条随播放器剩余宽度缩放并限制最大宽度；封面收缩时按钮不会跟着跳动
 $control-row-height: 65px;
 $control-btn-width: 55px;
 $play-btn-width: 65px;
 $volume-row-height: 50px;
-$volume-slider-width: 200px;
 
 .control-row {
   height: $control-row-height;
@@ -834,7 +833,8 @@ $volume-slider-width: 200px;
 }
 
 .volume-slider {
-  max-width: $volume-slider-width;
+  min-width: 0;
+  max-width: min(70%, 320px);
 }
 
 // 行高沿用 Quasar q-item 的 min-height；一页固定 4 行，另加一条分页条。

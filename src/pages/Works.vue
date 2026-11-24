@@ -209,6 +209,7 @@
                   v-model="listMode"
                   dense
                   unelevated
+                  no-wrap
                   toggle-color="primary"
                   class="app-theme-control"
                   :options="[
@@ -227,6 +228,7 @@
                   v-model="detailMode"
                   dense
                   unelevated
+                  no-wrap
                   toggle-color="primary"
                   class="app-theme-control"
                   :options="[
@@ -245,6 +247,7 @@
                   v-model="showLabel"
                   dense
                   unelevated
+                  no-wrap
                   toggle-color="primary"
                   class="app-theme-control"
                   :options="[

@@ -45,7 +45,7 @@
       <q-card class="tree-lyrics-dialog app-surface app-text column no-wrap">
         <q-card-section class="row items-start no-wrap q-pb-sm">
           <div class="col">
-            <div class="text-h6">LRC 歌词</div>
+            <div class="text-h6">歌词文件</div>
             <div class="ellipsis text-body2 app-text-secondary q-mt-xs">
               {{ lyricDialogTitle }}
             </div>
