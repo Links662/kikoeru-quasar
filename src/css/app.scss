@@ -181,18 +181,6 @@ a {
   text-decoration:none;
 }
 
-// 表格中的可排序居中列：箭头不参与标题文字的水平居中计算。
-.list-table .q-table thead th.text-center {
-  position: relative;
-}
-
-.list-table .q-table thead th.text-center .q-table__sort-icon {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  margin-top: -0.5em;
-}
-
 // 工具栏和筛选区共用的轻量控件表面。
 .app-control-button {
   height: $toolbar-control-height;
@@ -246,6 +234,12 @@ a {
   .q-btn {
     height: 100%;
     min-height: 0;
+    min-width: var(--app-control-item-min-width, max-content);
+  }
+
+  .q-btn__content {
+    flex-wrap: nowrap;
+    white-space: nowrap;
   }
 
   .q-btn:not(:last-child) {

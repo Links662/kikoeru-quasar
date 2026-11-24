@@ -7,62 +7,9 @@
           共 {{ users.length }} 个账号，其中 {{ enabledUserCount }} 个已启用
         </div>
       </div>
-
-      <div class="row no-wrap items-center col-auto">
-        <div v-if="!isNarrowScreen" class="user-search-wrap q-ml-md">
-          <SearchInput
-            v-model="search"
-            debounce="200"
-            placeholder="搜索用户名…"
-            class="full-width"
-          />
-        </div>
-      </div>
     </div>
 
-    <div v-if="isNarrowScreen" class="q-mb-sm">
-      <SearchInput
-        v-model="search"
-        debounce="200"
-        placeholder="搜索用户名…"
-        class="full-width"
-      />
-    </div>
-
-    <div class="row items-center q-col-gutter-sm q-mb-sm">
-      <div class="col-6 col-sm-auto">
-        <q-select
-          v-model="groupFilter"
-          :options="groupFilterOptions"
-          emit-value
-          map-options
-          options-dense
-          outlined
-          dense
-          rounded
-          color="app-accent"
-          label="用户组"
-          aria-label="按用户组筛选"
-          class="user-filter"
-        />
-      </div>
-      <div class="col-6 col-sm-auto">
-        <q-select
-          v-model="statusFilter"
-          :options="statusFilterOptions"
-          emit-value
-          map-options
-          options-dense
-          outlined
-          dense
-          rounded
-          color="app-accent"
-          label="账号状态"
-          aria-label="按账号状态筛选"
-          class="user-filter"
-        />
-      </div>
-      <q-space />
+    <div class="row items-center justify-end q-mb-sm">
       <div class="col-auto">
         <q-btn
           outline
@@ -78,7 +25,7 @@
 
     <q-table
       class="list-table user-table"
-      :rows="filteredUsers"
+      :rows="users"
       :columns="columns"
       row-key="name"
       :loading="tableLoading"
@@ -90,7 +37,7 @@
       bordered
       dense
       wrap-cells
-      no-data-label="没有符合条件的账号"
+      no-data-label="暂无账号"
       loading-label="正在加载用户..."
       table-header-class="app-text"
     >
@@ -304,7 +251,6 @@
 <script>
 import NotifyMixin from '../../mixins/Notification.js'
 import { endSession } from '../../services/session'
-import SearchInput from 'components/SearchInput'
 
 const USER_GROUP_LABELS = {
   user: '普通用户',
@@ -317,17 +263,10 @@ const USER_GROUPS = Object.entries(USER_GROUP_LABELS)
 export default {
   mixins: [NotifyMixin],
 
-  components: {
-    SearchInput
-  },
-
   data () {
     return {
       users: [],
       tableLoading: false,
-      search: '',
-      groupFilter: 'all',
-      statusFilter: 'all',
       tablePagination: {
         page: 1,
         rowsPerPage: 25,
@@ -378,15 +317,6 @@ export default {
         }
       ],
       groupOptions: USER_GROUPS,
-      groupFilterOptions: [
-        { label: '全部用户组', value: 'all' },
-        ...USER_GROUPS
-      ],
-      statusFilterOptions: [
-        { label: '全部状态', value: 'all' },
-        { label: '已启用', value: 'enabled' },
-        { label: '已禁用', value: 'disabled' }
-      ],
       loadingStatusUser: '',
       userDialog: false,
       editingUser: null,
@@ -437,38 +367,12 @@ export default {
     },
 
     tablePages () {
-      return Math.max(1, Math.ceil(this.filteredUsers.length / this.tablePagination.rowsPerPage))
-    },
-
-    filteredUsers () {
-      const keyword = this.search.trim().toLocaleLowerCase()
-
-      return this.users.filter((user) => {
-        const matchesSearch = !keyword || user.name.toLocaleLowerCase().includes(keyword)
-        const matchesGroup = this.groupFilter === 'all' || user.group === this.groupFilter
-        const matchesStatus = this.statusFilter === 'all' ||
-          (this.statusFilter === 'enabled' && this.isEnabled(user)) ||
-          (this.statusFilter === 'disabled' && this.isDisabled(user))
-
-        return matchesSearch && matchesGroup && matchesStatus
-      })
+      return Math.max(1, Math.ceil(this.users.length / this.tablePagination.rowsPerPage))
     }
   },
 
   watch: {
-    search () {
-      this.changeTablePage(1)
-    },
-
-    groupFilter () {
-      this.changeTablePage(1)
-    },
-
-    statusFilter () {
-      this.changeTablePage(1)
-    },
-
-    filteredUsers (rows) {
+    users (rows) {
       const lastPage = Math.max(1, Math.ceil(rows.length / this.tablePagination.rowsPerPage))
       if (this.tablePagination.page > lastPage) {
         this.tablePagination.page = lastPage
@@ -704,16 +608,6 @@ export default {
 
 .user-heading {
   overflow-wrap: anywhere;
-}
-
-.user-search-wrap {
-  width: 260px;
-  min-width: 180px;
-}
-
-.user-filter {
-  width: 150px;
-  max-width: 100%;
 }
 
 @media (max-width: $breakpoint-xs-max) {
