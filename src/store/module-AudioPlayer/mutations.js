@@ -90,6 +90,7 @@ const mutations = {
     state.queueOpen = false;
     state.lyricsOpen = false;
     state.currentLyric = "";
+    state.fullLyrics = [];
     state.lyricAvailable = false;
     state.lyricLoading = false;
     state.lyricsWanted = false;
@@ -154,12 +155,21 @@ const mutations = {
     state.currentLyric = line;
   },
 
+  SET_FULL_LYRICS(state, lines) {
+    state.fullLyrics = Array.isArray(lines) ? lines : [];
+  },
+
   SET_QUEUE_OPEN(state, value) {
     state.queueOpen = Boolean(value);
   },
 
   SET_LYRICS_OPEN(state, value) {
     state.lyricsOpen = Boolean(value);
+  },
+
+  SHOW_LYRICS(state) {
+    state.lyricsWanted = true;
+    state.lyricsOpen = true;
   },
 
   SET_LYRIC_AVAILABLE(state, value) {

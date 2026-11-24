@@ -40,20 +40,57 @@
         </q-item>
       </q-list>
     </q-card>
+
+    <q-dialog v-model="lyricDialogOpen" @hide="cancelLyricRequest">
+      <q-card class="tree-lyrics-dialog app-surface app-text column no-wrap">
+        <q-card-section class="row items-start no-wrap q-pb-sm">
+          <div class="col">
+            <div class="text-h6">LRC 歌词</div>
+            <div class="ellipsis text-body2 app-text-secondary q-mt-xs">
+              {{ lyricDialogTitle }}
+            </div>
+          </div>
+          <q-btn flat round dense icon="close" aria-label="关闭歌词" v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="tree-lyrics-dialog__scroll col scroll">
+          <div v-if="lyricDialogLines.length > 0" class="app-lyric-text q-px-xs q-py-sm">
+            <p v-for="(line, index) in lyricDialogLines" :key="index"
+              class="tree-lyrics-dialog__line text-body1 text-weight-medium text-center q-mt-none q-mb-md">
+              {{ line }}
+            </p>
+          </div>
+          <div v-else class="full-height row items-center justify-center text-body2 app-text-secondary">
+            {{ lyricDialogLoading ? '歌词文本加载中…' : '没有可显示的歌词文本' }}
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script>
+import Lyric from 'lrc-file-parser'
 import { mapState, mapGetters } from 'vuex'
 import { buildMediaUrl } from '../utils/mediaUrl'
+import NotifyMixin from '../mixins/Notification.js'
 
 export default {
   name: 'WorkTree',
 
+  mixins: [NotifyMixin],
+
   data() {
     return {
       path: [],
-      truncateLength: 5
+      truncateLength: 5,
+      lyricDialogOpen: false,
+      lyricDialogTitle: '',
+      lyricDialogLines: [],
+      lyricDialogLoading: false,
+      lyricDialogRequest: 0
     }
   },
 
@@ -130,7 +167,11 @@ export default {
       if (item.type === 'folder') {
         this.path.push(item.title);
       } else if (item.type === 'text' || item.type === 'image') {
-        this.openFile(item);
+        if (item.type === 'text' && this.isLrcFile(item)) {
+          this.openLyricDialog(item);
+        } else {
+          this.openFile(item);
+        }
       } else if (item.type === 'other') {
         this.download(item);
       } else if (item.type === 'audio') {
@@ -180,6 +221,66 @@ export default {
       link.target="_blank";
       link.click();
     },
+
+    isLrcFile (file) {
+      return /\.lrc$/i.test(file.title || '')
+    },
+
+    async openLyricDialog (file) {
+      const request = ++this.lyricDialogRequest
+      const token = this.$q.localStorage.getItem('jwt-token') || ''
+      const url = buildMediaUrl(
+        file.mediaStreamUrl || `/api/media/stream/${file.hash}`,
+        token
+      )
+
+      this.lyricDialogTitle = file.title
+      this.lyricDialogLines = []
+      this.lyricDialogLoading = true
+      this.lyricDialogOpen = true
+
+      try {
+        const response = await this.$axios.get(url, {
+          responseType: 'text',
+          transformResponse: [data => data]
+        })
+        if (request !== this.lyricDialogRequest) return
+
+        this.lyricDialogLines = this.parseLyricLines(response.data)
+      } catch (error) {
+        if (request !== this.lyricDialogRequest) return
+
+        if (error.response) {
+          this.showErrNotif(
+            error.response.data.error ||
+            `${error.response.status} ${error.response.statusText}`
+          )
+        } else {
+          this.showErrNotif(error.message || error)
+        }
+      } finally {
+        if (request === this.lyricDialogRequest) {
+          this.lyricDialogLoading = false
+        }
+      }
+    },
+
+    parseLyricLines (content) {
+      let lines = []
+      const lyric = new Lyric({
+        onSetLyric (parsedLines) {
+          lines = parsedLines.map(line => line.text)
+        }
+      })
+
+      lyric.setLyric(typeof content === 'string' ? content : String(content || ''))
+      return lines
+    },
+
+    cancelLyricRequest () {
+      this.lyricDialogRequest += 1
+      this.lyricDialogLoading = false
+    },
   }
 }
 </script>
@@ -220,5 +321,19 @@ export default {
 .work-tree-item--active .work-tree-count {
   color: inherit;
   opacity: 0.72;
+}
+
+.tree-lyrics-dialog {
+  width: min(560px, calc(100vw - 32px));
+  height: min(82vh, 880px);
+}
+
+.tree-lyrics-dialog__scroll {
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.tree-lyrics-dialog__line {
+  overflow-wrap: anywhere;
 }
 </style>

@@ -2,20 +2,42 @@
   <div>
     <transition name="player-slide">
       <q-card square v-show="hasTrack && !hide"
-        class="fixed-bottom-right app-surface app-text audio-player column no-wrap" @wheel.prevent @touchmove.prevent>
+        class="fixed-bottom-right app-surface app-text audio-player column no-wrap"
+        :class="{ 'audio-player--lyrics-expanded': lyricsExpanded }"
+        @wheel.prevent @touchmove.prevent>
         <!-- 音声封面 -->
         <div class="bg-dark row items-center albumart relative-position overflow-hidden col-shrink">
-          <q-img fit="contain" :src="coverUrl" :img-class="currentWork.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
+          <q-img v-show="!lyricsExpanded" fit="contain" :src="coverUrl"
+            :img-class="currentWork.nsfw ? 'cover-mask' : ''" :ratio="4 / 3" />
 
           <!-- 歌词：只有当前这一句，压在封面下沿，从下往上弹出来。
                播放列表展开时它就在列表上方，两块可以同时开着 -->
           <transition name="lyrics-pop">
-            <div v-if="lyricsOpen" class="lyrics-view absolute-bottom row items-center justify-center overflow-hidden">
+            <div v-if="lyricsOpen && !lyricsExpanded"
+              class="lyrics-view absolute-bottom row items-center justify-center overflow-hidden">
               <div class="lyrics-view__line app-lyric-text text-center text-h6 text-bold ellipsis-2-lines">
                 {{ currentLyric }}
               </div>
             </div>
           </transition>
+
+          <!-- 长按歌词按钮后，歌词面板占满封面到播放控制按钮之间的空间 -->
+          <div v-if="lyricsExpanded"
+            class="full-lyrics-inline absolute-full column no-wrap app-surface">
+            <div class="full-lyrics-inline__scroll col scroll"
+              @wheel.stop @touchmove.stop>
+              <div v-if="fullLyrics.length > 0"
+                class="full-lyrics-inline__content app-lyric-text q-px-md q-pb-lg">
+                <p v-for="(line, index) in fullLyrics" :key="index"
+                  class="full-lyrics-inline__line text-body1 text-weight-medium text-center q-mt-none q-mb-md">
+                  {{ line }}
+                </p>
+              </div>
+              <div v-else class="full-height row items-center justify-center q-pa-lg text-body2 app-text-secondary">
+                {{ lyricLoading ? '歌词文本加载中…' : '没有可显示的歌词文本' }}
+              </div>
+            </div>
+          </div>
 
           <q-btn dense round size="md" icon="keyboard_arrow_down"
             aria-label="收起播放器" @click="toggleHide()"
@@ -26,7 +48,8 @@
         </div>
 
         <!-- 当前播放列表：每页固定 4 行 + 一条分页条，所有操作都是直接点击（播放 / 上下挪位 / 移除） -->
-        <div class="current-play-list app-surface relative-position col-auto overflow-hidden" v-show="queueOpen">
+        <div class="current-play-list app-surface relative-position col-auto overflow-hidden"
+          v-show="queueOpen && !lyricsExpanded">
           <!-- 只渲染当前页的 4 行，列表本身不滚动，因此没有滚轮和手势要处理 -->
           <q-list class="queue-list overflow-hidden">
             <q-item v-for="row in pageTracks" :key="row.index"
@@ -112,31 +135,54 @@
 
         <!-- 播放按钮控件 -->
         <div class="row justify-around control-row">
-          <!-- 短按：展开/收起播放列表；长按 5 秒：清空播放列表 -->
-          <q-btn flat dense size="md" :icon="isPressing('queue') ? 'delete_forever' : 'queue_music'"
-            :color="isPressing('queue') ? 'app-danger' : (queueOpen ? 'app-accent' : undefined)"
-            aria-label="展开播放列表；长按清空"
-            @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
-            @mouseleave="cancelPress" @contextmenu.prevent
-            class="col-auto non-selectable control-btn" />
+          <!-- 短按：展开/收起播放列表；长按 2 秒：清空播放列表 -->
+          <div class="col-auto hold-control">
+            <q-btn flat dense size="md" icon="queue_music"
+              :color="queueOpen ? 'app-accent' : undefined"
+              aria-label="展开播放列表；长按清空"
+              @click="onPressClick('queue')" @mousedown="startPress('queue')" @touchstart="startPress('queue')"
+              @mouseleave="cancelPress" @contextmenu.prevent
+              class="non-selectable control-btn" />
+            <q-circular-progress v-if="isPressing('queue')" class="hold-control__progress"
+              size="46px" :value="pressProgress" :min="0" :max="100" :thickness="0.08"
+              color="app-accent" rounded instant-feedback aria-hidden="true" />
+          </div>
           <!-- 短按：上一首；长按：后退 -->
-          <q-btn flat dense size="lg" :icon="isPressing('previous') ? rewindIcon : 'skip_previous'"
-            aria-label="上一首；长按后退"
-            @click="onPressClick('previous')" @mousedown="startPress('previous')"
-            @touchstart="startPress('previous')" @mouseleave="cancelPress"
-            class="col-auto non-selectable control-btn" />
+          <div class="col-auto hold-control">
+            <q-btn flat dense size="lg" icon="skip_previous"
+              aria-label="上一首；长按后退"
+              @click="onPressClick('previous')" @mousedown="startPress('previous')"
+              @touchstart="startPress('previous')" @mouseleave="cancelPress"
+              class="non-selectable control-btn" />
+            <q-circular-progress v-if="isPressing('previous')" class="hold-control__progress"
+              size="46px" :value="pressProgress" :min="0" :max="100" :thickness="0.08"
+              color="app-accent" rounded instant-feedback aria-hidden="true" />
+          </div>
           <q-btn flat dense size="28px" :icon="playingIcon" :aria-label="playing ? '暂停' : '播放'"
             @click="togglePlaying()"
             class="col-auto control-btn control-btn--play" />
           <!-- 短按：下一首；长按：前进 -->
-          <q-btn flat dense size="lg" :icon="isPressing('next') ? forwardIcon : 'skip_next'"
-            aria-label="下一首；长按前进"
-            @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
-            @mouseleave="cancelPress" class="col-auto non-selectable control-btn" />
+          <div class="col-auto hold-control">
+            <q-btn flat dense size="lg" icon="skip_next"
+              aria-label="下一首；长按前进"
+              @click="onPressClick('next')" @mousedown="startPress('next')" @touchstart="startPress('next')"
+              @mouseleave="cancelPress"
+              class="non-selectable control-btn" />
+            <q-circular-progress v-if="isPressing('next')" class="hold-control__progress"
+              size="46px" :value="pressProgress" :min="0" :max="100" :thickness="0.08"
+              color="app-accent" rounded instant-feedback aria-hidden="true" />
+          </div>
           <!-- 歌词开关：没有歌词文件时置灰不可点。和播放列表互不影响，两者可同时开着 -->
-          <q-btn flat dense size="md" icon="lyrics" :disable="!hasLyric"
-            :color="lyricsOpen ? 'app-accent' : undefined" @click="toggleLyrics()"
-            class="col-auto non-selectable control-btn" aria-label="歌词" />
+          <div class="col-auto hold-control">
+            <q-btn flat dense size="md" icon="lyrics" :disable="!hasLyric"
+              :color="lyricsExpanded || lyricsOpen ? 'app-accent' : undefined"
+              @click="onPressClick('lyrics')" @mousedown="startPress('lyrics')" @touchstart="startPress('lyrics')"
+              @mouseleave="cancelPress" @contextmenu.prevent
+              class="non-selectable control-btn" aria-label="歌词；长按查看完整歌词" />
+            <q-circular-progress v-if="isPressing('lyrics')" class="hold-control__progress"
+              size="46px" :value="pressProgress" :min="0" :max="100" :thickness="0.08"
+              color="app-accent" rounded instant-feedback aria-hidden="true" />
+          </div>
         </div>
 
         <!-- 音量控件：与进度条统一使用 Quasar q-slider，样式/主题色一致 -->
@@ -160,12 +206,16 @@ import { buildCoverUrl } from '../utils/mediaUrl'
 // 当前播放列表每页固定显示的行数
 const QUEUE_PAGE_SIZE = 4
 
-// 长按手势时长表：fire 到点触发动作，feedback 到点进入长按反馈（按钮图标变化），
-// repeat 表示继续按住时按该间隔反复触发
+// 按住这么久后才显示进度环，避免普通点击时闪一下反馈
+const PRESS_PROGRESS_DELAY = 500
+
+// 长按手势时长表：fire 到点触发动作，进度环用同一时长走完一圈；
+// repeat 表示继续按住时按该间隔反复触发并重新走一圈
 const LONG_PRESS = {
-  queue: { fire: 2000, feedback: 500 }, // 长按清空播放列表
-  previous: { fire: 1000, feedback: 200, repeat: 1000 }, // 长按后退，按住不放持续后退
-  next: { fire: 1000, feedback: 200, repeat: 1000 } // 长按前进，按住不放持续前进
+  queue: { fire: 2000 }, // 长按清空播放列表
+  previous: { fire: 1000, repeat: 1000 }, // 长按后退，按住不放持续后退
+  next: { fire: 1000, repeat: 1000 }, // 长按前进，按住不放持续前进
+  lyrics: { fire: 2000 } // 长按打开完整歌词
 }
 
 export default {
@@ -180,11 +230,16 @@ export default {
       seekingTimer: null,
       pressHeld: false, // 正有一次按住（到松手为止，期间忽略其他按钮）
       pressKey: null, // 当前按住的按钮
-      pressActive: false, // 已进入长按反馈，按钮图标据此变化
-      pressFeedbackTimer: null,
+      pressProgressVisible: false,
+      pressProgressDelayTimer: null,
       pressTimer: null,
       pressRepeatTimer: null,
       pressDone: false, // 本次长按已触发，用于吞掉随后的 click
+      pressProgress: 0,
+      pressProgressFrame: null,
+      pressProgressStart: 0,
+      pressProgressDuration: 0,
+      lyricsExpanded: false,
     }
   },
 
@@ -218,6 +273,10 @@ export default {
     // 删掉前面的一条也会让正在播放的那首整个往前挪一位，但播放的还是同一首，
     // 这时翻页只会把用户从他正在操作的那一页弹走。
     currentTrack () {
+      if (this.lyricsExpanded === true) {
+        this.lyricsExpanded = false
+      }
+
       const index = this.queueIndex
       // 没有选中曲目（队列空 / 正在播放的这首刚被删掉）：留在当前页。
       // 队列变短导致页码越界由上面的 queue 监听兜底，不用在这里回到第一页
@@ -310,32 +369,6 @@ export default {
       return this.playing ? "pause" : "play_arrow"
     },
 
-    rewindIcon() {
-      switch (this.rewindSeekTime) {
-        case 5:
-          return 'replay_5'
-        case 10:
-          return 'replay_10'
-        case 30:
-          return 'replay_30'
-        default:
-          return 'replay_5'
-      }
-    },
-
-    forwardIcon() {
-      switch (this.forwardSeekTime) {
-        case 5:
-          return 'forward_5'
-        case 10:
-          return 'forward_10'
-        case 30:
-          return 'forward_30'
-        default:
-          return 'forward_5'
-      }
-    },
-
     ...mapState('AudioPlayer', [
       'playing',
       'hide',
@@ -346,10 +379,9 @@ export default {
       'queueOpen',
       'lyricsOpen',
       'currentLyric',
+      'fullLyrics',
       'lyricLoading',
-      'lyricsWanted',
-      'rewindSeekTime',
-      'forwardSeekTime'
+      'lyricsWanted'
     ]),
 
     ...mapGetters('AudioPlayer', [
@@ -376,6 +408,7 @@ export default {
       setSeekTime: 'SET_SEEKTIME',
       setQueueOpen: 'SET_QUEUE_OPEN',
       setLyricsOpen: 'SET_LYRICS_OPEN',
+      showLyrics: 'SHOW_LYRICS',
       toggleQueue: 'TOGGLE_QUEUE',
       toggleLyrics: 'TOGGLE_LYRICS',
     }),
@@ -439,12 +472,15 @@ export default {
       this.pressHeld = true
       this.pressKey = key
       this.pressDone = false
+      this.pressProgressVisible = false
+      this.startPressProgress(conf.fire)
 
-      // 按住一小会儿才换图标，避免普通点击时闪一下
-      this.pressFeedbackTimer = setTimeout(() => {
-        this.pressFeedbackTimer = null
-        this.pressActive = true
-      }, conf.feedback)
+      this.pressProgressDelayTimer = setTimeout(() => {
+        this.pressProgressDelayTimer = null
+        if (this.pressHeld === true && this.pressKey === key) {
+          this.pressProgressVisible = true
+        }
+      }, PRESS_PROGRESS_DELAY)
 
       this.pressTimer = setTimeout(() => {
         this.pressTimer = null
@@ -453,8 +489,10 @@ export default {
 
         // 继续按住就按固定间隔反复快进/快退
         if (conf.repeat !== void 0) {
+          this.restartPressProgress(conf.repeat)
           this.pressRepeatTimer = setInterval(() => {
             this.fireLongPress(key)
+            this.restartPressProgress(conf.repeat)
           }, conf.repeat)
         }
       }, conf.fire)
@@ -464,6 +502,41 @@ export default {
       window.addEventListener('touchcancel', this.cancelPress)
     },
 
+    startPressProgress(duration) {
+      this.stopPressProgress()
+
+      this.pressProgressStart = performance.now()
+      this.pressProgressDuration = duration
+      this.pressProgress = 0
+
+      const update = () => {
+        if (this.pressHeld !== true || this.pressProgressDuration <= 0) return
+
+        const elapsed = performance.now() - this.pressProgressStart
+        this.pressProgress = Math.min((elapsed / this.pressProgressDuration) * 100, 100)
+        this.pressProgressFrame = requestAnimationFrame(update)
+      }
+
+      this.pressProgressFrame = requestAnimationFrame(update)
+    },
+
+    restartPressProgress(duration) {
+      this.pressProgressStart = performance.now()
+      this.pressProgressDuration = duration
+      this.pressProgress = 0
+    },
+
+    stopPressProgress() {
+      if (this.pressProgressFrame !== null) {
+        cancelAnimationFrame(this.pressProgressFrame)
+        this.pressProgressFrame = null
+      }
+
+      this.pressProgress = 0
+      this.pressProgressStart = 0
+      this.pressProgressDuration = 0
+    },
+
     fireLongPress(key) {
       if (key === 'queue') {
         this.emptyQueue()
@@ -471,13 +544,15 @@ export default {
         this.rewind()
       } else if (key === 'next') {
         this.forward()
+      } else if (key === 'lyrics') {
+        this.toggleFullLyrics()
       }
     },
 
     cancelPress() {
-      if (this.pressFeedbackTimer !== null) {
-        clearTimeout(this.pressFeedbackTimer)
-        this.pressFeedbackTimer = null
+      if (this.pressProgressDelayTimer !== null) {
+        clearTimeout(this.pressProgressDelayTimer)
+        this.pressProgressDelayTimer = null
       }
 
       if (this.pressTimer !== null) {
@@ -494,8 +569,9 @@ export default {
       window.removeEventListener('touchend', this.cancelPress)
       window.removeEventListener('touchcancel', this.cancelPress)
 
+      this.stopPressProgress()
       this.pressHeld = false
-      this.pressActive = false
+      this.pressProgressVisible = false
       this.pressKey = null
     },
 
@@ -512,12 +588,39 @@ export default {
         this.previousTrack()
       } else if (key === 'next') {
         this.nextTrack()
+      } else if (key === 'lyrics') {
+        if (this.lyricsExpanded) {
+          this.collapseFullLyrics()
+        } else {
+          this.toggleLyrics()
+        }
       }
     },
 
-    // 模板里用：判断某个按钮是否处于长按反馈中
+    // 模板里用：按住的按钮显示进度环，任何图标都保持原样
     isPressing(key) {
-      return this.pressActive === true && this.pressKey === key
+      return this.pressHeld === true &&
+        this.pressProgressVisible === true &&
+        this.pressKey === key
+    },
+
+    toggleFullLyrics() {
+      if (this.hasLyric !== true) return
+
+      if (this.lyricsExpanded === true) {
+        this.collapseFullLyrics()
+        return
+      }
+
+      this.lyricsExpanded = true
+      if (this.queueOpen === true) {
+        this.setQueueOpen(false)
+      }
+    },
+
+    collapseFullLyrics() {
+      this.lyricsExpanded = false
+      this.showLyrics()
     },
 
     /**
@@ -619,6 +722,18 @@ export default {
   }
 }
 
+.audio-player--lyrics-expanded {
+  @media (min-width: $breakpoint-sm-min) {
+    height: calc(100vh - var(--player-top-boundary) - 20px);
+    height: calc(100dvh - var(--player-top-boundary) - 20px);
+  }
+}
+
+.audio-player--lyrics-expanded > .albumart {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
 .player-slide-enter-active,
 .player-slide-leave-active {
   transition: transform 300ms cubic-bezier(.25, .8, .50, 1);
@@ -658,6 +773,18 @@ export default {
   opacity: 0;
 }
 
+.full-lyrics-inline__scroll {
+  min-height: 0;
+}
+
+.full-lyrics-inline__content {
+  padding-top: 56px;
+}
+
+.full-lyrics-inline__line {
+  overflow-wrap: anywhere;
+}
+
 // 播放控件区：一排按钮（含播放键）与音量条的高度、宽度都固定，
 // 封面收缩让出空间时按钮不会跟着跳动
 $control-row-height: 65px;
@@ -675,6 +802,30 @@ $volume-slider-width: 200px;
 
   &--play {
     width: $play-btn-width;
+  }
+}
+
+.hold-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: $control-row-height;
+}
+
+.hold-control .control-btn {
+  height: 100%;
+}
+
+.hold-control__progress {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+
+  :deep(.q-circular-progress__track) {
+    color: var(--app-border);
   }
 }
 

@@ -35,6 +35,9 @@ export default {
   queueOpen: false,
   lyricsOpen: false,
   currentLyric: '',
+  // 当前歌词文件的全部文本（去掉时间标签），供长按歌词按钮展开的内联歌词区域使用。
+  // 这里不做时间同步，页面只负责静态展示和手动滚动。
+  fullLyrics: [],
   // 当前曲目有没有歌词文件 / 引擎是不是还在查。
   // 查的过程中没有歌词文件这件事"还没定"，UI 要靠 lyricLoading 区分，
   // 否则每次切歌按钮都会先闪一下灰

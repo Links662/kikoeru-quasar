@@ -51,6 +51,7 @@ export default class AudioEngine {
 
     this.media = null
     this.lrc = null
+    this.lrcRequest = null
 
     this.pauseIntentTimer = null
     this.sleepTimer = null
@@ -219,6 +220,7 @@ export default class AudioEngine {
       this.commit('SET_LYRIC_AVAILABLE', false)
       this.commit('SET_LYRIC_LOADING', false)
       this.commit('SET_CURRENT_LYRIC', '')
+      this.lrcRequest = null
       if (this.lrc) this.lrc.setLyric('')
 
       return
@@ -439,6 +441,7 @@ export default class AudioEngine {
     this.dontResume = false
     this.commit('SET_LYRIC_AVAILABLE', false)
     this.commit('SET_LYRIC_LOADING', false)
+    this.lrcRequest = null
     if (this.lrc) {
       this.lrc.setLyric('')
     }
@@ -525,6 +528,9 @@ export default class AudioEngine {
     this.lrc = new Lyric({
       onPlay: (line, text) => {
         this.commit('SET_CURRENT_LYRIC', text)
+      },
+      onSetLyric: (lines) => {
+        this.commit('SET_FULL_LYRICS', lines.map(line => line.text))
       }
     })
   }
@@ -551,16 +557,22 @@ export default class AudioEngine {
     this.commit('SET_CURRENT_LYRIC', '')
     this.lrc.setLyric('')
 
+    const request = {}
+    this.lrcRequest = request
     const url = buildMediaUrl(`/api/media/check-lrc/${hash}`, this.token)
 
     axios.get(url)
       .then((response) => {
+        if (this.lrcRequest !== request) return
+
         if (response.data.result) {
           // 有 lrc 歌词文件
           this.commit('SET_LYRIC_AVAILABLE', true)
           const lrcUrl = buildMediaUrl(`/api/media/stream/${response.data.hash}`, this.token)
           axios.get(lrcUrl)
             .then(res => {
+              if (this.lrcRequest !== request) return
+
               this.lrc.setLyric(res.data)
               // 歌词文件回来时音频可能已经暂停了，这时只装歌词、别把歌词时钟也跑起来
               this.playLrc(this.state.elementPlaying === true)
@@ -573,6 +585,8 @@ export default class AudioEngine {
         }
       })
       .catch((error) => {
+        if (this.lrcRequest !== request) return
+
         if (error.response) {
           if (error.response.status !== 401) {
             this.showError(error.response.data.error || `${error.response.status} ${error.response.statusText}`)
@@ -582,7 +596,9 @@ export default class AudioEngine {
         }
       })
       .finally(() => {
-        this.commit('SET_LYRIC_LOADING', false)
+        if (this.lrcRequest === request) {
+          this.commit('SET_LYRIC_LOADING', false)
+        }
       })
   }
 
