@@ -686,9 +686,7 @@ export default class AudioEngine {
           this.notify.success(`继续从${formatSeconds(continueTime)}开始播放`)
         }
       })
-      .catch((error) => {
-        console.log(error)
-      })
+      .catch(() => {})
   }
 
   // ------------------------------------------------------------------

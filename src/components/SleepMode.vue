@@ -203,7 +203,7 @@ export default {
         this.SET_SLEEP_TIMER(this.$q.sessionStorage.getItem('sleepTime'))
       }
     } catch {
-      console.log('Web Storage API error')
+      // Session Storage 不可用时，定时器仍保留在内存状态中。
     }
   },
 
@@ -295,7 +295,7 @@ export default {
         this.$q.sessionStorage.set('sleepTime', time)
         this.$q.sessionStorage.set('sleepMode', true)
       } catch {
-        console.log('Web Storage API error')
+        // Session Storage 不可用时，定时器仍保留在内存状态中。
       }
       this.showSuccessNotif(`将在 ${time} 自动暂停播放`)
       this.closeDialog()
@@ -307,7 +307,7 @@ export default {
         this.$q.sessionStorage.set('sleepTime', null)
         this.$q.sessionStorage.set('sleepMode', false)
       } catch {
-        console.log('Web Storage API error')
+        // Session Storage 不可用时，定时器仍保留在内存状态中。
       }
       this.showSuccessNotif('播放定时已关闭')
       this.closeDialog()
