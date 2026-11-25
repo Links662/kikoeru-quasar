@@ -44,16 +44,6 @@
         <template v-if="!tableLoading">
           <q-icon class="q-table__bottom-nodata-icon" name="folder_off" />
           {{ message }}
-          <q-btn
-            v-if="config.rootFolders.length === 0"
-            outline
-            no-caps
-            color="app-accent"
-            icon="create_new_folder"
-            label="新增目录"
-            class="q-mt-md"
-            @click="openFolderDialog"
-          />
         </template>
       </template>
 

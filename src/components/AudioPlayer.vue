@@ -583,7 +583,7 @@ export default {
       }
 
       if (key === 'queue') {
-        this.toggleQueue()
+        this.toggleQueueView()
       } else if (key === 'previous') {
         this.previousTrack()
       } else if (key === 'next') {
@@ -595,6 +595,18 @@ export default {
           this.toggleLyrics()
         }
       }
+    },
+
+    // 完整歌词和播放列表都占用封面区域。从完整歌词切到列表时先退出完整歌词，
+    // 否则 queueOpen 虽然变成 true，列表仍会被模板里的 !lyricsExpanded 隐藏。
+    toggleQueueView() {
+      if (this.lyricsExpanded === true) {
+        this.collapseFullLyrics()
+        this.setQueueOpen(true)
+        return
+      }
+
+      this.toggleQueue()
     },
 
     // 模板里用：按住的按钮显示进度环，任何图标都保持原样
