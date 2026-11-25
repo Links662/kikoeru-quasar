@@ -82,9 +82,7 @@
         </template>
         
         <q-scroll-area class="log-scroll bg-dark text-white q-pa-md">
-          <div v-for="(log, index) in allLogs" :key="index" >
-            <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
-          </div>
+          <ScannerLogList :logs="allLogs" />
         </q-scroll-area>
       </q-expansion-item>
     </q-card>
@@ -135,9 +133,7 @@
                 
                 <q-card>
                   <q-card-section class="bg-dark text-white">
-                    <div v-for="(log, index) in item.logs" :key="index">
-                      <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
-                    </div>
+                    <ScannerLogList :logs="item.logs" />
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
@@ -177,9 +173,7 @@
                 
                 <q-card>
                   <q-card-section class="bg-dark text-white">
-                    <div v-for="(log, index) in item.logs" :key="index">
-                      <span :class="log.level === 'error' ? 'text-app-on-dark-danger' : ''">➜ {{log.message}}</span>
-                    </div>
+                    <ScannerLogList :logs="item.logs" />
                   </q-card-section>
                 </q-card>
               </q-expansion-item>
@@ -195,6 +189,7 @@
 <script>
 import NotifyMixin from '../../mixins/Notification.js'
 import { formatRJLabel } from '../../utils/rjCode'
+import ScannerLogList from '../../components/ScannerLogList.vue'
 
 // socket 不可用时的轮询间隔
 const POLL_INTERVAL = 2000
@@ -204,6 +199,10 @@ export default {
 
   mixins: [NotifyMixin],
 
+  components: {
+    ScannerLogList
+  },
+
   data () {
     return {
       tab: 'tasks',
@@ -212,6 +211,7 @@ export default {
       polling: false, // 是否正在用轮询兜底
       pollTimer: null,
       finishedMessage: null, // 扫描结束时服务端给出的总结
+      finishedLevel: 'info',
       tasks: [], // 正在处理中的并行任务
       failedTasks: [], // 处理失败的任务
       mainLogs: [],
@@ -243,6 +243,7 @@ export default {
     SCAN_FINISHED (payload) {
       this.state = 'finished'
       this.finishedMessage = payload.message
+      this.finishedLevel = payload.level || 'info'
     },
     SCAN_ERROR () {
       this.state = 'error'
@@ -299,6 +300,7 @@ export default {
       this.mainLogs = []
       this.results = []
       this.finishedMessage = null
+      this.finishedLevel = 'info'
     },
 
     // ---- 主通道（socket）状态 ----
@@ -376,31 +378,71 @@ export default {
       this.mainLogs = scanState.mainLogs || []
       this.results = scanState.results || []
       this.finishedMessage = scanState.status === 'finished' ? scanState.message : null
+      this.finishedLevel = scanState.messageLevel || 'info'
     }
   },
 
   computed: {
     allLogs () {
       const resultLogs = this.results.map(res => {
+        if (res.log) return res.log
+
         const rjLabel = res.workId ? formatRJLabel(res.workId) : ''
         if (res.result === 'added') {
-          return { level: 'info', message: `[${rjLabel}] 添加成功：${res.count} 项` }
+          return {
+            level: 'success',
+            type: 'item',
+            depth: 2,
+            message: `[${rjLabel}] 添加成功`
+          }
         } else if (res.result === 'repaired') {
-          return { level: 'info', message: `[${rjLabel}] 封面修复成功：${res.count} 项` }
+          return {
+            level: 'success',
+            type: 'item',
+            depth: 2,
+            message: `[${rjLabel}] 封面修复成功`
+          }
         } else if (res.result === 'upgraded') {
-          return { level: 'info', message: `[${rjLabel}] 封面升级成功：${res.count} 项` }
+          return {
+            level: 'success',
+            type: 'item',
+            depth: 2,
+            message: `[${rjLabel}] 封面升级成功`
+          }
         } else if (res.result === 'updated') {
-          return { level: 'info', message: `[${rjLabel}] 更新成功：${res.count} 项` }
+          return {
+            level: 'success',
+            type: 'item',
+            depth: 2,
+            message: `[${rjLabel}] 更新成功`
+          }
         } else {
-          return { level: 'error', message: `[${rjLabel}] 处理失败：${res.count} 项` }
+          return {
+            level: 'error',
+            type: 'item',
+            depth: 2,
+            message: `[${rjLabel}] 处理失败`
+          }
         }
       })
 
-      const logs = this.mainLogs.concat(resultLogs)
+      const logsById = new Map()
+      this.mainLogs.concat(resultLogs).forEach((log, index) => {
+        logsById.set(log.id ?? `legacy:${index}`, log)
+      })
+      const logs = Array.from(logsById.values()).sort((left, right) => {
+        return (left.id ?? Number.MAX_SAFE_INTEGER) -
+          (right.id ?? Number.MAX_SAFE_INTEGER)
+      })
 
       // 结束语由 SCAN_FINISHED 单独给出，不混进 mainLogs / results
       if (this.finishedMessage) {
-        logs.push({ level: 'info', message: this.finishedMessage })
+        logs.push({
+          level: this.finishedLevel,
+          type: 'summary',
+          depth: 0,
+          message: this.finishedMessage
+        })
       }
 
       return logs
