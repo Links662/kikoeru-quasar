@@ -22,7 +22,9 @@
   "scripts": {
     "test": "eslint .",
     "dev": "quasar dev",
-    "build": "quasar build && quasar build -m pwa"
+    "build": "npm run build:spa && npm run build:pwa",
+    "build:spa": "quasar build",
+    "build:pwa": "quasar build -m pwa"
   },
   "dependencies": {
     "@quasar/extras": "^1",

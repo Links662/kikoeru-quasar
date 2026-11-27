@@ -32,7 +32,6 @@ Kikoeru 的 Web 前端，基于 Vue 3 + Quasar v2，构建产物为 SPA / PWA，
 ├── src-pwa/                 # PWA 相关配置
 ├── docs/nginx/              # nginx 反向代理示例配置
 ├── quasar.config.js         # Quasar 构建配置
-├── Dockerfile               # 单独部署（Nginx 提供静态资源）时使用
 ├── package.json             # npm 脚本和依赖项
 └── .eslintrc.json           # ESLint
 ```
@@ -67,27 +66,9 @@ npm run build
 ### 后端
 前端需要有一个运行中的 kikoeru-express 提供 `/api`，安装与配置见 [kikoeru-express](https://github.com/kikoeru-project/kikoeru-express)。
 
-### Docker安装
-将kikoeru-quasar源码文件夹复制到kikoeru-express文件夹内，目录结构如下：
+### Docker部署
 
-```bash
-kikoeru-express
-├── ...
-├── kikoeru-quasar
-└── ...
-```
-
-手动编译构建镜像
-```bash
-docker build -t links/kikoeru-dev .
-```
-
-调整`docker-compose.yml`内的挂载位置，启动服务
-```bash
-docker compose up -d
-```
-
-> 本仓库自带的 `Dockerfile` 用于单独部署前端：构建 SPA / PWA 后交给 Nginx，由 Nginx 反向代理 `/api` 到后端，配置示例见 `docs/nginx`。
+Docker 构建、前端打包和 Compose 编排由独立的 Kikoeru 部署仓库管理。本仓库只维护前端源码，不再保存 Dockerfile、`.dockerignore` 或 Compose 配置。
 
 ## 其他
 
