@@ -1,5 +1,10 @@
 <template>
-  <q-layout view="hHh Lpr lFf" class="app-page-bg" :style="layoutStyle">
+  <q-layout
+    view="hHh Lpr lFf"
+    class="app-page-bg"
+    :style="layoutStyle"
+    @click.capture="handleRouteLinkClick"
+  >
     <q-header ref="header" class="app-main-header shadow-1">
       <q-toolbar>
         <q-toolbar-title shrink class="gt-xs q-mr-xs">
@@ -458,6 +463,22 @@ export default {
 
     closePanel () {
       this.closeWorkPanel();
+    },
+
+    // 重复导航不会改变 $route，也就不会触发 App.vue 里的路由监听。
+    // 因此要在路由链接被点击时先收起浮层，再让 Vue Router 决定是否真正跳转。
+    handleRouteLinkClick (event) {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+
+      const link = event.target.closest('a[href]')
+      if (!link) return
+
+      const href = new URL(link.href, window.location.href)
+      if (href.origin !== window.location.origin) return
+
+      this.collapsePlayer()
+      if (this.workId !== null) this.closePanel()
     },
 
     handlePanelKeyEvent (event) {
