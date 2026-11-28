@@ -1,30 +1,31 @@
 <template>
   <q-card class="collection-log-panel">
-    <q-expansion-item expand-separator default-opened>
-      <template v-slot:header>
-        <q-item-section avatar>
+    <q-card-section class="log-header">
+      <div class="row no-wrap items-center">
+        <div class="q-mr-sm">
           <q-spinner-gears v-if="state === 'running'" color="app-accent" size="2em" />
           <q-icon v-else-if="state === 'finished'" name="done" color="positive" size="2em" />
           <q-icon v-else-if="state === 'error'" name="error" color="app-danger" size="2em" />
           <q-icon v-else name="subject" color="app-accent" size="2em" />
-        </q-item-section>
-
-        <q-item-section>
-          <q-item-label>运行日志</q-item-label>
-          <q-item-label caption class="ellipsis">
-            {{ logs.length > 0 ? logs[logs.length - 1].message : '暂无运行日志，任务启动后会在这里显示执行过程。' }}
-          </q-item-label>
-        </q-item-section>
-      </template>
-
-      <q-scroll-area class="log-scroll bg-dark text-white q-pa-md">
-        <ScannerLogList v-if="logs.length > 0" :logs="logs" dark />
-        <div v-else class="log-empty">
-          <q-icon name="subject" size="2em" class="q-mb-sm" />
-          <div>暂无运行日志</div>
         </div>
-      </q-scroll-area>
-    </q-expansion-item>
+        <div class="col">
+          <div>运行日志</div>
+          <div class="text-caption app-text-secondary ellipsis">
+            {{ logs.length > 0 ? logs[logs.length - 1].message : '暂无运行日志，任务启动后会在这里显示执行过程。' }}
+          </div>
+        </div>
+      </div>
+    </q-card-section>
+
+    <q-separator />
+
+    <q-scroll-area class="log-scroll bg-dark text-white q-pa-md">
+      <ScannerLogList v-if="logs.length > 0" :logs="logs" dark />
+      <div v-else class="log-empty">
+        <q-icon name="subject" size="2em" class="q-mb-sm" />
+        <div>暂无运行日志</div>
+      </div>
+    </q-scroll-area>
   </q-card>
 </template>
 
@@ -54,6 +55,11 @@ export default {
 <style lang="scss" scoped>
 .collection-log-panel {
   height: 100%;
+}
+
+.log-header {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .log-scroll {
