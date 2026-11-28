@@ -83,7 +83,6 @@
           <div class="text-h6 text-weight-regular">自动化</div>
           <div class="text-caption app-text-secondary">
             共 {{ automations.length }} 项，其中 {{ enabledCount }} 项已启用。
-            Cron 按服务器容器时区执行
           </div>
         </div>
       </div>
@@ -381,15 +380,11 @@
               dense
               label="Cron 表达式"
               hint="五段格式：分 时 日 月 周，例如 0 3 * * *"
-              :rules="[validateCronInput]"
               :error="Boolean(cronError)"
               :error-message="cronError"
-              :loading="previewLoading"
               :disable="savingAutomation"
-              lazy-rules
               class="q-mb-sm"
-              @update:model-value="schedulePreview"
-              @blur="loadCronPreview"
+              @update:model-value="clearCronError"
             />
 
             <q-toggle
@@ -398,22 +393,6 @@
               label="启用自动化"
               color="app-accent"
             />
-
-            <q-list
-              v-if="previewRuns.length > 0"
-              dense
-              bordered
-              class="q-mt-md"
-            >
-              <q-item v-for="run in previewRuns" :key="run.value">
-                <q-item-section avatar>
-                  <q-icon name="event" color="app-accent" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label class="text-mono">{{ run.label }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
           </q-card-section>
 
           <q-card-actions align="right" class="q-px-md q-pt-sm q-pb-sm">
@@ -523,10 +502,6 @@ export default {
       savingAutomation: false,
       deleteDialog: false,
       deletingAutomation: null,
-      previewTimer: null,
-      previewRequestId: 0,
-      previewLoading: false,
-      previewRuns: [],
       cronError: '',
       actionOptions: ACTION_OPTIONS,
       automationForm: {
@@ -665,8 +640,8 @@ export default {
       return status === 'error' ? 'text-app-danger' : 'app-text-secondary'
     },
 
-    validateCronInput (value) {
-      return Boolean(value && value.trim()) || '请输入 Cron 表达式'
+    clearCronError () {
+      this.cronError = ''
     },
 
     showRequestError (error, fallback = '操作失败') {
@@ -708,9 +683,7 @@ export default {
         cronExpression: '',
         enabled: true
       }
-      this.previewRuns = []
       this.cronError = ''
-      this.previewLoading = false
       this.automationDialog = true
     },
 
@@ -721,79 +694,30 @@ export default {
         cronExpression: automation.cronExpression,
         enabled: automation.enabled
       }
-      this.previewRuns = []
       this.cronError = ''
-      this.previewLoading = false
       this.automationDialog = true
-      this.loadCronPreview()
     },
 
     closeAutomationDialog () {
       if (this.savingAutomation) return
-      if (this.previewTimer) {
-        clearTimeout(this.previewTimer)
-        this.previewTimer = null
-      }
-      this.previewRequestId += 1
-      this.previewLoading = false
       this.automationDialog = false
       this.editingAutomation = null
-      this.previewRuns = []
       this.cronError = ''
     },
 
-    schedulePreview () {
-      this.previewRequestId += 1
-      if (this.previewTimer) clearTimeout(this.previewTimer)
-      this.previewLoading = false
-      this.previewRuns = []
-      this.cronError = ''
-      if (!this.automationForm.cronExpression.trim()) return
-
-      this.previewTimer = setTimeout(this.loadCronPreview, 350)
-    },
-
-    async loadCronPreview () {
-      if (this.previewTimer) {
-        clearTimeout(this.previewTimer)
-        this.previewTimer = null
+    showAutomationSaveError (error) {
+      if (error.response && error.response.status === 400) {
+        const data = error.response.data || {}
+        this.cronError = (data.errors && data.errors[0] && data.errors[0].msg) ||
+          data.error ||
+          'Cron 表达式无效'
+        return
       }
-      const expression = this.automationForm.cronExpression.trim()
-      if (!expression) {
-        this.previewRuns = []
-        return false
-      }
-
-      const requestId = ++this.previewRequestId
-      this.previewLoading = true
-      try {
-        const response = await this.$axios.post('/api/scanner/automations/preview', {
-          cronExpression: expression
-        })
-        if (requestId !== this.previewRequestId) return false
-        this.automationForm.cronExpression = response.data.cronExpression
-        this.previewRuns = response.data.nextRuns || []
-        this.cronError = ''
-        return true
-      } catch (error) {
-        if (requestId !== this.previewRequestId) return false
-        const data = error.response && error.response.data
-        this.cronError = data
-          ? (data.errors && data.errors[0] && data.errors[0].msg) || data.error || 'Cron 表达式无效'
-          : (error.message || 'Cron 表达式无效')
-        this.previewRuns = []
-        return false
-      } finally {
-        if (requestId === this.previewRequestId) {
-          this.previewLoading = false
-        }
-      }
+      this.showRequestError(error, '保存扫描自动化失败')
     },
 
     async saveAutomation () {
       if (this.savingAutomation) return
-      if (!await this.loadCronPreview()) return
-
       this.savingAutomation = true
       try {
         if (this.editingAutomation) {
@@ -816,7 +740,7 @@ export default {
         this.editingAutomation = null
         await this.requestAutomations()
       } catch (error) {
-        this.showRequestError(error, '保存扫描自动化失败')
+        this.showAutomationSaveError(error)
       } finally {
         this.savingAutomation = false
       }
@@ -1078,7 +1002,6 @@ export default {
 
   beforeUnmount () {
     this.stopPolling()
-    if (this.previewTimer) clearTimeout(this.previewTimer)
   }
 }
 </script>
