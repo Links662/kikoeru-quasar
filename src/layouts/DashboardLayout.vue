@@ -42,7 +42,7 @@ export default {
     return {
       links: [
         {
-          title: '用户',
+          title: '用户管理',
           icon: 'person',
           path: '/admin/usermanage',
           primary: true,
@@ -56,7 +56,7 @@ export default {
           exact: false
         },
         {
-          title: '存储',
+          title: '存储管理',
           icon: 'folder',
           path: '/admin/folders',
           primary: true,
@@ -71,7 +71,7 @@ export default {
         },
         
         {
-          title: '主页',
+          title: '回到主页',
           icon: 'home',
           path: '/',
           primary: true,
