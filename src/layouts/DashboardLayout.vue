@@ -3,7 +3,7 @@
     <q-header class="app-dashboard-header shadow-1 text-white">
       <q-toolbar class="row no-wrap items-center">
         <!-- 屏幕变窄时先收掉「控制台」标志，再窄到手机尺寸才让导航缩成纯图标 -->
-        <q-toolbar-title shrink class="gt-xs q-mr-xs">控制台</q-toolbar-title>
+        <q-toolbar-title shrink class="gt-md q-mr-xs">控制台</q-toolbar-title>
 
         <div class="col nav-scroll row no-wrap items-center overflow-hidden">
           <q-btn
@@ -18,7 +18,11 @@
             :to="link.path"
             :exact="link.exact"
             active-class="nav-active"
-          />
+          >
+            <q-tooltip v-if="!showNavLinkLabel(link)">
+              {{ link.title }}
+            </q-tooltip>
+          </q-btn>
         </div>
       </q-toolbar>
     </q-header>
@@ -82,9 +86,9 @@ export default {
   },
 
   computed: {
-    // 主入口在 xs 以上显示文字；次级入口只在 md 以上恢复文字。
+    // 仅 xs 收成图标；sm 及以上显示文字，宽屏再显示“控制台”标题。
     showNavLinkLabel () {
-      return (link) => link.primary === true || this.$q.screen.gt.xs
+      return () => this.$q.screen.gt.xs
     }
   },
 

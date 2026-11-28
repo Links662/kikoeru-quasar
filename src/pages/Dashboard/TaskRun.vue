@@ -17,37 +17,41 @@
             :key="group.title"
             class="col-12 col-md-4"
           >
-            <q-card flat bordered class="manual-task-card">
-              <q-card-section class="manual-task-card__header">
-                <q-icon :name="group.icon" size="20px" color="app-accent" />
-                <span>{{ group.title }}</span>
+            <q-card flat bordered class="column full-height">
+              <q-card-section class="row items-center q-px-md q-py-sm">
+                <q-icon :name="group.icon" size="20px" color="app-accent" class="q-mr-sm" />
+                <span class="text-body2 text-weight-bold">{{ group.title }}</span>
               </q-card-section>
               <q-separator />
-              <q-card-section class="manual-task-card__body">
+              <q-card-section class="column q-pa-sm q-gutter-y-sm">
                 <q-btn
                   v-for="task in group.tasks"
                   :key="task.kind"
-                  flat
                   no-caps
                   align="left"
-                  class="manual-task-button full-width"
-                  :class="{ 'manual-task-button--primary': task.kind === 'scan' }"
+                  size="md"
+                  padding="8px 12px"
+                  color="app-accent"
+                  :text-color="task.kind === 'scan' ? 'app-accent-contrast' : undefined"
+                  class="full-width"
+                  :outline="task.kind !== 'scan'"
+                  :unelevated="task.kind === 'scan'"
                   :disable="state === 'running' || !socketConnected"
                   @click="startTask(task.kind)"
                 >
-                  <span class="manual-task-button__content">
-                    <q-icon :name="task.icon" size="20px" class="manual-task-button__icon" />
-                    <span class="manual-task-button__label">{{ task.title }}</span>
+                  <span class="row no-wrap items-center full-width">
+                    <q-icon :name="task.icon" size="20px" class="q-mr-sm" />
+                    <span class="col text-left ellipsis">{{ task.title }}</span>
                     <q-spinner
                       v-if="state === 'running' && runKind === task.kind"
                       size="18px"
-                      class="manual-task-button__action"
+                      class="q-ml-sm"
                     />
                     <q-icon
                       v-else
                       name="play_arrow"
                       size="18px"
-                      class="manual-task-button__action"
+                      class="q-ml-sm"
                     />
                   </span>
                 </q-btn>
@@ -129,7 +133,7 @@
 
     <div class="row q-col-gutter-md q-px-md q-pb-md">
       <div class="col-12 col-lg-4">
-        <q-card class="task-monitor-card">
+        <q-card class="full-height">
           <q-card-section>
             <div class="row items-center">
               <div class="col text-h6 text-weight-regular">任务监视</div>
@@ -144,7 +148,7 @@
             <div v-if="tasks.length === 0" class="text-caption app-text-secondary q-pb-sm">
               当前没有正在处理的任务。
             </div>
-            <q-list v-else separator class="monitor-list">
+            <q-list v-else separator class="scroll monitor-list">
               <q-item v-for="task in visibleTasks" :key="task.workId" dense>
                 <q-item-section avatar>
                   <q-spinner-hourglass color="app-accent" size="18px" />
@@ -173,7 +177,7 @@
             <div v-if="exceptionItems.length === 0" class="text-caption app-text-secondary">
               本次运行没有需要处理的异常。
             </div>
-            <q-list v-else separator class="monitor-list">
+            <q-list v-else separator class="scroll monitor-list">
               <q-item
                 v-for="item in visibleExceptions"
                 :key="`${item.result}-${item.workId}`"
@@ -624,77 +628,7 @@ export default {
   z-index: 5;
 }
 
-.manual-task-card {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-}
-
-.manual-task-card__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-top: 0.625rem;
-  padding-bottom: 0.625rem;
-  color: var(--app-text);
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-
-.manual-task-card__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem;
-}
-
-.manual-task-button {
-  min-height: 42px;
-  padding: 0 0.75rem;
-  border: 1px solid var(--app-border);
-  border-radius: $button-rounded-border-radius;
-  background: var(--app-surface);
-  color: var(--app-text);
-}
-
-.manual-task-button--primary {
-  border-color: transparent;
-  background: var(--app-accent);
-  color: var(--app-accent-contrast);
-}
-
-.manual-task-button__content {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  gap: 0.625rem;
-}
-
-.manual-task-button__icon {
-  flex: 0 0 20px;
-}
-
-.manual-task-button__label {
-  flex: 1;
-  text-align: left;
-}
-
-.manual-task-button__action {
-  flex: 0 0 auto;
-  opacity: 0.7;
-}
-
-.manual-task-button :deep(.q-btn__content) {
-  width: 100%;
-}
-
-.task-monitor-card {
-  height: 100%;
-}
-
 .monitor-list {
   max-height: 220px;
-  overflow: auto;
 }
 </style>
