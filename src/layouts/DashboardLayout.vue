@@ -19,9 +19,6 @@
             :exact="link.exact"
             active-class="nav-active"
           >
-            <q-tooltip v-if="!showNavLinkLabel(link)">
-              {{ link.title }}
-            </q-tooltip>
           </q-btn>
         </div>
       </q-toolbar>
