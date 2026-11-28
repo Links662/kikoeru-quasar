@@ -225,6 +225,10 @@ a {
   max-width: 6.25rem;
 }
 
+.admin-form-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
 .admin-data-table {
   .q-table {
     table-layout: fixed;

@@ -265,10 +265,12 @@
   </q-page>
 
   <q-dialog v-model="folderDialog" :persistent="savingFolder">
-    <q-card style="width: 520px; max-width: 90vw">
+    <q-card class="admin-form-dialog">
       <q-form ref="folderForm" @submit="onSubmitRootFolder">
-        <q-toolbar>
-          <q-toolbar-title>{{ folderDialogTitle }}</q-toolbar-title>
+        <q-card-section class="row items-center no-wrap q-px-md q-pt-md q-pb-none">
+          <div class="col">
+            <div class="text-h6">{{ folderDialogTitle }}</div>
+          </div>
           <q-btn
             flat
             round
@@ -278,9 +280,9 @@
             :disable="savingFolder"
             @click="closeFolderDialog"
           />
-        </q-toolbar>
+        </q-card-section>
 
-        <q-card-section class="q-pt-none">
+        <q-card-section class="q-px-md q-pt-sm q-pb-none">
           <q-input
             v-model.trim="rootFolder.name"
             outlined
@@ -322,19 +324,21 @@
           </div>
         </q-card-section>
 
-        <q-card-actions align="right">
+        <q-card-actions align="right" class="q-px-md q-pt-sm q-pb-sm">
           <q-btn
             flat
+            no-caps
             label="取消"
-            color="primary"
+            color="app-accent"
             :disable="savingFolder"
             @click="closeFolderDialog"
           />
           <q-btn
-            unelevated
+            flat
+            no-caps
             type="submit"
             :label="folderDialogSubmitLabel"
-            color="primary"
+            color="app-accent"
             :loading="savingFolder"
           />
         </q-card-actions>

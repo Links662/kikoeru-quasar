@@ -137,10 +137,12 @@
   </q-page>
 
   <q-dialog v-model="userDialog">
-    <q-card style="width: 520px; max-width: 90vw">
+    <q-card class="admin-form-dialog">
       <q-form ref="userForm" @submit="saveUser">
-        <q-toolbar>
-          <q-toolbar-title>{{ isEditing ? '修改用户' : '新增用户' }}</q-toolbar-title>
+        <q-card-section class="row items-center no-wrap q-px-md q-pt-md q-pb-none">
+          <div class="col">
+            <div class="text-h6">{{ isEditing ? '修改用户' : '新增用户' }}</div>
+          </div>
           <q-btn
             flat
             round
@@ -150,9 +152,9 @@
             :disable="savingUser"
             @click="closeUserDialog"
           />
-        </q-toolbar>
+        </q-card-section>
 
-        <q-card-section class="q-pt-none">
+        <q-card-section class="q-px-md q-pt-sm q-pb-none">
           <q-input
             v-model.trim="userForm.name"
             outlined
@@ -197,19 +199,21 @@
           </div>
         </q-card-section>
 
-        <q-card-actions align="right">
+        <q-card-actions align="right" class="q-px-md q-pt-sm q-pb-sm">
           <q-btn
             flat
+            no-caps
             label="取消"
-            color="primary"
+            color="app-accent"
             :disable="savingUser"
             @click="closeUserDialog"
           />
           <q-btn
-            unelevated
+            flat
+            no-caps
             type="submit"
             :label="isEditing ? '保存' : '创建'"
-            color="primary"
+            color="app-accent"
             :loading="savingUser"
             :disable="isEditing && !editHasChanges"
           />

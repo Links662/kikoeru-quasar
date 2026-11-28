@@ -343,12 +343,14 @@
     </q-card>
 
     <q-dialog v-model="automationDialog" :persistent="savingAutomation">
-      <q-card style="width: 560px; max-width: 92vw">
+      <q-card class="admin-form-dialog">
         <q-form @submit="saveAutomation">
-          <q-toolbar>
-            <q-toolbar-title>
-              {{ editingAutomation ? '修改扫描自动化' : '新增扫描自动化' }}
-            </q-toolbar-title>
+          <q-card-section class="row items-center no-wrap q-px-md q-pt-md q-pb-none">
+            <div class="col">
+              <div class="text-h6">
+                {{ editingAutomation ? '修改扫描自动化' : '新增扫描自动化' }}
+              </div>
+            </div>
             <q-btn
               flat
               round
@@ -358,9 +360,9 @@
               :disable="savingAutomation"
               @click="closeAutomationDialog"
             />
-          </q-toolbar>
+          </q-card-section>
 
-          <q-card-section class="q-pt-none">
+          <q-card-section class="q-px-md q-pt-sm q-pb-none">
             <q-select
               v-model="automationForm.type"
               :options="actionOptions"
@@ -414,19 +416,21 @@
             </q-list>
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions align="right" class="q-px-md q-pt-sm q-pb-sm">
             <q-btn
               flat
+              no-caps
               label="取消"
-              color="primary"
+              color="app-accent"
               :disable="savingAutomation"
               @click="closeAutomationDialog"
             />
             <q-btn
-              unelevated
+              flat
+              no-caps
               type="submit"
               :label="editingAutomation ? '保存' : '创建'"
-              color="primary"
+              color="app-accent"
               :loading="savingAutomation"
             />
           </q-card-actions>
