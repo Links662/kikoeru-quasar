@@ -16,7 +16,7 @@
             :label="showNavLinkLabel(link) ? link.title : undefined"
             :aria-label="showNavLinkLabel(link) ? undefined : link.title"
             :to="link.path"
-            exact
+            :exact="link.exact"
             active-class="nav-active"
           />
         </div>
@@ -45,32 +45,37 @@ export default {
           title: '用户',
           icon: 'person',
           path: '/admin/usermanage',
-          primary: true
+          primary: true,
+          exact: true
         },
         {
-          title: '扫描',
+          title: '采集管理',
           icon: 'youtube_searched_for',
-          path: '/admin/scanner',
-          primary: true
+          path: '/admin/collection',
+          primary: true,
+          exact: false
         },
         {
           title: '存储',
           icon: 'folder',
           path: '/admin/folders',
-          primary: true
+          primary: true,
+          exact: true
         },
         {
-          title: '高级',
+          title: '系统设置',
           icon: 'settings',
           path: '/admin/advanced',
-          primary: true
+          primary: true,
+          exact: true
         },
         
         {
           title: '主页',
           icon: 'home',
           path: '/',
-          primary: true
+          primary: true,
+          exact: true
         }
       ]
     }

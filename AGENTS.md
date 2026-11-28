@@ -80,7 +80,7 @@ npm run build
 ## 路由与页面
 
 - 主站路由：`/works`、`/circles`、`/tags`、`/vas`、`/progress`、`/login`。
-- 管理路由：`/admin`（默认重定向到扫描页）、`/admin/scanner`、`/admin/folders`、`/admin/advanced`、`/admin/usermanage`。
+- 管理路由：`/admin`（默认重定向到任务运行页）、`/admin/collection/run`、`/admin/collection/automations`、`/admin/collection/settings`、`/admin/folders`、`/admin/advanced`、`/admin/usermanage`；旧 `/admin/scanner` 重定向到任务运行页。
 - 作品详情不是独立页面。访问 `/work/:id` 时，路由守卫打开 `WorkPanel`：
   - 应用内跳转取消原导航，只打开左侧/移动端面板；
   - 直接访问或刷新则回到 `/works` 并打开面板。

@@ -4,17 +4,21 @@
       v-for="(log, index) in logs"
       :key="log.id ?? index"
       class="scanner-log-row row no-wrap items-start q-py-none"
-      :class="indentClass(log)"
     >
-      <div class="q-pr-sm">
-        <q-icon
-          :name="iconName(log)"
-          :class="iconClass(log)"
-          size="16px"
-        />
+      <div class="log-time text-caption text-mono">
+        {{ formatTime(log) }}
       </div>
-      <div class="col" :class="messageClass(log)">
-        <span>{{ log.message }}</span>
+      <div class="col row no-wrap items-start" :class="indentClass(log)">
+        <div class="q-pr-sm">
+          <q-icon
+            :name="iconName(log)"
+            :class="iconClass(log)"
+            size="16px"
+          />
+        </div>
+        <div class="col log-message" :class="messageClass(log)">
+          <span>{{ log.message }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -43,10 +47,21 @@ export default {
     logs: {
       type: Array,
       default: () => []
+    },
+    dark: {
+      type: Boolean,
+      default: false
     }
   },
 
   methods: {
+    formatTime (log) {
+      if (!log.timestamp) return '--:--:--'
+      const date = new Date(log.timestamp)
+      if (Number.isNaN(date.getTime())) return '--:--:--'
+      return date.toLocaleTimeString('zh-CN', { hour12: false })
+    },
+
     depth (log) {
       const depth = Number.isInteger(log.depth)
         ? log.depth
@@ -72,11 +87,15 @@ export default {
     },
 
     iconClass (log) {
-      if (log.level === 'error') return 'text-app-on-dark-danger'
+      if (log.level === 'error') {
+        return this.dark ? 'text-app-on-dark-danger' : 'text-app-danger'
+      }
       if (log.level === 'warn') return 'text-warning'
       if (log.level === 'success') return 'text-positive'
-      if (log.type === 'phase' || log.type === 'summary') return 'text-white'
-      return 'text-grey-4'
+      if (log.type === 'phase' || log.type === 'summary') {
+        return this.dark ? 'text-white' : ''
+      }
+      return this.dark ? 'text-grey-4' : 'app-text-secondary'
     },
 
     messageClass (log) {
@@ -88,11 +107,17 @@ export default {
         classes.push('text-body2')
       }
 
-      if (log.level === 'error') classes.push('text-app-on-dark-danger')
-      else if (log.level === 'warn') classes.push('text-warning')
-      else if (log.level === 'success') classes.push('text-positive')
-      else if (log.type === 'detail') classes.push('text-grey-4')
-      else if (log.type === 'phase' || log.type === 'summary') classes.push('text-white')
+      if (log.level === 'error') {
+        classes.push(this.dark ? 'text-app-on-dark-danger' : 'text-app-danger')
+      } else if (log.level === 'warn') {
+        classes.push('text-warning')
+      } else if (log.level === 'success') {
+        classes.push('text-positive')
+      } else if (log.type === 'detail') {
+        classes.push(this.dark ? 'text-grey-4' : 'app-text-secondary')
+      } else if ((log.type === 'phase' || log.type === 'summary') && this.dark) {
+        classes.push('text-white')
+      }
 
       return classes
     }
@@ -102,6 +127,18 @@ export default {
 
 <style lang="scss" scoped>
 .scanner-log-row {
-  min-height: 22px;
+  min-height: 24px;
+}
+
+.log-time {
+  flex: 0 0 5.25rem;
+  padding-top: 1px;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.log-message {
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 </style>

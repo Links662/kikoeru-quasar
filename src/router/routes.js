@@ -7,9 +7,12 @@ import Login from 'pages/Login'
 import Favourites from 'pages/Favourites'
 
 import Folders from 'pages/Dashboard/Folders'
-import Scanner from 'pages/Dashboard/Scanner'
 import Advanced from 'pages/Dashboard/Advanced'
 import UserManage from 'pages/Dashboard/UserManage'
+import CollectionLayout from 'pages/Dashboard/CollectionLayout'
+import CollectionTaskRun from 'pages/Dashboard/TaskRun'
+import CollectionAutomations from 'pages/Dashboard/Automations'
+import CollectionSettings from 'pages/Dashboard/CollectionSettings'
 
 const routes = [
   {
@@ -18,15 +21,37 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/scanner'
+        redirect: '/admin/collection/run'
       },
       {
         path: 'folders',
         component: Folders
       },
       {
+        path: 'collection',
+        component: CollectionLayout,
+        children: [
+          {
+            path: '',
+            redirect: '/admin/collection/run'
+          },
+          {
+            path: 'run',
+            component: CollectionTaskRun
+          },
+          {
+            path: 'automations',
+            component: CollectionAutomations
+          },
+          {
+            path: 'settings',
+            component: CollectionSettings
+          }
+        ]
+      },
+      {
         path: 'scanner',
-        component: Scanner
+        redirect: '/admin/collection/run'
       },
       {
         path: 'advanced',
