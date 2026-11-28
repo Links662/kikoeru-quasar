@@ -56,6 +56,21 @@
             />
           </q-item-section>
         </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>标签显示语言</q-item-label>
+            <q-item-label caption>全站生效，用户刷新页面后使用新的标签名称</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <div class="q-gutter-sm">
+              <q-radio dense v-model="config.tagLanguage" val="zh-cn" label="简" />
+              <q-radio dense v-model="config.tagLanguage" val="zh-tw" label="繁" />
+              <q-radio dense v-model="config.tagLanguage" val="ja-jp" label="日" />
+            </div>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-card>
 
@@ -104,21 +119,6 @@
       </q-toolbar>
 
       <q-list>
-        <q-item>
-          <q-item-section>
-            <q-item-label>标签语言</q-item-label>
-            <q-item-label caption>从 DLSite 爬取的标签元数据的语言</q-item-label>
-          </q-item-section>
-
-          <q-item-section side>
-            <div class="q-gutter-sm">
-              <q-radio dense v-model="config.tagLanguage" val="zh-CN" label="简" />
-              <q-radio dense v-model="config.tagLanguage" val="zh-TW" label="繁" />
-              <q-radio dense v-model="config.tagLanguage" val="ja-JP" label="日" />
-            </div>
-          </q-item-section>
-        </q-item>
-
         <q-item>
           <q-item-section>
             <q-item-label>每次刷新作品数量</q-item-label>

@@ -35,6 +35,17 @@
         <q-btn
           class="col"
           unelevated
+          color="deep-orange"
+          label="扫描标签列表"
+          :disable="state === 'running' || !socketConnected"
+          @click="performTagScan()"
+        />
+      </div>
+
+      <div class="col-xs-6 col-sm-4 row q-pa-sm">
+        <q-btn
+          class="col"
+          unelevated
           color="primary"
           label="刷新作品信息"
           :disable="state === 'running' || !socketConnected"
@@ -279,6 +290,12 @@ export default {
       this.resetScanState()
       this.state = 'running'
       this.$socket.emit('PERFORM_UPDATE')
+    },
+
+    performTagScan () {
+      this.resetScanState()
+      this.state = 'running'
+      this.$socket.emit('PERFORM_TAG_SCAN')
     },
 
     performSubtitleScan () {
