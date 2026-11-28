@@ -121,6 +121,40 @@
 
         <q-item>
           <q-item-section>
+            <q-item-label>每次刷新作品数量</q-item-label>
+            <q-item-label caption>每次点击最多选择多少条待刷新作品</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.metadataRefreshBatchSize"
+              aria-label="每次刷新作品数量"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
+            <q-item-label>刷新多少天前的作品</q-item-label>
+            <q-item-label caption>只选择指定天数以前更新过的数据，0 表示不限</q-item-label>
+          </q-item-section>
+
+          <q-item-section side>
+            <q-input
+              v-model.number="config.metadataRefreshStaleDays"
+              aria-label="刷新多少天前的作品"
+              type="number"
+              input-class="text-right"
+              class="admin-field"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item>
+          <q-item-section>
             <q-item-label>DLsite 超时时间</q-item-label>
             <q-item-label caption>默认 10000 毫秒</q-item-label>
           </q-item-section>
