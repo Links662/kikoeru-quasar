@@ -175,7 +175,7 @@
               class="text-weight-medium"
               :class="props.row.enabled ? 'app-text-secondary' : 'text-app-danger'"
             >
-              {{ props.row.enabled ? '已启用' : '已停用' }}
+              {{ props.row.enabled ? '已启用' : '已禁用' }}
             </span>
           </q-td>
         </template>
@@ -197,10 +197,10 @@
               dense
               no-caps
               :color="props.row.enabled ? 'app-danger' : 'app-accent'"
-              :icon="props.row.enabled ? 'pause_circle' : 'play_circle'"
-              :label="showAutomationActionLabels ? (props.row.enabled ? '停用' : '启用') : undefined"
+              :icon="props.row.enabled ? 'block' : 'check_circle'"
+              :label="showAutomationActionLabels ? (props.row.enabled ? '禁用' : '启用') : undefined"
               :loading="loadingAutomationId === props.row.id"
-              :aria-label="`${props.row.enabled ? '停用' : '启用'}扫描自动化 ${actionLabel(props.row.type)}`"
+              :aria-label="`${props.row.enabled ? '禁用' : '启用'}扫描自动化 ${actionLabel(props.row.type)}`"
               @click="toggleAutomation(props.row)"
             />
             <q-btn
@@ -753,7 +753,7 @@ export default {
         await this.$axios.put(`/api/scanner/automations/${automation.id}`, {
           enabled: !automation.enabled
         })
-        this.showSuccNotif(`已${automation.enabled ? '停用' : '启用'}扫描自动化`)
+        this.showSuccNotif(`已${automation.enabled ? '禁用' : '启用'}扫描自动化`)
         await this.requestAutomations()
       } catch (error) {
         this.showRequestError(error, '修改扫描自动化状态失败')

@@ -569,6 +569,7 @@ export default {
       if (this.savingFolder) return
 
       const folder = {
+        id: this.rootFolder.id,
         name: this.rootFolder.name.trim(),
         path: this.rootFolder.path.trim(),
         maxRecursionDepth: Number(this.rootFolder.maxRecursionDepth)
